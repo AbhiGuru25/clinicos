@@ -3,10 +3,10 @@ import { motion } from 'framer-motion';
 
 export default function Hero() {
   return (
-    <section style={{ background: '#F8FAFF', paddingTop: '100px', paddingBottom: '60px', position: 'relative', overflow: 'hidden' }}>
+    <section style={{ background: 'transparent', paddingTop: '100px', paddingBottom: '60px', position: 'relative', overflow: 'hidden' }}>
       
       {/* Subtle Medical Pattern from CSS */}
-      <div className="bg-cross-pattern" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
+      <div className="bg-cross-pattern" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', opacity: 0.1 }} />
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', position: 'relative' }}>
 

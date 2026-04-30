@@ -26,7 +26,7 @@ const stats = [
 
 export default function Stats() {
   return (
-    <section style={{ padding: '40px 0', background: 'white', borderTop: '1px solid #F1F5F9', borderBottom: '1px solid #F1F5F9' }}>
+    <section style={{ padding: '40px 0', background: 'transparent', borderTop: '1px solid #F1F5F9', borderBottom: '1px solid #F1F5F9' }}>
       <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '24px' }}>
           {stats.map((s, i) => (

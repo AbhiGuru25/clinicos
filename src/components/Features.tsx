@@ -31,7 +31,7 @@ const features = [
 
 export default function Features() {
   return (
-    <section id="features" style={{ padding: '60px 0', background: 'white' }}>
+    <section id="features" style={{ padding: '60px 0', background: 'transparent' }}>
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
 
         {/* Centered header */}
