@@ -49,11 +49,12 @@ export default function Pricing() {
                 </div>
                 <div style={{ fontSize: '0.82rem', color: '#94A3B8', marginBottom: '8px' }}>{plan.desc}</div>
                 <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', fontWeight: 700, color: '#16A34A', background: '#F0FDF4', padding: '4px 10px', borderRadius: '999px' }}>
-                  <span>✅</span> 14 days free
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                  14 days free
                 </div>
               </div>
 
-              <ul style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px', flex: 1, listStyle: 'none' }}>
+              <ul style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '32px', flex: 1, listStyle: 'none', padding: 0 }}>
                 {plan.features.map((f, j) => (
                   <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', fontSize: '0.875rem', color: '#475569' }}>
                     <svg style={{ flexShrink: 0, marginTop: '2px' }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke={plan.color} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -79,7 +80,10 @@ export default function Pricing() {
         </div>
 
         <div style={{ marginTop: '40px', textAlign: 'center', fontSize: '0.85rem', color: '#94A3B8' }}>
-          🔒 All plans include data encryption · Cancel anytime · Setup within 48 hours guaranteed
+          <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            All plans include data encryption · Cancel anytime · Setup within 48 hours guaranteed
+          </span>
         </div>
       </div>
     </section>
