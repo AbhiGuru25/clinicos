@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap');
+
+@import "tailwindcss";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: #F8FAFF;
+  color: #0F172A;
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.font-display {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+/* Gradient text utility */
+.gradient-text {
+  background: linear-gradient(135deg, #0EA5E9, #10B981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Hero gradient background */
+.hero-bg {
+  background: linear-gradient(180deg, #EFF6FF 0%, #F0FDF4 50%, #F8FAFF 100%);
+}
+
+/* Card styles */
+.card {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  border-color: #0EA5E9;
+  box-shadow: 0 10px 40px rgba(14, 165, 233, 0.1);
+  transform: translateY(-4px);
+}
+
+/* Section alt background */
+.section-alt {
+  background: linear-gradient(180deg, #F0F9FF 0%, #F8FAFF 100%);
+}
+
+/* Pulse */
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+.pulse-slow { animation: pulse-slow 2s ease-in-out infinite; }
+
+/* WhatsApp float */
+.whatsapp-float {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  width: 56px;
+  height: 56px;
+  background: #25D366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+  transition: transform 0.2s;
+}
+.whatsapp-float:hover { transform: scale(1.1); }
