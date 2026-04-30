@@ -2,28 +2,28 @@ import React from 'react';
 
 const features = [
   { 
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, 
-    color: '#0EA5E9', bg: '#EFF6FF', title: 'AI Appointment Booking', desc: 'Patients WhatsApp your clinic number. The AI instantly checks availability, books slots, and sends confirmations — 24/7.' 
+    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>, 
+    color: '#0369A1', bg: '#F0F9FF', title: 'Smart Scheduling', desc: 'Automated 24/7 appointment booking on WhatsApp. Synchronized with your clinic calendar instantly.' 
   },
   { 
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>, 
-    color: '#10B981', bg: '#F0FDF4', title: 'Smart Patient Reminders', desc: 'Automated WhatsApp reminders sent 24h and 1h before appointments. Reduce no-shows by up to 70%.' 
+    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>, 
+    color: '#0D9488', bg: '#F0FDF4', title: 'Patient Outreach', desc: 'Personalized reminders and follow-up messages sent automatically to reduce no-shows and increase compliance.' 
   },
   { 
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>, 
-    color: '#7C3AED', bg: '#F5F3FF', title: 'Auto GST Billing', desc: 'Generate GST-compliant invoices automatically and send them directly to patients via WhatsApp.' 
+    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>, 
+    color: '#4F46E5', bg: '#F5F3FF', title: 'Automated Billing', desc: 'Secure, paperless billing and GST-compliant invoicing sent directly to patient WhatsApp after consultations.' 
   },
   { 
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, 
-    color: '#F59E0B', bg: '#FFFBEB', title: 'Daily Reports on WhatsApp', desc: "Every evening at 8 PM, receive your clinic's daily summary — patients seen, revenue collected, and tomorrow's appointments." 
+    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>, 
+    color: '#0369A1', bg: '#F0F9FF', title: 'Practice Analytics', desc: 'Real-time monitoring of clinic revenue, patient volume, and staff performance available 24/7.' 
   },
   { 
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10.5 20.5 19 12a4.95 4.95 0 1 0-7-7L3.5 13.5a4.95 4.95 0 1 0 7 7Z"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/></svg>, 
-    color: '#EC4899', bg: '#FDF2F8', title: 'Prescription Tracker', desc: 'Log prescriptions digitally and provide automated medicine reminders for your patients.' 
+    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>, 
+    color: '#0D9488', bg: '#F0FDF4', title: 'Digital Health Records', desc: 'Secure cloud storage for prescriptions and patient history, accessible only by authorized practitioners.' 
   },
   { 
-    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>, 
-    color: '#0EA5E9', bg: '#EFF6FF', title: 'Revenue Dashboard', desc: 'Track daily, weekly, and monthly revenue in real-time. Know exactly how your business is performing.' 
+    icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, 
+    color: '#4F46E5', bg: '#F5F3FF', title: 'Encrypted & Secure', desc: 'Data is protected with healthcare-standard encryption, ensuring complete patient confidentiality.' 
   },
 ];
 
@@ -34,28 +34,26 @@ export default function Features() {
 
         {/* Centered header */}
         <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '999px', marginBottom: '16px', background: '#EFF6FF', border: '1px solid #BFDBFE', color: '#2563EB', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>
-            Everything You Need
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '999px', marginBottom: '16px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0369A1', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>
+            Comprehensive Solutions
           </div>
           <h2 className="font-display" style={{ fontSize: 'clamp(1.8rem, 4vw, 2.8rem)', fontWeight: 900, lineHeight: 1.1, color: '#0F172A', marginBottom: '12px' }}>
-            One System.<br />
-            <span style={{ background: 'linear-gradient(135deg, #0EA5E9, #10B981)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>
-              Every Clinic Need.
-            </span>
+            Unified Clinic<br />
+            <span style={{ color: '#0369A1' }}>Management System.</span>
           </h2>
-          <p style={{ fontSize: '0.95rem', color: '#94A3B8', maxWidth: '480px', margin: '0 auto' }}>
-            Built specifically for Indian clinics — from solo GPs to hospitals.
+          <p style={{ fontSize: '0.95rem', color: '#64748B', maxWidth: '480px', margin: '0 auto' }}>
+            A professional ecosystem built to modernize patient engagement and streamline operations.
           </p>
         </div>
 
         {/* Feature cards grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
           {features.map((f, i) => (
-            <div key={i} className="card" style={{ padding: '24px', background: 'white', borderRadius: '20px', border: '1px solid #F1F5F9', boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
+            <div key={i} className="card" style={{ padding: '24px', background: 'white', borderRadius: '16px', border: '1px solid #F1F5F9' }}>
               <div style={{ width: '44px', height: '44px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', background: f.bg, color: f.color }}>
                 {f.icon}
               </div>
-              <h3 className="font-display" style={{ fontSize: '1.05rem', fontWeight: 900, color: '#0F172A', marginBottom: '10px' }}>{f.title}</h3>
+              <h3 className="font-display" style={{ fontSize: '1.05rem', fontWeight: 900, color: '#1E293B', marginBottom: '10px' }}>{f.title}</h3>
               <p style={{ fontSize: '0.82rem', lineHeight: 1.6, color: '#64748B' }}>{f.desc}</p>
             </div>
           ))}
