@@ -5,12 +5,8 @@ export default function Hero() {
   return (
     <section style={{ background: '#F8FAFF', paddingTop: '100px', paddingBottom: '60px', position: 'relative', overflow: 'hidden' }}>
       
-      {/* Subtle Medical Pattern */}
-      <div style={{ 
-          position: 'absolute', inset: 0, opacity: 0.03, pointerEvents: 'none',
-          backgroundImage: 'radial-gradient(#0369A1 1px, transparent 1px), radial-gradient(#0369A1 1px, transparent 1px)',
-          backgroundSize: '40px 40px', backgroundPosition: '0 0, 20px 20px'
-        }} />
+      {/* Subtle Medical Pattern from CSS */}
+      <div className="bg-cross-pattern" style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }} />
 
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', position: 'relative' }}>
 

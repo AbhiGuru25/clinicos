@@ -6,10 +6,10 @@
 }
 
 :root {
-  /* Clinical Palette */
-  --primary: #0369A1; /* Deeper Professional Blue */
+  /* Clinical Palette - Solid & Professional */
+  --primary: #0369A1;
   --primary-light: #F0F9FF;
-  --secondary: #0D9488; /* Professional Teal */
+  --secondary: #0D9488;
   --accent: #F59E0B;
   --text-main: #1E293B;
   --text-muted: #64748B;
@@ -26,53 +26,57 @@ body {
   color: var(--text-main);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* Medical Grid Background - Subtle Chart Vibe */
+.bg-medical-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(3, 105, 161, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(3, 105, 161, 0.03) 1px, transparent 1px);
+}
+
+/* Subtle Medical Cross Pattern */
+.bg-cross-pattern {
+  background-image: radial-gradient(var(--primary) 0.5px, transparent 0.5px), radial-gradient(var(--primary) 0.5px, transparent 0.5px);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
+  opacity: 0.04;
 }
 
 .font-display {
   font-family: var(--font-display);
 }
 
-/* Card Style */
 .card {
   background: white;
   border: 1px solid var(--border-light);
-  border-radius: 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
-}
-
-.card:hover {
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-  border-color: #BAE6FD;
-}
-
-/* Medical Plus Pattern */
-.bg-plus {
-  background-image: radial-gradient(#0369A1 0.5px, transparent 0.5px), radial-gradient(#0369A1 0.5px, #F8FAFF 0.5px);
-  background-size: 20px 20px;
-  background-position: 0 0, 10px 10px;
-  opacity: 0.03;
-}
-
-/* Clinical Button */
-.btn-primary {
-  background: var(--primary);
-  color: white;
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 700;
-  box-shadow: 0 4px 12px rgba(3, 105, 161, 0.2);
-  transition: all 0.2s ease;
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(3, 105, 161, 0.3);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .gradient-text {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  background-clip: text;
+}
+
+/* Floating Shapes Background Decor */
+.medical-blob {
+  position: absolute;
+  filter: blur(80px);
+  z-index: -1;
+  opacity: 0.15;
+  border-radius: 50%;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-20px) scale(1.05); }
+}
+
+.animate-float {
+  animation: float 10s ease-in-out infinite;
 }

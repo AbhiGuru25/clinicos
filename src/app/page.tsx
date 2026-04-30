@@ -8,10 +8,12 @@ import Testimonials from "@/components/Testimonials";
 import FAQ from "@/components/FAQ";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
+import BackgroundDecor from "@/components/BackgroundDecor";
 
 export default function Home() {
   return (
-    <main className="min-h-screen" style={{ background: '#F8FAFF' }}>
+    <main className="min-h-screen" style={{ background: '#F8FAFF', position: 'relative' }}>
+      <BackgroundDecor />
       <Navbar />
       <Hero />
       <Stats />
