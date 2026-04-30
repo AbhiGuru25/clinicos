@@ -1,3 +1,6 @@
+'use client';
+import { motion } from 'framer-motion';
+
 const steps = [
   { 
     num: '01', 
@@ -31,27 +34,41 @@ const steps = [
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="section-alt" style={{ padding: '80px 0', background: '#F8FAFF' }}>
+    <section id="how-it-works" style={{ padding: '80px 0', background: '#F8FAFF' }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
         
         {/* Centered header */}
-        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{ textAlign: 'center', marginBottom: '60px' }}
+        >
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', borderRadius: '999px', marginBottom: '20px', background: '#F0FDF4', border: '1px solid #BBF7D0', color: '#16A34A', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>
             How It Works
           </div>
           <h2 className="font-display" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 900, lineHeight: 1.1, color: '#0F172A', marginBottom: '16px' }}>
             Up & Running in
-            <span style={{ background: 'linear-gradient(135deg, #0EA5E9, #10B981)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}> 48 Hours.</span>
+            <span style={{ color: '#0369A1' }}> 48 Hours.</span>
           </h2>
           <p style={{ fontSize: '1.05rem', color: '#94A3B8', maxWidth: '500px', margin: '0 auto' }}>
             No IT team. No installation. No training sessions. Just follow these 4 steps.
           </p>
-        </div>
+        </motion.div>
 
         {/* Steps Grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '24px' }}>
           {steps.map((step, i) => (
-            <div key={i} className="card" style={{ position: 'relative', padding: '32px', background: 'white', borderRadius: '24px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}>
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, x: -20 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.15 }}
+              whileHover={{ y: -5 }}
+              className="card" style={{ position: 'relative', padding: '32px', background: 'white', borderRadius: '24px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)' }}
+            >
               {/* Step number watermark */}
               <div className="font-display" style={{ fontSize: '4rem', fontWeight: 900, lineHeight: 1, marginBottom: '16px', opacity: 0.07, userSelect: 'none', color: step.color }}>
                 {step.num}
@@ -61,7 +78,7 @@ export default function HowItWorks() {
               </div>
               <h3 className="font-display" style={{ fontSize: '1.05rem', fontWeight: 900, color: '#0F172A', marginBottom: '8px' }}>{step.title}</h3>
               <p style={{ fontSize: '0.88rem', lineHeight: 1.7, color: '#64748B' }}>{step.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

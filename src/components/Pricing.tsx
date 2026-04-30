@@ -1,3 +1,6 @@
+'use client';
+import { motion } from 'framer-motion';
+
 const plans = [
   { name: 'Starter', price: '999', desc: 'Designed for solo practitioners', color: '#0369A1', features: ['AI Patient Intake Bot', 'Automated Reminders', 'Up to 200 appointments/mo', 'Revenue tracking', 'Email support'], cta: 'Start Free Trial', popular: false },
   { name: 'Growth', price: '2,499', desc: 'Best for multi-doctor clinics', color: '#0D9488', features: ['Everything in Starter', 'GST-Compliant Billing', 'Daily WhatsApp Performance Report', 'Prescription Management', 'Unlimited appointments', 'Priority support'], popular: true },
@@ -10,7 +13,13 @@ export default function Pricing() {
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
         
         {/* Centered header */}
-        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{ textAlign: 'center', marginBottom: '60px' }}
+        >
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', borderRadius: '999px', marginBottom: '20px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0369A1', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>
             Flexible Engagement
           </div>
@@ -20,18 +29,26 @@ export default function Pricing() {
           <p style={{ fontSize: '1rem', color: '#64748B', maxWidth: '480px', margin: '0 auto' }}>
             Professional medical automation at a predictable price. No hidden fees.
           </p>
-        </div>
+        </motion.div>
 
         {/* Pricing Cards */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', alignItems: 'stretch' }}>
           {plans.map((plan, i) => (
-            <div key={i} style={{ 
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              whileHover={{ scale: 1.02, boxShadow: '0 20px 40px rgba(0, 0, 0, 0.08)' }}
+              style={{ 
                 position: 'relative', borderRadius: '16px', padding: '32px', display: 'flex', flexDirection: 'column',
                 background: 'white',
                 border: plan.popular ? `2px solid ${plan.color}` : '1px solid #F1F5F9',
                 boxShadow: plan.popular ? '0 20px 40px rgba(0, 0, 0, 0.05)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
                 transition: 'all 0.3s ease'
-              }}>
+              }}
+            >
 
               {plan.popular && (
                 <div style={{ position: 'absolute', top: '-12px', left: '50%', transform: 'translateX(-50%)', padding: '4px 16px', borderRadius: '999px', fontSize: '0.6rem', fontWeight: 900, textTransform: 'uppercase', letterSpacing: '1px', color: 'white', background: plan.color }}>
@@ -60,16 +77,20 @@ export default function Pricing() {
                 ))}
               </ul>
 
-              <a href="https://wa.me/916352449698"
+              <motion.a 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                href="https://wa.me/916352449698"
                 style={{
                   display: 'block', width: '100%', padding: '14px', borderRadius: '10px', textAlign: 'center', fontWeight: 900, fontSize: '0.9rem', textDecoration: 'none', transition: 'all 0.2s ease',
                   background: plan.popular ? plan.color : 'white',
                   color: plan.popular ? 'white' : plan.color,
                   border: plan.popular ? 'none' : `1px solid ${plan.color}`
-                }}>
+                }}
+              >
                 Start Implementation
-              </a>
-            </div>
+              </motion.a>
+            </motion.div>
           ))}
         </div>
       </div>

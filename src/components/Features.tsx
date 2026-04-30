@@ -1,4 +1,6 @@
+'use client';
 import React from 'react';
+import { motion } from 'framer-motion';
 
 const features = [
   { 
@@ -33,7 +35,13 @@ export default function Features() {
       <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
 
         {/* Centered header */}
-        <div style={{ textAlign: 'center', marginBottom: '48px' }}>
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{ textAlign: 'center', marginBottom: '48px' }}
+        >
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 14px', borderRadius: '999px', marginBottom: '16px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0369A1', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>
             Comprehensive Solutions
           </div>
@@ -44,18 +52,26 @@ export default function Features() {
           <p style={{ fontSize: '0.95rem', color: '#64748B', maxWidth: '480px', margin: '0 auto' }}>
             A professional ecosystem built to modernize patient engagement and streamline operations.
           </p>
-        </div>
+        </motion.div>
 
         {/* Feature cards grid */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
           {features.map((f, i) => (
-            <div key={i} className="card" style={{ padding: '24px', background: 'white', borderRadius: '16px', border: '1px solid #F1F5F9' }}>
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              whileHover={{ y: -5, boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.05)', borderColor: '#BAE6FD' }}
+              className="card" style={{ padding: '24px', background: 'white', borderRadius: '16px', border: '1px solid #F1F5F9' }}
+            >
               <div style={{ width: '44px', height: '44px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '20px', background: f.bg, color: f.color }}>
                 {f.icon}
               </div>
               <h3 className="font-display" style={{ fontSize: '1.05rem', fontWeight: 900, color: '#1E293B', marginBottom: '10px' }}>{f.title}</h3>
               <p style={{ fontSize: '0.82rem', lineHeight: 1.6, color: '#64748B' }}>{f.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

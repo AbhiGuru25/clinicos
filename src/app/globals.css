@@ -17,6 +17,10 @@
   --border-light: #E2E8F0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: var(--bg-light);
   color: var(--text-main);

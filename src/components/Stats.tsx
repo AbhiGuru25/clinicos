@@ -1,3 +1,6 @@
+'use client';
+import { motion } from 'framer-motion';
+
 const stats = [
   { 
     value: '4 hrs', 
@@ -27,13 +30,25 @@ export default function Stats() {
       <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 24px' }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '24px' }}>
           {stats.map((s, i) => (
-            <div key={i} style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}
+            >
               <div style={{ marginBottom: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{s.icon}</div>
-              <div className="font-display" style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '2px', color: '#0F172A' }}>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                transition={{ duration: 1, delay: 0.5 + i * 0.1 }}
+                className="font-display" style={{ fontSize: '1.8rem', fontWeight: 900, marginBottom: '2px', color: '#0F172A' }}
+              >
                 {s.value}
-              </div>
+              </motion.div>
               <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '1px' }}>{s.label}</div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
