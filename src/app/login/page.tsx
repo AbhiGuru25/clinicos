@@ -116,7 +116,7 @@ export default function LoginPage() {
 
           <div className="mt-10 text-center">
             <p className="text-xs font-bold text-slate-400">
-              New to ClinicOS? <button className="text-sky-600 hover:underline">Request an Invite</button>
+              New to ClinicOS? <a href="https://wa.me/919876543210?text=Hi!%20I'm%20a%20doctor%20and%20I'd%20like%20to%20request%20an%20invite%20for%20ClinicOS." className="text-sky-600 hover:underline">Request an Invite</a>
             </p>
           </div>
         </div>
