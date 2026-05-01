@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 import { Users, Search, Download, ExternalLink, Calendar, Phone, Activity } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -112,10 +113,13 @@ export default function PatientsPage() {
                       </div>
                     </td>
                     <td className="px-8 py-5 text-right">
-                      <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold text-sm hover:bg-sky-600 hover:text-white transition-all">
+                      <Link 
+                        href={`/dashboard/patients/${p.id}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold text-sm hover:bg-sky-600 hover:text-white transition-all"
+                      >
                         View Records
                         <ExternalLink size={14} />
-                      </button>
+                      </Link>
                     </td>
                   </motion.tr>
                 ))}
