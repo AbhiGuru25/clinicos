@@ -1,51 +1,75 @@
+'use client';
+import { motion } from 'framer-motion';
+
 const testimonials = [
-  { name: 'Dr. Rajesh Patel', clinic: 'Patel Multispeciality Clinic, Ahmedabad', avatar: 'RP', color: '#0EA5E9', bg: '#EFF6FF', quote: "Before ClinicOS, my receptionist spent 3 hours just calling patients for reminders. Now it's all automatic. We went from 6 no-shows a day to less than 1. It paid for itself in week 1.", stars: 5 },
-  { name: 'Dr. Sneha Shah', clinic: 'Shah Dental Care, Surat', avatar: 'SS', color: '#10B981', bg: '#F0FDF4', quote: "Patients love that they can book at midnight. I wake up to 8-10 new appointments booked while I was sleeping. The WhatsApp bot is so smooth that patients think it's a real person.", stars: 5 },
-  { name: 'Dr. Mohan Verma', clinic: 'Verma Eye Hospital, Vadodara', avatar: 'MV', color: '#7C3AED', bg: '#F5F3FF', quote: "The daily report on WhatsApp is my favourite feature. At 8 PM every day I know exactly how much revenue came in. Running 3 branches is now simple.", stars: 5 },
+  {
+    text: "ClinicOS ne hamare clinic ki zindagi badal di. Pehle roz 20-30 calls miss hote the. Ab koi bhi appointment miss nahi hoti. Patients khud WhatsApp pe book kar lete hain.",
+    author: "Dr. Manish Shah",
+    role: "Shah Multispeciality Clinic, Ahmedabad",
+    initials: "MS",
+    color: "#0369A1"
+  },
+  {
+    text: "The GST billing feature alone saves us 2 hours every day. Invoices go directly to patients on WhatsApp. My staff can now focus on actual patient care.",
+    author: "Dr. Priya Mehta",
+    role: "Mehta Dental Clinic, Surat",
+    initials: "PM",
+    color: "#0D9488"
+  },
+  {
+    text: "Setup in exactly 48 hours as promised. The daily 8PM report on WhatsApp is my favorite feature — I know exactly how the clinic performed without asking anyone.",
+    author: "Dr. Rajesh Patel",
+    role: "Patel Nursing Home, Rajkot",
+    initials: "RP",
+    color: "#4F46E5"
+  }
 ];
 
 export default function Testimonials() {
   return (
-    <section className="section-alt" style={{ padding: '80px 0' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
+    <section style={{ padding: '100px 0', background: '#F8FAFF' }}>
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0 24px' }}>
         
-        {/* Centered header */}
-        <div style={{ textAlign: 'center', marginBottom: '60px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', borderRadius: '999px', marginBottom: '20px', background: '#F5F3FF', border: '1px solid #E9D5FF', color: '#9333EA', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>
-            Real Doctors. Real Results.
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          style={{ textAlign: 'center', marginBottom: '60px' }}
+        >
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', borderRadius: '999px', marginBottom: '20px', background: '#F0F9FF', border: '1px solid #BAE6FD', color: '#0369A1', fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '2px' }}>
+            Doctors Love It
           </div>
-          <h2 className="font-display" style={{ fontSize: 'clamp(2rem, 5vw, 3.5rem)', fontWeight: 900, lineHeight: 1.1, color: '#0F172A', marginBottom: '16px' }}>
-            Clinics Love ClinicOS ❤️
+          <h2 className="font-display" style={{ fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 900, lineHeight: 1.1, color: '#0F172A', marginBottom: '16px' }}>
+            Real Results from <span style={{ color: '#0369A1' }}>Real Clinics.</span>
           </h2>
-        </div>
+        </motion.div>
 
-        {/* Testimonial Cards */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '24px' }}>
           {testimonials.map((t, i) => (
-            <div key={i} className="card" style={{ background: 'white', padding: '32px', display: 'flex', flexDirection: 'column' }}>
-              {/* Stars */}
-              <div style={{ display: 'flex', gap: '4px', marginBottom: '16px' }}>
-                {Array.from({ length: t.stars }).map((_, j) => (
-                  <svg key={j} width="16" height="16" viewBox="0 0 24 24" fill="#F59E0B">
-                    <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                  </svg>
-                ))}
-              </div>
-
-              <p style={{ fontSize: '0.95rem', lineHeight: 1.7, flex: 1, marginBottom: '24px', color: '#475569', fontStyle: 'italic' }}>
-                "{t.quote}"
+            <motion.div 
+              key={i} 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: i * 0.1 }}
+              whileHover={{ y: -5 }}
+              style={{ padding: '32px', background: 'white', borderRadius: '24px', border: '1px solid #F1F5F9', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.02)' }}
+            >
+              <div style={{ color: '#F59E0B', fontSize: '1.2rem', marginBottom: '20px' }}>★★★★★</div>
+              <p style={{ fontSize: '1rem', lineHeight: 1.7, color: '#475569', fontStyle: 'italic', marginBottom: '24px' }}>
+                "{t.text}"
               </p>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingTop: '16px', borderTop: '1px solid #F1F5F9' }}>
-                <div style={{ width: '44px', height: '44px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.78rem', background: t.bg, color: t.color }}>
-                  {t.avatar}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '50%', background: t.color, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 800, fontSize: '1rem' }}>
+                  {t.initials}
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#0F172A' }}>{t.name}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#94A3B8' }}>{t.clinic}</div>
+                  <div style={{ fontSize: '1rem', fontWeight: 800, color: '#1E293B' }}>{t.author}</div>
+                  <div style={{ fontSize: '0.8rem', color: '#64748B' }}>{t.role}</div>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

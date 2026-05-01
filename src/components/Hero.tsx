@@ -30,13 +30,13 @@ export default function Hero() {
           </motion.div>
 
           {/* Clinical Headline */}
-          <h1 className="font-display" style={{ fontSize: 'clamp(2rem, 6vw, 3.8rem)', fontWeight: 900, lineHeight: 1.1, letterSpacing: '-1px', marginBottom: '20px', color: '#0F172A' }}>
-            Elevate Your Clinic with<br />
-            <span style={{ color: '#0369A1' }}>Intelligent Automation.</span>
+          <h1 className="font-display" style={{ fontSize: 'clamp(2.2rem, 6vw, 4.2rem)', fontWeight: 900, lineHeight: 1, letterSpacing: '-1.5px', marginBottom: '24px', color: '#0F172A' }}>
+            Your Clinic.<br />
+            Running on <span style={{ color: '#0369A1' }}>Autopilot.</span>
           </h1>
 
-          <p style={{ fontSize: '1.05rem', marginBottom: '32px', lineHeight: 1.6, maxWidth: '560px', margin: '0 auto 32px auto', color: '#475569' }}>
-            The all-in-one "WhatsApp-First" management system designed to reduce no-shows, automate billing, and let you focus on what matters most: <strong style={{ color: '#0369A1' }}>Patient Care.</strong>
+          <p style={{ fontSize: '1.1rem', marginBottom: '40px', lineHeight: 1.7, maxWidth: '600px', margin: '0 auto 40px auto', color: '#475569' }}>
+            ClinicOS automates appointments, reminders, billing, and daily reports — all on WhatsApp. No new apps. No training. <strong style={{ color: '#0369A1' }}>Just results in 48 hours.</strong>
           </p>
 
           {/* CTAs */}

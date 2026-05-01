@@ -9,6 +9,9 @@ import FAQ from "@/components/FAQ";
 import CTA from "@/components/CTA";
 import Footer from "@/components/Footer";
 import BackgroundDecor from "@/components/BackgroundDecor";
+import Problem from "@/components/Problem";
+import Marquee from "@/components/Marquee";
+import WhatsAppDemo from "@/components/WhatsAppDemo";
 
 export default function Home() {
   return (
@@ -16,9 +19,12 @@ export default function Home() {
       <BackgroundDecor />
       <Navbar />
       <Hero />
+      <Marquee />
       <Stats />
+      <Problem />
       <Features />
       <HowItWorks />
+      <WhatsAppDemo />
       <Pricing />
       <Testimonials />
       <FAQ />
