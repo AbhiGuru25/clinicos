@@ -12,11 +12,93 @@ import {
   ChevronRight,
   CheckCircle2
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 export default function BillingPage() {
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const generatePDF = (invoice: any) => {
+    const doc = new jsPDF();
+    const patient = invoice.appointments?.patients;
+    
+    // Header Branding
+    doc.setFontSize(24);
+    doc.setTextColor(124, 58, 237); // Violet-600
+    doc.text('ClinicOS', 14, 25);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text('Smart Medical Management', 14, 32);
+
+    // Clinic Info (Right Side)
+    doc.setFontSize(10);
+    doc.setTextColor(30);
+    doc.text('Shah Multispeciality Clinic', 140, 20);
+    doc.setFontSize(8);
+    doc.setTextColor(100);
+    doc.text('Ambli Road, Ahmedabad, GJ', 140, 25);
+    doc.text('GSTIN: 24AAAAA0000A1Z5', 140, 30);
+    doc.text('+91 63524 49698', 140, 35);
+
+    // Separator
+    doc.setDrawColor(240);
+    doc.line(14, 45, 196, 45);
+
+    // Patient & Invoice Details
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text('BILL TO:', 14, 55);
+    doc.setTextColor(30);
+    doc.setFontSize(12);
+    doc.text(patient?.name || 'Valued Patient', 14, 62);
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(patient?.phone || '', 14, 67);
+
+    doc.setTextColor(100);
+    doc.text('INVOICE NO:', 140, 55);
+    doc.setTextColor(30);
+    doc.text(`#CL-INV-${invoice.id.slice(0, 8).toUpperCase()}`, 140, 62);
+    doc.setTextColor(100);
+    doc.text('DATE:', 140, 68);
+    doc.setTextColor(30);
+    doc.text(new Date(invoice.created_at).toLocaleDateString(), 140, 73);
+
+    // Table
+    const total = Number(invoice.total);
+    const subtotal = (total / 1.18).toFixed(2);
+    const gst = (total - Number(subtotal)).toFixed(2);
+
+    (doc as any).autoTable({
+      startY: 85,
+      head: [['Service Description', 'Amount (INR)']],
+      body: [
+        ['Medical Consultation & Diagnostic Review', `INR ${subtotal}`],
+        ['GST (18% Integrated)', `INR ${gst}`],
+      ],
+      headStyles: { fillColor: [124, 58, 237], textColor: [255, 255, 255], fontStyle: 'bold' },
+      foot: [['Total Payable Amount', `INR ${total}`]],
+      footStyles: { fillColor: [248, 250, 252], textColor: [15, 23, 42], fontStyle: 'bold' },
+      theme: 'grid',
+    });
+
+    // Signatures
+    const finalY = (doc as any).lastAutoTable.finalY || 150;
+    doc.setFontSize(10);
+    doc.text('Authorized Signatory', 140, finalY + 40);
+    doc.line(140, finalY + 35, 190, finalY + 35);
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text('Thank you for trusting ClinicOS. Get well soon!', 14, 280);
+    doc.text('Page 1 of 1', 180, 280);
+
+    doc.save(`Invoice_${patient?.name || 'Patient'}.pdf`);
+  };
 
   useEffect(() => {
     fetchInvoices();
@@ -141,7 +223,11 @@ export default function BillingPage() {
                     </td>
                     <td className="px-8 py-5 text-right">
                       <div className="flex items-center justify-end gap-3 opacity-40 group-hover:opacity-100 transition-opacity">
-                        <button title="Download PDF" className="p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all">
+                        <button 
+                          onClick={() => generatePDF(inv)}
+                          title="Download PDF" 
+                          className="p-2 text-slate-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-all"
+                        >
                           <Download size={20} />
                         </button>
                         <button title="Resend WhatsApp" className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-lg transition-all">
