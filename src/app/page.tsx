@@ -12,6 +12,7 @@ import BackgroundDecor from "@/components/BackgroundDecor";
 import Problem from "@/components/Problem";
 import Marquee from "@/components/Marquee";
 import WhatsAppDemo from "@/components/WhatsAppDemo";
+import DashboardShowcase from "@/components/DashboardShowcase";
 
 export default function Home() {
   return (
@@ -23,6 +24,7 @@ export default function Home() {
       <Stats />
       <Problem />
       <Features />
+      <DashboardShowcase />
       <HowItWorks />
       <WhatsAppDemo />
       <Pricing />
