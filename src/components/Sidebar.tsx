@@ -8,8 +8,11 @@ import {
   ReceiptIndianRupee, 
   Settings, 
   MessageSquare,
-  Activity
+  Activity,
+  LogOut
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { supabase } from '@/lib/supabase';
 import { motion } from 'framer-motion';
 
 const navItems = [
@@ -22,6 +25,12 @@ const navItems = [
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/login');
+  };
 
   return (
     <div className="flex flex-col h-screen w-64 bg-white border-r border-slate-100 fixed left-0 top-0 z-50">
@@ -68,7 +77,7 @@ export default function Sidebar() {
       </div>
 
       <div className="mt-auto p-6">
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100">
+        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 mb-4">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Live Engine Sync</span>
@@ -77,6 +86,14 @@ export default function Sidebar() {
             WhatsApp automation is actively monitoring your messages.
           </p>
         </div>
+
+        <button 
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-3 w-full rounded-xl text-slate-400 hover:bg-rose-50 hover:text-rose-600 transition-all font-bold text-sm"
+        >
+          <LogOut size={20} />
+          Sign Out
+        </button>
       </div>
     </div>
   );
