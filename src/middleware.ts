@@ -6,22 +6,19 @@ export async function middleware(req: NextRequest) {
   const res = NextResponse.next();
   const supabase = createMiddlewareClient({ req, res });
 
+  // Refresh session if it exists, which is required for Server Components
   const {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // If user is not signed in and trying to access dashboard, redirect to login
+  // 1. If trying to access dashboard WITHOUT a session -> Go to Login
   if (!session && req.nextUrl.pathname.startsWith('/dashboard')) {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/login';
-    return NextResponse.redirect(redirectUrl);
+    return NextResponse.redirect(new URL('/login', req.url));
   }
 
-  // If user is signed in and trying to access login, redirect to dashboard
-  if (session && req.nextUrl.pathname.startsWith('/login')) {
-    const redirectUrl = req.nextUrl.clone();
-    redirectUrl.pathname = '/dashboard';
-    return NextResponse.redirect(redirectUrl);
+  // 2. If trying to access login WITH a session -> Go to Dashboard
+  if (session && req.nextUrl.pathname === '/login') {
+    return NextResponse.redirect(new URL('/dashboard', req.url));
   }
 
   return res;
