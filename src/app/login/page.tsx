@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
-import { Activity, Mail, Lock, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
+import { Activity, Mail, Lock, ArrowRight, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import BackgroundDecor from '@/components/BackgroundDecor';
 
@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -18,16 +19,29 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (authError) {
-      setError(authError.message);
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+      } else {
+        console.log('Login successful:', data);
+        setSuccess(true);
+        setLoading(false);
+        // Attempt redirect
+        router.push('/dashboard');
+        // Fallback for some browsers
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1500);
+      }
+    } catch (err: any) {
+      setError('An unexpected error occurred. Please try again.');
       setLoading(false);
-    } else {
-      router.push('/dashboard');
     }
   };
 
@@ -41,7 +55,6 @@ export default function LoginPage() {
         className="relative w-full max-w-md"
       >
         <div className="bg-white/80 backdrop-blur-xl p-10 rounded-[2.5rem] border border-white shadow-2xl shadow-sky-100/50">
-          {/* Logo */}
           <div className="flex flex-col items-center mb-10">
             <div className="w-14 h-14 rounded-2xl bg-sky-600 flex items-center justify-center shadow-lg shadow-sky-200 mb-4">
               <Activity className="text-white" size={32} />
@@ -52,67 +65,87 @@ export default function LoginPage() {
             <p className="text-slate-500 font-bold text-sm mt-2 uppercase tracking-widest">Doctor Portal</p>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
-                  type="email" 
-                  required 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="doctor@clinicos.in"
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl font-bold text-slate-900 focus:ring-2 focus:ring-sky-500 transition-all outline-none"
-                />
+          {!success ? (
+            <form onSubmit={handleLogin} className="space-y-6">
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Email Address</label>
+                <div className="relative">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input 
+                    type="email" 
+                    required 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="doctor@clinicos.in"
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl font-bold text-slate-900 focus:ring-2 focus:ring-sky-500 transition-all outline-none"
+                  />
+                </div>
               </div>
-            </div>
 
-            <div className="space-y-2">
-              <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Password</label>
-                <button type="button" className="text-[10px] font-black text-sky-600 uppercase tracking-widest hover:underline">Forgot?</button>
+              <div className="space-y-2">
+                <div className="flex justify-between items-center px-1">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Password</label>
+                  <button type="button" className="text-[10px] font-black text-sky-600 uppercase tracking-widest hover:underline">Forgot?</button>
+                </div>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                  <input 
+                    type="password" 
+                    required 
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl font-bold text-slate-900 focus:ring-2 focus:ring-sky-500 transition-all outline-none"
+                  />
+                </div>
               </div>
-              <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                <input 
-                  type="password" 
-                  required 
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full pl-12 pr-4 py-4 bg-slate-50 border-none rounded-2xl font-bold text-slate-900 focus:ring-2 focus:ring-sky-500 transition-all outline-none"
-                />
-              </div>
-            </div>
 
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="p-4 bg-rose-50 text-rose-600 rounded-xl flex items-center gap-3 text-xs font-bold border border-rose-100"
-              >
-                <AlertCircle size={16} />
-                {error}
-              </motion.div>
-            )}
-
-            <button 
-              type="submit" 
-              disabled={loading}
-              className="w-full py-4 bg-sky-600 text-white rounded-2xl font-black text-lg hover:bg-sky-700 transition-all shadow-xl shadow-sky-100 flex items-center justify-center gap-2 group disabled:opacity-50"
-            >
-              {loading ? (
-                <Loader2 className="animate-spin" size={24} />
-              ) : (
-                <>
-                  Sign In to Console
-                  <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                </>
+              {error && (
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="p-4 bg-rose-50 text-rose-600 rounded-xl flex items-center gap-3 text-xs font-bold border border-rose-100"
+                >
+                  <AlertCircle size={16} />
+                  {error}
+                </motion.div>
               )}
-            </button>
-          </form>
+
+              <button 
+                type="submit" 
+                disabled={loading}
+                className="w-full py-4 bg-sky-600 text-white rounded-2xl font-black text-lg hover:bg-sky-700 transition-all shadow-xl shadow-sky-100 flex items-center justify-center gap-2 group disabled:opacity-50"
+              >
+                {loading ? (
+                  <Loader2 className="animate-spin" size={24} />
+                ) : (
+                  <>
+                    Sign In to Console
+                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                  </>
+                )}
+              </button>
+            </form>
+          ) : (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="text-center space-y-6"
+            >
+              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-4">
+                <CheckCircle2 size={32} />
+              </div>
+              <h2 className="text-2xl font-black text-slate-900">Success!</h2>
+              <p className="text-slate-500 font-medium">Authentication complete. Entering the dashboard...</p>
+              <button 
+                onClick={() => window.location.href = '/dashboard'}
+                className="w-full py-4 bg-emerald-600 text-white rounded-2xl font-black text-lg hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-100 flex items-center justify-center gap-2"
+              >
+                Enter Dashboard Now
+                <ArrowRight size={20} />
+              </button>
+            </motion.div>
+          )}
 
           <div className="mt-10 text-center">
             <p className="text-xs font-bold text-slate-400">
