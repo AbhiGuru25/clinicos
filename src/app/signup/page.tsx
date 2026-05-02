@@ -25,13 +25,15 @@ export default function SignupPage() {
     setError(null);
     
     try {
-      // 1. Sign up the user
+      // 1. Sign up the user with metadata for the DB Trigger
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
             doctor_name: doctorName,
+            clinic_name: clinicName,
+            whatsapp_number: phone,
           }
         }
       });
@@ -44,19 +46,8 @@ export default function SignupPage() {
         throw new Error('Failed to create account. Please try again.');
       }
 
-      // 2. Auto-create clinic record in Supabase
-      const { error: clinicError } = await supabase.from('clinics').insert([
-        {
-          owner_id: authData.user.id,
-          name: clinicName,
-          whatsapp_number: phone,
-        }
-      ]);
-
-      if (clinicError) {
-        console.error('Error creating clinic profile:', clinicError);
-        // Continue anyway, but ideally handle rollback
-      }
+      // Note: The 'clinics' table record is now created automatically 
+      // by a Supabase Database Trigger on auth.users using the metadata above.
 
       // 3. Optional: Trigger Welcome Email via API route (stubbed)
       fetch('/api/emails/welcome', {
