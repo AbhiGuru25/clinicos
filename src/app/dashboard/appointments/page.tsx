@@ -41,6 +41,50 @@ export default function AppointmentsPage() {
   const [appointmentTime, setAppointmentTime] = useState('');
   const [notes, setNotes] = useState('');
 
+  // Filters
+  const [dateFilter, setDateFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
+
+  const filteredAppointments = appointments.filter(a => {
+    let dateMatch = true;
+    const todayStr = new Date().toISOString().split('T')[0];
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const tomorrowStr = tomorrow.toISOString().split('T')[0];
+
+    if (dateFilter === 'Today') dateMatch = a.appointment_date === todayStr;
+    if (dateFilter === 'Tomorrow') dateMatch = a.appointment_date === tomorrowStr;
+
+    let statusMatch = true;
+    if (statusFilter !== 'All') statusMatch = a.status?.toLowerCase() === statusFilter.toLowerCase();
+
+    return dateMatch && statusMatch;
+  });
+
+  const formatTime = (timeStr: string) => {
+    if (!timeStr) return '';
+    try {
+      const [hour, min] = timeStr.split(':');
+      const d = new Date();
+      d.setHours(parseInt(hour, 10));
+      d.setMinutes(parseInt(min, 10));
+      return d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+    } catch {
+      return timeStr;
+    }
+  };
+
+  const formatDate = (dateStr: string) => {
+    if (!dateStr) return '';
+    try {
+      // Need to append time to ensure local timezone doesn't shift the day
+      const d = new Date(`${dateStr}T12:00:00`); 
+      return d.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' });
+    } catch {
+      return dateStr;
+    }
+  };
+
   useEffect(() => {
     fetchAppointments();
   }, []);
@@ -138,20 +182,43 @@ export default function AppointmentsPage() {
       </div>
 
       <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8 min-h-[500px]">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-600 rounded-xl font-bold text-sm">
-            <Calendar size={18} />
-            List View
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+          <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl w-fit border border-slate-100">
+            {['Today', 'Tomorrow', 'This Week', 'All'].map(tab => (
+              <button 
+                key={tab}
+                onClick={() => setDateFilter(tab)}
+                className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${dateFilter === tab ? 'bg-white text-sky-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
+            {['All', 'Confirmed', 'Pending', 'Completed', 'Cancelled'].map(status => (
+              <button 
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+                  statusFilter === status 
+                    ? 'bg-slate-900 text-white' 
+                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                }`}
+              >
+                {status}
+              </button>
+            ))}
           </div>
         </div>
 
         {loading ? (
           <div className="flex justify-center py-20 text-slate-400 font-bold">Loading schedule...</div>
-        ) : appointments.length === 0 ? (
-          <div className="text-center py-20 text-slate-400 font-medium">No appointments found.</div>
+        ) : filteredAppointments.length === 0 ? (
+          <div className="text-center py-20 text-slate-400 font-medium">No appointments found for selected filters.</div>
         ) : (
           <div className="space-y-4">
-            {appointments.map((a) => (
+            {filteredAppointments.map((a) => (
               <div key={a.id} className="flex items-center justify-between p-6 rounded-2xl border border-slate-50 bg-slate-50/30 group">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center font-black text-sky-600 shadow-sm group-hover:bg-sky-600 group-hover:text-white transition-all">
@@ -164,8 +231,8 @@ export default function AppointmentsPage() {
                 </div>
                 <div className="flex items-center gap-12">
                   <div className="text-right">
-                    <p className="font-bold text-slate-700">{a.appointment_time}</p>
-                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">{a.appointment_date}</p>
+                    <p className="font-bold text-slate-700">{formatTime(a.appointment_time)}</p>
+                    <p className="text-xs font-bold text-slate-400 tracking-wide">{formatDate(a.appointment_date)}</p>
                   </div>
                   {a.status === 'confirmed' ? (
                     <button 

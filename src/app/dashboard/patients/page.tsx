@@ -17,7 +17,7 @@ export default function PatientsPage() {
   async function fetchPatients() {
     const { data, error } = await supabase
       .from('patients')
-      .select('*')
+      .select('*, appointments(id)')
       .order('name', { ascending: true });
 
     if (error) console.error(error);
@@ -76,6 +76,7 @@ export default function PatientsPage() {
                 <tr className="border-b border-slate-50 text-left">
                   <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Patient Details</th>
                   <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Phone</th>
+                  <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest text-center">Visits</th>
                   <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Registered</th>
                   <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
                 </tr>
@@ -104,6 +105,11 @@ export default function PatientsPage() {
                       <div className="flex items-center gap-2 font-bold text-slate-600">
                         <Phone size={14} className="text-slate-400" />
                         {p.phone}
+                      </div>
+                    </td>
+                    <td className="px-8 py-5 text-center">
+                      <div className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-lg bg-sky-50 text-sky-700 font-black text-sm border border-sky-100">
+                        {p.appointments?.length || 0}
                       </div>
                     </td>
                     <td className="px-8 py-5">

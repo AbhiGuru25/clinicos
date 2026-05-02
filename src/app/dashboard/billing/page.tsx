@@ -164,6 +164,43 @@ export default function BillingPage() {
         </div>
       </div>
 
+      {/* 7-Day Revenue Chart */}
+      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8">
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <h2 className="text-xl font-black text-slate-900 tracking-tight">Revenue Trend</h2>
+            <p className="text-sm font-medium text-slate-500">Past 7 days performance</p>
+          </div>
+          <div className="px-3 py-1 bg-emerald-50 text-emerald-600 rounded-lg text-xs font-bold uppercase tracking-widest">
+            +12% this week
+          </div>
+        </div>
+        <div className="flex items-end justify-between h-48 gap-2 mt-4">
+          {[
+            { day: 'Mon', amount: 1200, height: '40%' },
+            { day: 'Tue', amount: 3400, height: '70%' },
+            { day: 'Wed', amount: 2100, height: '50%' },
+            { day: 'Thu', amount: 4500, height: '85%' },
+            { day: 'Fri', amount: 5200, height: '100%' },
+            { day: 'Sat', amount: 3100, height: '65%' },
+            { day: 'Sun', amount: 1800, height: '45%' },
+          ].map((d, i) => (
+            <div key={i} className="flex-1 flex flex-col items-center gap-3 group h-full">
+              <div className="relative w-full flex justify-center h-full items-end">
+                <div className="w-full max-w-[3rem] bg-violet-50 rounded-t-xl transition-all group-hover:bg-violet-100" style={{ height: '100%' }}>
+                  <div className="absolute bottom-0 w-full max-w-[3rem] bg-violet-500 rounded-t-xl transition-all duration-500 group-hover:bg-violet-600" style={{ height: d.height }}></div>
+                </div>
+                {/* Tooltip */}
+                <div className="absolute -top-10 bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                  ₹{d.amount}
+                </div>
+              </div>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{d.day}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden min-h-[500px]">
         <div className="p-8 border-b border-slate-50 flex items-center justify-between">
           <h2 className="text-xl font-black text-slate-900 tracking-tight">Billing History</h2>
@@ -175,12 +212,18 @@ export default function BillingPage() {
         {loading ? (
           <div className="p-20 text-center text-slate-400 font-bold italic">Analyzing revenue data...</div>
         ) : invoices.length === 0 ? (
-          <div className="p-20 text-center">
-            <div className="w-16 h-16 rounded-3xl bg-slate-50 flex items-center justify-center text-slate-300 mb-6 mx-auto">
-              <ReceiptIndianRupee size={32} />
+          <div className="p-20 text-center flex flex-col items-center justify-center">
+            <div className="w-20 h-20 rounded-[2rem] bg-violet-50 flex items-center justify-center text-violet-400 mb-6 shadow-inner border border-violet-100/50">
+              <ReceiptIndianRupee size={40} />
             </div>
-            <h3 className="text-xl font-black text-slate-900 mb-2">No Invoices Found</h3>
-            <p className="text-slate-400 font-medium">Your bills will appear here once you complete a visit.</p>
+            <h3 className="text-xl font-black text-slate-900 mb-3">No Invoices Yet</h3>
+            <p className="text-slate-500 font-medium mb-8 max-w-sm leading-relaxed">
+              Complete your first appointment to auto-generate your first invoice.
+            </p>
+            <a href="/dashboard/appointments" className="flex items-center gap-2 px-8 py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-lg shadow-slate-200">
+              Complete an Appointment
+              <ChevronRight size={18} />
+            </a>
           </div>
         ) : (
           <div className="overflow-x-auto">

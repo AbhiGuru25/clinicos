@@ -77,15 +77,18 @@ export default function Sidebar() {
       </div>
 
       <div className="mt-auto p-6">
-        <div className="p-4 rounded-2xl bg-slate-50 border border-slate-100 mb-4">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <span className="text-xs font-black text-slate-500 uppercase tracking-wider">Live Engine Sync</span>
+        <Link href="/dashboard/settings" className="block p-4 rounded-2xl bg-slate-50 border border-slate-100 mb-4 hover:bg-slate-100 hover:border-sky-200 transition-all group cursor-pointer">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-black text-slate-500 group-hover:text-slate-700 uppercase tracking-wider transition-colors">Live Engine Sync</span>
+            </div>
+            <MessageSquare size={14} className="text-slate-400 group-hover:text-sky-500 transition-colors" />
           </div>
-          <p className="text-[10px] text-slate-400 font-bold leading-tight">
-            WhatsApp automation is actively monitoring your messages.
+          <p className="text-[10px] text-slate-400 font-bold leading-tight group-hover:text-slate-500 transition-colors">
+            WhatsApp automation is actively monitoring your messages. Click to configure.
           </p>
-        </div>
+        </Link>
 
         <button 
           onClick={handleLogout}

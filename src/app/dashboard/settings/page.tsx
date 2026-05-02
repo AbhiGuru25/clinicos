@@ -163,18 +163,49 @@ export default function SettingsPage() {
               </div>
 
               <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm space-y-6">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                       <Wifi size={20} />
                     </div>
                     <h2 className="text-xl font-black text-slate-900 tracking-tight">WhatsApp Engine</h2>
                   </div>
-                  <div className={`px-3 py-1 rounded-full flex items-center gap-2 text-[10px] font-black uppercase tracking-wider ${isConnected ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}`}>
+                  <div className={`px-3 py-1 rounded-full flex items-center gap-2 text-[10px] font-black uppercase tracking-wider ${isConnected ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-500'}`}>
                     <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`} />
-                    {isConnected ? 'Active' : 'Disconnected'}
+                    {isConnected ? 'Active' : 'Setup Required'}
                   </div>
                 </div>
+
+                {!isConnected && (
+                  <div className="bg-gradient-to-br from-indigo-50 to-blue-50 border border-indigo-100 rounded-2xl p-5 mb-6 shadow-sm">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xl">⚡</span>
+                      <h3 className="font-bold text-indigo-900">Quick Setup — Takes 5 minutes</h3>
+                    </div>
+                    <p className="text-sm font-medium text-indigo-700/80 mb-4">
+                      Your WhatsApp automation is one connection away from going live for your patients.
+                    </p>
+                    <div className="space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-xs font-bold text-indigo-600 shrink-0 border border-indigo-100 shadow-sm">1</div>
+                        <p className="text-sm font-medium text-indigo-900 pt-0.5">Enter your Evolution API URL</p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-xs font-bold text-indigo-600 shrink-0 border border-indigo-100 shadow-sm">2</div>
+                        <p className="text-sm font-medium text-indigo-900 pt-0.5">Enter your Secret Key</p>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="w-6 h-6 rounded-full bg-white flex items-center justify-center text-xs font-bold text-indigo-600 shrink-0 border border-indigo-100 shadow-sm">3</div>
+                        <p className="text-sm font-medium text-indigo-900 pt-0.5">Click Test Connection</p>
+                      </div>
+                    </div>
+                    <div className="mt-5 pt-4 border-t border-indigo-100/50">
+                      <a href="#" className="text-sm font-bold text-indigo-600 hover:text-indigo-700 underline underline-offset-2">
+                        Need help? Watch 2-min setup video
+                      </a>
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-4">
                   <div className="space-y-1.5">

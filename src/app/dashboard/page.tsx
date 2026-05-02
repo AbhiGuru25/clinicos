@@ -56,13 +56,22 @@ export default function Dashboard() {
           </p>
         </div>
         
-        <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
-          <div className="text-right">
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Clinic Status</p>
-            <p className="text-emerald-600 font-bold text-sm">Open & Accepting Patients</p>
-          </div>
-          <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-            <Activity className="text-emerald-500" size={20} />
+        <div className="flex items-center gap-4">
+          <button className="relative p-3 bg-white border border-slate-100 rounded-xl shadow-sm hover:bg-slate-50 transition-colors group">
+            <span className="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform border-2 border-white">
+              3
+            </span>
+            <span className="text-lg">🔔</span>
+          </button>
+          
+          <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
+            <div className="text-right">
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Clinic Status</p>
+              <p className="text-emerald-600 font-bold text-sm">Open & Accepting Patients</p>
+            </div>
+            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
+              <Activity className="text-emerald-500" size={20} />
+            </div>
           </div>
         </div>
       </header>
@@ -118,9 +127,9 @@ export default function Dashboard() {
         </div>
 
         {/* Card 4 */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
+        <a href="#recent-activity" className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden group hover:border-amber-200 hover:shadow-md transition-all cursor-pointer">
           <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
               <Clock className="text-amber-600" size={20} />
             </div>
             <div className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
@@ -128,10 +137,10 @@ export default function Dashboard() {
             </div>
           </div>
           <div>
-            <p className="text-xs font-bold text-slate-500 mb-1">Pending Tasks</p>
+            <p className="text-xs font-bold text-slate-500 mb-1 group-hover:text-slate-700 transition-colors">Pending Tasks</p>
             <h2 className="text-2xl font-display font-bold text-slate-900">4</h2>
           </div>
-        </div>
+        </a>
       </div>
 
       {/* Main Content Grid */}
@@ -151,34 +160,61 @@ export default function Dashboard() {
                <div className="h-48 flex items-center justify-center border-2 border-dashed border-slate-100 rounded-2xl">
                  <p className="text-slate-400 font-medium text-sm">Syncing with database...</p>
                </div>
-            ) : patients.length === 0 ? (
-              <div className="h-48 flex items-center justify-center border-2 border-dashed border-slate-100 rounded-2xl">
-                <p className="text-slate-400 font-medium text-sm">No appointments for today yet.</p>
-              </div>
             ) : (
               <div className="space-y-4">
-                {patients.slice(0, 5).map((p, i) => (
-                  <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-sky-100 hover:bg-sky-50/30 transition-colors">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-sm">
-                        {(p.name || p.full_name || 'U')[0].toUpperCase()}
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-slate-900">{p.name || p.full_name || 'Unknown Patient'}</h4>
-                        <p className="text-xs font-medium text-slate-500">{p.department || 'General Consultation'}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <span className={`inline-block px-3 py-1 rounded-md text-[10px] font-black tracking-wider uppercase ${
-                        p.priority === 'High' ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
-                      }`}>
-                        {p.priority || 'Confirmed'}
-                      </span>
-                    </div>
+                {patients.length === 0 ? (
+                  <div className="h-48 flex items-center justify-center border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50">
+                    <p className="text-slate-500 font-medium text-sm">No appointments for today yet.</p>
                   </div>
-                ))}
+                ) : (
+                  patients.slice(0, 5).map((p, i) => (
+                    <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-sky-100 hover:bg-sky-50/30 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-sm">
+                          {(p.name || p.full_name || 'U')[0].toUpperCase()}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-slate-900">{p.name || p.full_name || 'Unknown Patient'}</h4>
+                          <p className="text-xs font-medium text-slate-500">{p.department || 'General Consultation'}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className={`inline-block px-3 py-1 rounded-md text-[10px] font-black tracking-wider uppercase ${
+                          p.priority === 'High' ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
+                        }`}>
+                          {p.priority || 'Confirmed'}
+                        </span>
+                      </div>
+                    </div>
+                  ))
+                )}
+                
+                {patients.length <= 1 && (
+                  <div className="mt-6 p-6 text-center border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50">
+                    <p className="text-slate-500 font-medium text-sm">No more appointments today — your AI is booking tomorrow's slots</p>
+                  </div>
+                )}
               </div>
             )}
+
+            {/* Quick Actions */}
+            <div className="pt-6 mt-6 border-t border-slate-50">
+              <h3 className="text-xs font-black text-slate-400 mb-4 uppercase tracking-widest ml-1">Quick Actions</h3>
+              <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
+                <Link href="/dashboard/patients" className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:border-sky-300 hover:text-sky-700 hover:shadow-md transition-all whitespace-nowrap shadow-sm">
+                  <span className="text-sky-500 font-black">+</span> Add Patient
+                </Link>
+                <Link href="/dashboard/appointments" className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:border-sky-300 hover:text-sky-700 hover:shadow-md transition-all whitespace-nowrap shadow-sm">
+                  📅 View Tomorrow
+                </Link>
+                <Link href="/dashboard/billing" className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:border-sky-300 hover:text-sky-700 hover:shadow-md transition-all whitespace-nowrap shadow-sm">
+                  💰 New Invoice
+                </Link>
+                <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:border-sky-300 hover:text-sky-700 hover:shadow-md transition-all whitespace-nowrap shadow-sm">
+                  📊 Weekly Report
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -196,7 +232,7 @@ export default function Dashboard() {
           </div>
 
           {/* Recent Activity */}
-          <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm">
+          <div id="recent-activity" className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm scroll-mt-8">
             <h3 className="text-lg font-display font-bold text-slate-900 mb-6">Recent Activity</h3>
             <div className="space-y-6">
               <div className="flex gap-4">
