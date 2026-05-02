@@ -1,41 +1,34 @@
 'use client';
+
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { motion } from 'framer-motion';
 import { 
+  HeartPulse, 
   Users, 
-  Calendar, 
-  TrendingUp, 
-  Clock, 
-  ArrowUpRight,
-  MoreVertical,
-  CheckCircle2,
-  XCircle
+  Brain, 
+  Stethoscope, 
+  CalendarCheck, 
+  FileMedical, 
+  Settings, 
+  Plus, 
+  Wand2,
+  AlertCircle,
+  Activity
 } from 'lucide-react';
 
 export default function Dashboard() {
-  const [appointments, setAppointments] = useState<any[]>([]);
+  const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchAppointments() {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select('*, patients(name, phone)')
-        .order('appointment_date', { ascending: true })
-        .order('appointment_time', { ascending: true });
-
-      if (error) console.error('Error fetching appointments:', error);
-      else setAppointments(data || []);
-      setLoading(false);
-    }
-
-    fetchAppointments();
-
+    fetchPatients();
+    
+    // Real-time subscription
     const channel = supabase
-      .channel('dashboard-sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => {
-        fetchAppointments();
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, (payload) => {
+        console.log('Change received!', payload);
+        fetchPatients();
       })
       .subscribe();
 
@@ -44,140 +37,160 @@ export default function Dashboard() {
     };
   }, []);
 
-  const stats = [
-    { label: "Today's Visits", value: appointments.length, icon: Calendar, color: "text-sky-600", bg: "bg-sky-50", trend: "+12%" },
-    { label: "Total Patients", value: "1,284", icon: Users, color: "text-emerald-600", bg: "bg-emerald-50", trend: "+5%" },
-    { label: "Revenue Today", value: "₹12,450", icon: TrendingUp, color: "text-violet-600", bg: "bg-violet-50", trend: "+18%" },
-    { label: "Pending Tasks", value: "4", icon: Clock, color: "text-amber-600", bg: "bg-amber-50", trend: "-2" },
-  ];
+  async function fetchPatients() {
+    const { data, error } = await supabase
+      .from('patients')
+      .select('*')
+      .order('created_at', { ascending: false });
+    
+    if (data) setPatients(data);
+    setLoading(false);
+  }
 
   return (
-    <div>
-      {/* Header */}
-      <div className="flex items-center justify-between mb-10">
-        <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Welcome, Dr. Sharma</h1>
-          <p className="text-slate-500 font-medium">Here's what's happening at your clinic today.</p>
-        </div>
-        <div className="flex items-center gap-4">
-          <div className="text-right hidden sm:block">
-            <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-0.5">Clinic Status</p>
-            <p className="text-sm font-bold text-emerald-600">Open & Accepting Patients</p>
-          </div>
-          <div className="w-12 h-12 rounded-2xl bg-slate-200 border-4 border-white shadow-sm" />
-        </div>
+    <div className="min-h-screen bg-[#0F172A] text-white font-sans overflow-hidden flex">
+      {/* Background Orbs */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#2D9E7A] rounded-full blur-[100px] opacity-10 animate-pulse"></div>
+        <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-[#4A90D9] rounded-full blur-[100px] opacity-10 animate-pulse delay-700"></div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        {stats.map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="p-6 rounded-3xl bg-white border border-slate-100 shadow-sm hover:shadow-md transition-shadow"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
-                <stat.icon size={24} />
-              </div>
-              <div className="flex items-center gap-1 text-emerald-600 font-bold text-xs bg-emerald-50 px-2 py-1 rounded-lg">
-                <ArrowUpRight size={14} />
-                {stat.trend}
-              </div>
+      {/* Sidebar */}
+      <aside className="w-[280px] bg-slate-900/50 backdrop-blur-xl border-r border-teal-500/10 p-10 flex flex-col gap-10 z-10">
+        <div className="flex items-center gap-3 text-2xl font-bold text-[#2D9E7A] font-serif">
+          <Activity size={24} />
+          <span>Clinic<span className="text-white/50">OS</span></span>
+        </div>
+
+        <nav className="flex flex-col gap-2">
+          {[
+            { icon: Users, label: 'Patient Census', active: true },
+            { icon: Brain, label: 'AI Diagnostics' },
+            { icon: CalendarCheck, label: 'Scheduler' },
+            { icon: FileMedical, label: 'Archives' },
+          ].map((item, i) => (
+            <div 
+              key={i}
+              className={`flex items-center gap-4 px-5 py-3.5 rounded-xl cursor-pointer transition-all ${
+                item.active ? 'bg-[#2D9E7A] text-white shadow-lg shadow-teal-500/20' : 'text-slate-400 hover:bg-slate-800'
+              }`}
+            >
+              <item.icon size={18} />
+              <span className="font-medium text-sm">{item.label}</span>
             </div>
-            <p className="text-sm font-bold text-slate-500 mb-1">{stat.label}</p>
-            <h3 className="text-2xl font-black text-slate-900">{stat.value}</h3>
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Bottom Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Appointment Table */}
-        <div className="lg:col-span-2 bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden">
-          <div className="p-8 border-b border-slate-50 flex items-center justify-between">
-            <h2 className="text-xl font-black text-slate-900 tracking-tight">Today's Appointments</h2>
-            <button className="text-sm font-bold text-sky-600 hover:text-sky-700">View All</button>
+          ))}
+          <div className="mt-auto flex items-center gap-4 px-5 py-3.5 rounded-xl text-slate-400 hover:bg-slate-800 cursor-pointer">
+            <Settings size={18} />
+            <span className="font-medium text-sm">Settings</span>
           </div>
-          
-          <div className="p-8">
-            {loading ? (
-              <div className="flex flex-col items-center justify-center py-12 gap-4">
-                <div className="w-10 h-10 border-4 border-sky-100 border-t-sky-600 rounded-full animate-spin" />
-                <p className="text-slate-400 font-bold">Syncing with WhatsApp Engine...</p>
-              </div>
-            ) : appointments.length === 0 ? (
-              <div className="text-center py-12 border-2 border-dashed border-slate-100 rounded-3xl">
-                <p className="text-slate-400 font-bold">No appointments for today yet.</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {appointments.map((a) => (
-                  <div key={a.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-slate-50 transition-colors border border-transparent hover:border-slate-100 group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center font-black text-lg">
-                        {a.patients?.name?.charAt(0)}
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-slate-900">{a.patients?.name}</h4>
-                        <p className="text-xs font-bold text-slate-400">{a.patients?.phone}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-8">
-                      <div className="text-right">
-                        <p className="font-bold text-slate-900">{a.appointment_time}</p>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Confirmed</p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <button className="p-2 text-slate-400 hover:text-emerald-600 transition-colors">
-                          <CheckCircle2 size={20} />
-                        </button>
-                        <button className="p-2 text-slate-400 hover:text-rose-600 transition-colors">
-                          <XCircle size={20} />
-                        </button>
-                        <button className="p-2 text-slate-400 hover:text-slate-900">
-                          <MoreVertical size={20} />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
+        </nav>
+      </aside>
+
+      {/* Main Content */}
+      <main className="flex-1 p-10 overflow-y-auto z-10 relative">
+        <header className="flex justify-between items-center mb-12">
+          <div>
+            <h1 className="text-4xl font-serif font-bold">Welcome, <span className="text-[#2D9E7A]">Dr. Sharma</span></h1>
+            <p className="text-slate-400 mt-1">Medical OS v2.0 is running with 99.9% AI accuracy.</p>
+          </div>
+          <button className="bg-[#2D9E7A] hover:scale-105 active:scale-95 transition-all text-white px-7 py-3 rounded-full font-bold shadow-xl shadow-teal-500/30 flex items-center gap-2">
+            <Plus size={18} />
+            New Admission
+          </button>
+        </header>
+
+        <div className="grid grid-cols-12 gap-6">
+          {/* KPI Card */}
+          <div className="col-span-8 bg-white/5 border border-teal-500/10 backdrop-blur-md rounded-[32px] p-8 flex items-center gap-16">
+            <div>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <Users size={12} /> Active Admissions
+              </p>
+              <h2 className="text-6xl font-bold tracking-tighter">{patients.length}</h2>
+              <p className="text-[#2D9E7A] text-[11px] font-bold mt-2 uppercase">Normal Load Operation</p>
+            </div>
+            <div className="w-px h-20 bg-teal-500/10"></div>
+            <div>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                <HeartPulse size={12} /> Clinic Status
+              </p>
+              <h2 className="text-6xl font-bold tracking-tighter text-[#10B981]">STABLE</h2>
+              <p className="text-slate-400 text-[11px] font-bold mt-2 uppercase tracking-widest">Real-time Vitals Sync</p>
+            </div>
+          </div>
+
+          {/* AI Predictor */}
+          <div className="col-span-4 bg-white/5 border border-blue-500/20 backdrop-blur-md rounded-[32px] p-8">
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+              <Brain size={12} /> AI Health Forecast
+            </p>
+            <p className="text-xs text-slate-400 mb-4">Predicted recovery rate for Neurology Ward</p>
+            <div className="bg-black/20 rounded-2xl p-6 border border-blue-500/10">
+              <h3 className="text-4xl font-bold text-[#4A90D9]">94.2%</h3>
+              <p className="text-[#10B981] text-[10px] font-bold flex items-center gap-1 mt-1">
+                <Wand2 size={10} /> HIGH CONFIDENCE
+              </p>
+            </div>
+          </div>
+
+          {/* Patient Table */}
+          <div className="col-span-12 bg-white/5 border border-teal-500/10 backdrop-blur-md rounded-[32px] p-8 mt-4">
+            <div className="flex justify-between items-center mb-8">
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <Stethoscope size={12} /> Real-time Patient Stream
+              </p>
+            </div>
+            
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-[11px] text-slate-500 uppercase tracking-widest border-b border-teal-500/5">
+                  <th className="pb-4 px-4">Patient Name</th>
+                  <th className="pb-4 px-4">ID</th>
+                  <th className="pb-4 px-4">Department</th>
+                  <th className="pb-4 px-4">Priority</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {loading ? (
+                  <tr><td colSpan={4} className="py-20 text-center text-slate-500">Scanning neural database...</td></tr>
+                ) : patients.length === 0 ? (
+                  <tr><td colSpan={4} className="py-20 text-center text-slate-500">No active patients in census.</td></tr>
+                ) : patients.map((p, i) => (
+                  <tr key={i} className="group hover:bg-white/5 transition-all">
+                    <td className="py-5 px-4 font-bold">{p.name || p.full_name || 'Unknown Patient'}</td>
+                    <td className="py-5 px-4 text-slate-400 text-sm">MED-{p.id.toString().slice(-4)}</td>
+                    <td className="py-5 px-4 text-slate-400 text-sm">{p.department || 'General'}</td>
+                    <td className="py-5 px-4">
+                      <span className={`text-[10px] font-black px-3 py-1 rounded-full ${
+                        p.priority === 'High' ? 'bg-red-500/10 text-red-400' : 'bg-teal-500/10 text-teal-400'
+                      }`}>
+                        {p.priority || 'ROUTINE'}
+                      </span>
+                    </td>
+                  </tr>
                 ))}
-              </div>
-            )}
+              </tbody>
+            </table>
           </div>
         </div>
 
-        {/* Right Sidebar - Quick Insights */}
-        <div className="space-y-8">
-          <div className="bg-gradient-to-br from-sky-600 to-indigo-700 p-8 rounded-[2rem] text-white shadow-xl shadow-sky-100">
-            <h3 className="text-lg font-black mb-4 tracking-tight">Clinic Growth</h3>
-            <p className="text-sky-100 text-sm font-medium leading-relaxed mb-6">
-              You have booked 24 more appointments this week compared to last week. Your AI is saving you ~14 hours of admin work.
-            </p>
-            <button className="w-full py-4 bg-white/10 hover:bg-white/20 transition-colors rounded-2xl font-bold text-sm backdrop-blur-md border border-white/10">
-              View Analytics Report
+        {/* Command Bar */}
+        <div className="fixed bottom-10 left-[320px] right-10 max-w-4xl mx-auto z-50">
+          <div className="bg-slate-800/80 backdrop-blur-2xl border border-teal-500/20 rounded-full p-2 pl-4 flex items-center gap-4 shadow-2xl">
+            <div className="w-12 h-12 bg-[#2D9E7A] rounded-full flex items-center justify-center text-white shadow-lg shadow-teal-500/40">
+              <Wand2 size={20} />
+            </div>
+            <input 
+              type="text" 
+              className="flex-1 bg-transparent border-none outline-none text-white placeholder-slate-400 font-medium"
+              placeholder="Ask AI: 'Who needs immediate attention in Cardiology?'"
+            />
+            <button className="bg-[#2D9E7A] text-white px-6 py-3 rounded-full font-bold text-sm">
+              Consult AI
             </button>
           </div>
-
-          <div className="bg-white p-8 rounded-[2rem] border border-slate-100 shadow-sm">
-            <h3 className="text-lg font-black text-slate-900 mb-6 tracking-tight">Recent Activity</h3>
-            <div className="space-y-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex gap-4">
-                  <div className="w-2 h-2 rounded-full bg-sky-500 mt-2 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-bold text-slate-700 leading-snug">New booking via WhatsApp for Rahul M.</p>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">2 mins ago</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
