@@ -144,7 +144,11 @@ export default function BillingPage() {
           </div>
           <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Total Revenue</p>
           <h3 className="text-3xl font-black text-slate-900">₹{totalRevenue.toLocaleString()}</h3>
-          <p className="text-emerald-600 text-[10px] font-black uppercase mt-2 tracking-widest">+18% growth</p>
+          {totalRevenue === 0 ? (
+            <p className="text-slate-400 text-[10px] font-bold mt-2">Complete appointments to track revenue</p>
+          ) : (
+            <p className="text-emerald-600 text-[10px] font-black uppercase mt-2 tracking-widest">+18% growth</p>
+          )}
         </div>
         <div className="p-8 rounded-[2rem] bg-white border border-slate-100 shadow-sm">
           <div className="w-10 h-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center mb-4">
@@ -182,20 +186,20 @@ export default function BillingPage() {
             { day: 'Wed', amount: 2100, height: '50%' },
             { day: 'Thu', amount: 4500, height: '85%' },
             { day: 'Fri', amount: 5200, height: '100%' },
-            { day: 'Sat', amount: 3100, height: '65%' },
+            { day: 'Sat', amount: 3100, height: '65%', isToday: true },
             { day: 'Sun', amount: 1800, height: '45%' },
           ].map((d, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-3 group h-full">
               <div className="relative w-full flex justify-center h-full items-end">
-                <div className="w-full max-w-[3rem] bg-violet-50 rounded-t-xl transition-all group-hover:bg-violet-100" style={{ height: '100%' }}>
-                  <div className="absolute bottom-0 w-full max-w-[3rem] bg-violet-500 rounded-t-xl transition-all duration-500 group-hover:bg-violet-600" style={{ height: d.height }}></div>
+                <div className={`w-full max-w-[3rem] rounded-t-xl transition-all ${d.isToday ? 'bg-sky-100 group-hover:bg-sky-200' : 'bg-violet-50 group-hover:bg-violet-100'}`} style={{ height: '100%' }}>
+                  <div className={`absolute bottom-0 w-full max-w-[3rem] rounded-t-xl transition-all duration-500 ${d.isToday ? 'bg-sky-500 group-hover:bg-sky-600' : 'bg-violet-500 group-hover:bg-violet-600'}`} style={{ height: d.height }}></div>
                 </div>
                 {/* Tooltip */}
                 <div className="absolute -top-10 bg-slate-900 text-white text-[10px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                   ₹{d.amount}
                 </div>
               </div>
-              <p className="text-xs font-black text-slate-400 uppercase tracking-widest">{d.day}</p>
+              <p className={`text-xs font-black uppercase tracking-widest ${d.isToday ? 'text-sky-600' : 'text-slate-400'}`}>{d.day}</p>
             </div>
           ))}
         </div>

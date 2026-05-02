@@ -130,6 +130,7 @@ export default function SettingsPage() {
                     <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Clinic Name</label>
                     <input 
                       type="text" 
+                      placeholder="e.g. Shah Multispeciality Clinic"
                       value={clinicName}
                       onChange={(e) => setClinicName(e.target.value)}
                       className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-sky-500 transition-all outline-none"
@@ -141,6 +142,7 @@ export default function SettingsPage() {
                       <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                       <input 
                         type="text" 
+                        placeholder="e.g. 123 SG Highway, Ahmedabad"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 bg-slate-50 border-none rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-sky-500 transition-all outline-none"
@@ -153,6 +155,7 @@ export default function SettingsPage() {
                       <Smartphone className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                       <input 
                         type="text" 
+                        placeholder="e.g. +91 98765 43210"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className="w-full pl-10 pr-4 py-3 bg-slate-50 border-none rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-sky-500 transition-all outline-none"
