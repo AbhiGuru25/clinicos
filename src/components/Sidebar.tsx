@@ -10,7 +10,8 @@ import {
   MessageSquare,
   LogOut,
   Menu,
-  X
+  X,
+  Activity
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
@@ -31,7 +32,7 @@ function ZynteqLogo() {
       {/* Z Icon Mark */}
       <div className="relative w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
         style={{ background: 'linear-gradient(135deg, #6C5CE7, #4F46E5)' }}>
-        <span className="text-white font-black text-lg" style={{ fontFamily: 'Outfit, sans-serif' }}>Z</span>
+        <Activity size={22} className="text-white z-10" />
         <div className="absolute inset-0 opacity-20"
           style={{ background: 'radial-gradient(circle at 70% 30%, white, transparent)' }} />
       </div>
@@ -91,7 +92,7 @@ export default function Sidebar() {
               )}
               <item.icon
                 size={18}
-                className={`relative z-10 transition-colors ${isActive ? 'text-[#A29BFE]' : 'text-[#606080] group-hover:text-[#A0A0B8]'}`}
+                className={`relative z-10 transition-colors ${isActive ? 'text-white' : 'text-[#606080] group-hover:text-[#A0A0B8]'}`}
               />
               <span className="relative z-10 text-sm font-semibold">{item.name}</span>
               {isActive && (
@@ -118,7 +119,9 @@ export default function Sidebar() {
             <MessageSquare size={12} style={{ color: '#6C5CE7' }} />
           </div>
           <p className="text-[10px] font-medium leading-relaxed" style={{ color: '#606080' }}>
-            WhatsApp AI is active. Click to configure.
+            WhatsApp AI is active.<br/>
+            <span className="text-white font-bold my-1 block">47 messages handled today</span>
+            Click to configure.
           </p>
         </Link>
 

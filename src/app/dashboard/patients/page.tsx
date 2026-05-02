@@ -73,10 +73,11 @@ export default function PatientsPage() {
         ) : (
           <div>
             {/* Desktop Table Header */}
-            <div className="hidden md:grid grid-cols-5 gap-4 px-8 py-5 border-b text-[10px] font-black uppercase tracking-widest" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+            <div className="hidden md:grid grid-cols-6 gap-4 px-8 py-5 border-b text-[10px] font-black uppercase tracking-widest" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
               <div className="col-span-2">Patient Details</div>
               <div>Phone</div>
               <div className="text-center">Visits</div>
+              <div>Registered</div>
               <div className="text-right">Actions</div>
             </div>
 
@@ -87,7 +88,7 @@ export default function PatientsPage() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.05 }}
                   key={p.id} 
-                  className="mobile-card-row md:grid md:grid-cols-5 md:gap-4 md:px-8 md:py-5 md:border-b md:rounded-none group transition-all md:items-center"
+                  className="mobile-card-row md:grid md:grid-cols-6 md:gap-4 md:px-8 md:py-5 md:border-b md:rounded-none group transition-all md:items-center"
                   style={{ borderColor: 'var(--border)' }}
                 >
                   {/* Patient Details */}
@@ -113,6 +114,13 @@ export default function PatientsPage() {
                     <div className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-lg font-black text-sm" style={{ background: 'rgba(108,92,231,0.1)', color: '#6C5CE7' }}>
                       {p.appointments?.length || 0}
                     </div>
+                  </div>
+
+                  {/* Registered */}
+                  <div className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
+                    <Calendar size={14} className="hidden md:block" style={{ color: 'var(--text-muted)' }} />
+                    <span className="md:hidden text-[10px] uppercase font-bold tracking-wider mr-1" style={{ color: 'var(--text-muted)' }}>Registered:</span>
+                    {p.created_at ? new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
                   </div>
 
                   {/* Actions */}

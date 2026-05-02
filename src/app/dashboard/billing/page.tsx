@@ -176,19 +176,21 @@ export default function BillingPage() {
             <h2 className="text-xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Revenue Trend</h2>
             <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Past 7 days performance</p>
           </div>
-          <div className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest self-start sm:self-auto" style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981' }}>
-            +12% this week
-          </div>
+          {totalRevenue > 0 && (
+            <div className="px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-widest self-start sm:self-auto" style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981' }}>
+              +12% this week
+            </div>
+          )}
         </div>
         <div className="flex items-end justify-between h-40 md:h-48 gap-1 md:gap-2 mt-4">
           {[
-            { day: 'Mon', amount: 1200, height: '40%' },
-            { day: 'Tue', amount: 3400, height: '70%' },
-            { day: 'Wed', amount: 2100, height: '50%' },
-            { day: 'Thu', amount: 4500, height: '85%' },
-            { day: 'Fri', amount: 5200, height: '100%' },
+            { day: 'Mon', amount: 0, height: '4%' },
+            { day: 'Tue', amount: 0, height: '4%' },
+            { day: 'Wed', amount: 0, height: '4%' },
+            { day: 'Thu', amount: 0, height: '4%' },
+            { day: 'Fri', amount: 0, height: '4%' },
             { day: 'Sat', amount: 3100, height: '65%', isToday: true },
-            { day: 'Sun', amount: 1800, height: '45%' },
+            { day: 'Sun', amount: 0, height: '4%' },
           ].map((d, i) => (
             <div key={i} className="flex-1 flex flex-col items-center gap-2 md:gap-3 group h-full">
               <div className="relative w-full flex justify-center h-full items-end">

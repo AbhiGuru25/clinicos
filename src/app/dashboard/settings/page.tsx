@@ -184,10 +184,10 @@ export default function SettingsPage() {
                   </div>
                   <div className="px-3 py-1.5 rounded-full flex items-center gap-2 text-[10px] font-black uppercase tracking-wider w-fit" 
                     style={{ 
-                      background: isConnected ? 'rgba(16,185,129,0.1)' : 'rgba(239,68,68,0.1)', 
-                      color: isConnected ? '#10B981' : '#FCA5A5' 
+                      background: isConnected ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', 
+                      color: isConnected ? '#10B981' : '#F59E0B' 
                     }}>
-                    <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-red-500'}`} />
+                    <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
                     {isConnected ? 'Active' : 'Setup Required'}
                   </div>
                 </div>

@@ -11,7 +11,8 @@ import {
   Activity,
   ArrowUpRight,
   Sparkles,
-  Bell
+  Bell,
+  CheckCircle2
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion, Variants } from 'framer-motion';
@@ -102,6 +103,15 @@ export default function Dashboard() {
       glow: 'rgba(245,158,11,0.35)',
       href: '#recent-activity',
     },
+    {
+      label: 'Confirmation Rate',
+      value: '94%',
+      change: '↑ +3%',
+      positive: true,
+      icon: CheckCircle2,
+      gradient: 'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)',
+      glow: 'rgba(236,72,153,0.35)',
+    },
   ];
 
   return (
@@ -145,7 +155,7 @@ export default function Dashboard() {
       </div>
 
       {/* ─── Stat Cards ─── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 md:gap-4">
         {statCards.map((card, i) => (
           <motion.div
             key={card.label}
@@ -311,6 +321,7 @@ export default function Dashboard() {
             </h3>
             <div className="space-y-4">
               {[
+                { dot: '#EC4899', text: "🎂 Priya Patel's birthday tomorrow — send wishes?", time: 'Action Required', action: true },
                 { dot: '#6C5CE7', text: 'New booking via WhatsApp for Rahul M.', time: '2 mins ago' },
                 { dot: '#10B981', text: 'Payment received from Priya P.', time: '15 mins ago' },
                 { dot: '#F59E0B', text: 'AI rescheduled 3 appointments.', time: '1 hr ago' },
@@ -319,7 +330,13 @@ export default function Dashboard() {
                   <div className="w-2 h-2 rounded-full shrink-0 mt-1.5" style={{ background: item.dot }} />
                   <div>
                     <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{item.text}</p>
-                    <p className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>{item.time}</p>
+                    <p className="text-xs font-medium mt-0.5" style={{ color: item.action ? '#EC4899' : 'var(--text-muted)' }}>{item.time}</p>
+                    {item.action && (
+                      <div className="flex gap-2 mt-2">
+                        <button className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white transition-all hover:scale-105" style={{ background: 'linear-gradient(135deg, #EC4899, #BE185D)' }}>Send WhatsApp</button>
+                        <button className="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.02)' }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}>Dismiss</button>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -356,7 +373,7 @@ function StatCard({ card }: { card: any }) {
       </div>
 
       <p className="text-[10px] font-bold uppercase tracking-wider opacity-80 mb-1">{card.label}</p>
-      <h2 className="text-xl md:text-2xl font-black" style={{ fontFamily: 'Outfit, sans-serif' }}>
+      <h2 className={`text-xl md:text-2xl ${card.label === 'Revenue Today' ? 'font-[800]' : 'font-black'}`} style={{ fontFamily: 'Outfit, sans-serif' }}>
         {card.value}
       </h2>
     </div>

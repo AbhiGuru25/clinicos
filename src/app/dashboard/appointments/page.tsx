@@ -260,6 +260,13 @@ export default function AppointmentsPage() {
                 </div>
               </div>
             ))}
+            
+            <div className="mt-8 p-6 md:p-8 text-center border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3" style={{ borderColor: 'rgba(108,92,231,0.15)', background: 'rgba(108,92,231,0.02)' }}>
+              <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>No more appointments scheduled.</p>
+              <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-lg transition-all" style={{ background: 'rgba(108,92,231,0.1)', color: '#6C5CE7' }}>
+                <Plus size={16} /> Add Appointment
+              </button>
+            </div>
           </div>
         )}
       </div>
