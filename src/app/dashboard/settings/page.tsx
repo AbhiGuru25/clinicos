@@ -46,6 +46,9 @@ export default function SettingsPage() {
       setClinicName(data.name || '');
       setAddress(data.address || '');
       setPhone(data.whatsapp_number || '');
+      setEvolutionUrl(data.evolution_url || '');
+      setEvolutionKey(data.evolution_apikey || '');
+      setInstanceName(data.evolution_instance || '');
     }
     setLoading(false);
   }
@@ -60,6 +63,9 @@ export default function SettingsPage() {
         name: clinicName,
         whatsapp_number: phone,
         address: address,
+        evolution_url: evolutionUrl,
+        evolution_apikey: evolutionKey,
+        evolution_instance: instanceName,
       })
       .eq('id', clinic.id);
 

@@ -30,11 +30,15 @@ export default function Dashboard() {
   const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [doctorName, setDoctorName] = useState('Doctor');
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [messages, setMessages] = useState<any[]>([]);
   const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
     fetchPatients();
     fetchDoctorName();
+    fetchStats();
+    fetchMessages();
 
     // Live clock
     const tick = () => {
@@ -49,6 +53,9 @@ export default function Dashboard() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, () => {
         fetchPatients();
       })
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'whatsapp_messages' }, () => {
+        fetchMessages();
+      })
       .subscribe();
 
     return () => {
@@ -56,6 +63,23 @@ export default function Dashboard() {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  async function fetchMessages() {
+    const { data } = await supabase
+      .from('whatsapp_messages')
+      .select('*, patients(name)')
+      .order('created_at', { ascending: false })
+      .limit(4);
+    if (data) setMessages(data);
+  }
+
+  async function fetchStats() {
+    const { data: invoices } = await supabase.from('invoices').select('amount');
+    if (invoices) {
+      const total = invoices.reduce((sum: number, inv: any) => sum + (inv.amount || 0), 0);
+      setTotalRevenue(total);
+    }
+  }
 
   async function fetchDoctorName() {
     try {
@@ -88,7 +112,7 @@ export default function Dashboard() {
     {
       label: "Today's Visits",
       value: patients.length,
-      change: '+12%',
+      change: '+0%',
       positive: true,
       icon: CalendarDays,
       iconColor: 'var(--brand-primary)',
@@ -96,8 +120,8 @@ export default function Dashboard() {
     },
     {
       label: 'Total Patients',
-      value: '1,284',
-      change: '+5%',
+      value: patients.length,
+      change: '+0%',
       positive: true,
       icon: Users,
       iconColor: 'var(--brand-primary)',
@@ -105,8 +129,8 @@ export default function Dashboard() {
     },
     {
       label: 'Revenue Today',
-      value: '₹12,450',
-      change: '+18%',
+      value: `₹${totalRevenue.toLocaleString('en-IN')}`,
+      change: '+0%',
       positive: true,
       icon: TrendingUp,
       iconColor: 'var(--success-text)',
@@ -114,8 +138,8 @@ export default function Dashboard() {
     },
     {
       label: 'Pending Tasks',
-      value: '4',
-      change: '-2',
+      value: '0',
+      change: '0',
       positive: true,
       icon: Clock,
       iconColor: 'var(--text-secondary)',
@@ -124,8 +148,8 @@ export default function Dashboard() {
     },
     {
       label: 'Confirmation Rate',
-      value: '94%',
-      change: '↑ +3%',
+      value: '100%',
+      change: '↑ 0%',
       positive: true,
       icon: CheckCircle2,
       iconColor: 'var(--success-text)',
@@ -336,26 +360,29 @@ export default function Dashboard() {
               Recent Activity
             </h3>
             <div className="space-y-4">
-              {[
-                { dot: '#EC4899', text: "🎂 Priya Patel's birthday tomorrow — send wishes?", time: 'Action Required', action: true },
-                { dot: '#6C5CE7', text: 'New booking via WhatsApp for Rahul M.', time: '2 mins ago' },
-                { dot: '#10B981', text: 'Payment received from Priya P.', time: '15 mins ago' },
-                { dot: '#F59E0B', text: 'AI rescheduled 3 appointments.', time: '1 hr ago' },
-              ].map((item, i) => (
-                <div key={i} className="flex gap-3">
-                  <div className="w-2 h-2 rounded-full shrink-0 mt-1.5" style={{ background: item.dot }} />
-                  <div>
-                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{item.text}</p>
-                    <p className="text-xs font-medium mt-0.5" style={{ color: item.action ? '#EC4899' : 'var(--text-muted)' }}>{item.time}</p>
-                    {item.action && (
-                      <div className="flex gap-2 mt-2">
-                        <button className="px-3 py-1.5 rounded-lg text-[10px] font-bold text-white transition-all hover:scale-105" style={{ background: 'linear-gradient(135deg, #EC4899, #BE185D)' }}>Send WhatsApp</button>
-                        <button className="px-3 py-1.5 rounded-lg text-[10px] font-bold transition-all" style={{ color: 'var(--text-secondary)', border: '1px solid var(--border)' }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(0,0,0,0.02)' }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent' }}>Dismiss</button>
-                      </div>
-                    )}
-                  </div>
+              {messages.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>No recent activity</p>
                 </div>
-              ))}
+              ) : (
+                messages.map((msg, i) => (
+                  <div key={msg.id} className="flex gap-3">
+                    <div className="w-2 h-2 rounded-full shrink-0 mt-1.5" 
+                      style={{ background: msg.type === 'incoming' ? '#6C5CE7' : '#10B981' }} />
+                    <div>
+                      <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
+                        {msg.type === 'incoming' ? 'New message from' : 'Message sent to'} {msg.patients?.name || msg.sender_number}
+                      </p>
+                      <p className="text-xs font-medium mt-0.5 truncate max-w-[200px]" style={{ color: 'var(--text-muted)' }}>
+                        "{msg.content}"
+                      </p>
+                      <p className="text-[10px] font-bold mt-1 uppercase" style={{ color: 'var(--brand-primary)' }}>
+                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </motion.div>
         </div>
