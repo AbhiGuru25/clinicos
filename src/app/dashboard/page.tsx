@@ -2,265 +2,363 @@
 
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { 
-  CalendarDays, 
-  Users, 
-  TrendingUp, 
-  Clock, 
+import {
+  CalendarDays,
+  Users,
+  TrendingUp,
+  Clock,
   ChevronRight,
-  Activity
+  Activity,
+  ArrowUpRight,
+  Sparkles,
+  Bell
 } from 'lucide-react';
 import Link from 'next/link';
+import { motion } from 'framer-motion';
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.08, duration: 0.4, ease: [0.4, 0, 0.2, 1] }
+  })
+};
 
 export default function Dashboard() {
   const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
     fetchPatients();
-    
-    // Real-time subscription
+    // Live clock
+    const tick = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true }));
+    };
+    tick();
+    const interval = setInterval(tick, 60000);
+
     const channel = supabase
       .channel('schema-db-changes')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, (payload) => {
-        console.log('Change received!', payload);
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, () => {
         fetchPatients();
       })
       .subscribe();
 
     return () => {
+      clearInterval(interval);
       supabase.removeChannel(channel);
     };
   }, []);
 
   async function fetchPatients() {
-    const { data, error } = await supabase
+    const { data } = await supabase
       .from('patients')
       .select('*')
       .order('created_at', { ascending: false });
-    
     if (data) setPatients(data);
     setLoading(false);
   }
 
+  const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });
+
+  const statCards = [
+    {
+      label: "Today's Visits",
+      value: patients.length,
+      change: '+12%',
+      positive: true,
+      icon: CalendarDays,
+      gradient: 'linear-gradient(135deg, #6C5CE7 0%, #4F46E5 100%)',
+      glow: 'rgba(108,92,231,0.35)',
+    },
+    {
+      label: 'Total Patients',
+      value: '1,284',
+      change: '+5%',
+      positive: true,
+      icon: Users,
+      gradient: 'linear-gradient(135deg, #00B4D8 0%, #0096B7 100%)',
+      glow: 'rgba(0,180,216,0.35)',
+    },
+    {
+      label: 'Revenue Today',
+      value: '₹12,450',
+      change: '+18%',
+      positive: true,
+      icon: TrendingUp,
+      gradient: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+      glow: 'rgba(16,185,129,0.35)',
+    },
+    {
+      label: 'Pending Tasks',
+      value: '4',
+      change: '-2',
+      positive: true,
+      icon: Clock,
+      gradient: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
+      glow: 'rgba(245,158,11,0.35)',
+      href: '#recent-activity',
+    },
+  ];
+
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
-      {/* Header */}
-      <header className="flex justify-between items-start">
+    <div className="space-y-6 page-enter">
+
+      {/* ─── Header ─── */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-display font-bold text-slate-900 tracking-tight">
-            Welcome, <span className="text-sky-600">Dr. Sharma</span>
+          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#6C5CE7' }}>
+            {today}
+          </p>
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif' }}>
+            Welcome, <span style={{ background: 'linear-gradient(135deg, #6C5CE7, #00B4D8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Dr. Sharma</span>
           </h1>
-          <p className="text-slate-500 mt-1 text-sm font-medium">
+          <p className="text-sm font-medium mt-1" style={{ color: 'var(--text-secondary)' }}>
             Here's what's happening at your clinic today.
           </p>
         </div>
-        
-        <div className="flex items-center gap-4">
-          <button className="relative p-3 bg-white border border-slate-100 rounded-xl shadow-sm hover:bg-slate-50 transition-colors group">
-            <span className="absolute -top-2 -right-2 w-5 h-5 bg-rose-500 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform border-2 border-white">
-              3
-            </span>
-            <span className="text-lg">🔔</span>
+
+        <div className="flex items-center gap-3">
+          {/* Notification Bell */}
+          <button className="relative p-2.5 rounded-xl border transition-all hover:scale-105 touch-target"
+            style={{ background: 'white', borderColor: 'var(--border)', boxShadow: '0 1px 4px rgba(108,92,231,0.08)' }}>
+            <Bell size={18} style={{ color: 'var(--text-secondary)' }} />
+            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-white text-[10px] font-black flex items-center justify-center border-2 border-white"
+              style={{ background: '#EF4444' }}>3</span>
           </button>
-          
-          <div className="flex items-center gap-4 bg-white px-4 py-2 rounded-xl border border-slate-100 shadow-sm">
+
+          {/* Clinic Status */}
+          <div className="hidden sm:flex items-center gap-3 px-4 py-2.5 rounded-xl border"
+            style={{ background: 'white', borderColor: 'var(--border)' }}>
             <div className="text-right">
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Clinic Status</p>
-              <p className="text-emerald-600 font-bold text-sm">Open & Accepting Patients</p>
+              <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Clinic Status</p>
+              <p className="text-sm font-bold" style={{ color: '#10B981' }}>Open & Active</p>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-emerald-50 flex items-center justify-center">
-              <Activity className="text-emerald-500" size={20} />
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)' }}>
+              <Activity size={18} style={{ color: '#10B981' }} />
             </div>
           </div>
         </div>
-      </header>
-
-      {/* KPI Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        {/* Card 1 */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
-              <CalendarDays className="text-sky-600" size={20} />
-            </div>
-            <div className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
-              ↗ +12%
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-slate-500 mb-1">Today's Visits</p>
-            <h2 className="text-2xl font-display font-bold text-slate-900">{patients.length}</h2>
-          </div>
-        </div>
-
-        {/* Card 2 */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center">
-              <Users className="text-emerald-600" size={20} />
-            </div>
-            <div className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
-              ↗ +5%
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-slate-500 mb-1">Total Patients</p>
-            <h2 className="text-2xl font-display font-bold text-slate-900">1,284</h2>
-          </div>
-        </div>
-
-        {/* Card 3 */}
-        <div className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden">
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
-              <TrendingUp className="text-purple-600" size={20} />
-            </div>
-            <div className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
-              ↗ +18%
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-slate-500 mb-1">Revenue Today</p>
-            <h2 className="text-2xl font-display font-bold text-slate-900">₹12,450</h2>
-          </div>
-        </div>
-
-        {/* Card 4 */}
-        <a href="#recent-activity" className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm flex flex-col justify-between h-32 relative overflow-hidden group hover:border-amber-200 hover:shadow-md transition-all cursor-pointer">
-          <div className="flex justify-between items-start">
-            <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition-colors">
-              <Clock className="text-amber-600" size={20} />
-            </div>
-            <div className="bg-emerald-50 text-emerald-600 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1">
-              ↗ -2
-            </div>
-          </div>
-          <div>
-            <p className="text-xs font-bold text-slate-500 mb-1 group-hover:text-slate-700 transition-colors">Pending Tasks</p>
-            <h2 className="text-2xl font-display font-bold text-slate-900">4</h2>
-          </div>
-        </a>
       </div>
 
-      {/* Main Content Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
-        {/* Left Column (2/3) */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm min-h-[400px]">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-display font-bold text-slate-900">Today's Appointments</h2>
-              <Link href="/dashboard/appointments" className="text-sm font-bold text-sky-600 hover:text-sky-700">
-                View All
+      {/* ─── Stat Cards ─── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        {statCards.map((card, i) => (
+          <motion.div
+            key={card.label}
+            custom={i}
+            initial="hidden"
+            animate="visible"
+            variants={cardVariants}
+          >
+            {card.href ? (
+              <a href={card.href} className="block h-full">
+                <StatCard card={card} />
+              </a>
+            ) : (
+              <StatCard card={card} />
+            )}
+          </motion.div>
+        ))}
+      </div>
+
+      {/* ─── Main Grid ─── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+        {/* Appointments Card (2/3) */}
+        <motion.div
+          className="lg:col-span-2"
+          initial={{ opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.35, duration: 0.4 }}
+        >
+          <div className="rounded-2xl border p-5 md:p-6 min-h-[360px]"
+            style={{ background: 'white', borderColor: 'var(--border)' }}>
+            <div className="flex items-center justify-between mb-5">
+              <div>
+                <h2 className="text-lg font-black tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif' }}>
+                  Today's Appointments
+                </h2>
+                <p className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>Live synced</p>
+              </div>
+              <Link href="/dashboard/appointments"
+                className="flex items-center gap-1 text-xs font-bold px-3 py-1.5 rounded-lg transition-all"
+                style={{ color: '#6C5CE7', background: 'rgba(108,92,231,0.08)' }}>
+                View All <ChevronRight size={14} />
               </Link>
             </div>
 
             {loading ? (
-               <div className="h-48 flex items-center justify-center border-2 border-dashed border-slate-100 rounded-2xl">
-                 <p className="text-slate-400 font-medium text-sm">Syncing with database...</p>
-               </div>
+              <div className="flex flex-col gap-3">
+                {[1, 2, 3].map(n => (
+                  <div key={n} className="h-16 rounded-xl animate-pulse" style={{ background: '#F5F7FF' }} />
+                ))}
+              </div>
+            ) : patients.length === 0 ? (
+              <div className="h-48 flex flex-col items-center justify-center gap-3 border-2 border-dashed rounded-2xl"
+                style={{ borderColor: 'rgba(108,92,231,0.15)', background: 'rgba(108,92,231,0.02)' }}>
+                <Sparkles size={28} style={{ color: '#A29BFE' }} />
+                <p className="text-sm font-semibold" style={{ color: 'var(--text-muted)' }}>No appointments yet today</p>
+                <Link href="/dashboard/appointments"
+                  className="text-xs font-bold px-4 py-2 rounded-lg"
+                  style={{ background: 'rgba(108,92,231,0.1)', color: '#6C5CE7' }}>
+                  Book First Appointment
+                </Link>
+              </div>
             ) : (
-              <div className="space-y-4">
-                {patients.length === 0 ? (
-                  <div className="h-48 flex items-center justify-center border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50">
-                    <p className="text-slate-500 font-medium text-sm">No appointments for today yet.</p>
-                  </div>
-                ) : (
-                  patients.slice(0, 5).map((p, i) => (
-                    <div key={i} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-sky-100 hover:bg-sky-50/30 transition-colors">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center font-bold text-slate-600 text-sm">
-                          {(p.name || p.full_name || 'U')[0].toUpperCase()}
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-slate-900">{p.name || p.full_name || 'Unknown Patient'}</h4>
-                          <p className="text-xs font-medium text-slate-500">{p.department || 'General Consultation'}</p>
-                        </div>
+              <div className="space-y-2">
+                {patients.slice(0, 5).map((p, i) => (
+                  <motion.div
+                    key={p.id}
+                    initial={{ opacity: 0, x: -12 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 + i * 0.06 }}
+                    className="flex items-center justify-between p-3 md:p-4 rounded-xl border transition-all hover:shadow-sm group"
+                    style={{ borderColor: 'var(--border)', background: 'white' }}
+                    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(108,92,231,0.25)'; (e.currentTarget as HTMLElement).style.background = 'rgba(108,92,231,0.02)'; }}
+                    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.background = 'white'; }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl flex items-center justify-center font-black text-sm shrink-0 transition-all"
+                        style={{ background: 'rgba(108,92,231,0.1)', color: '#6C5CE7' }}>
+                        {(p.name || 'U')[0].toUpperCase()}
                       </div>
-                      <div className="text-right">
-                        <span className={`inline-block px-3 py-1 rounded-md text-[10px] font-black tracking-wider uppercase ${
-                          p.priority === 'High' ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
-                        }`}>
-                          {p.priority || 'Confirmed'}
-                        </span>
+                      <div>
+                        <h4 className="font-bold text-sm" style={{ color: 'var(--text-primary)' }}>{p.name || 'Unknown'}</h4>
+                        <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{p.department || 'General Consultation'}</p>
                       </div>
                     </div>
-                  ))
-                )}
-                
+                    <span className={`inline-block px-2.5 py-1 rounded-lg text-[10px] font-black uppercase tracking-wider ${
+                      p.priority === 'High' ? 'bg-rose-50 text-rose-600' : 'bg-emerald-50 text-emerald-600'
+                    }`}>
+                      {p.priority || 'Confirmed'}
+                    </span>
+                  </motion.div>
+                ))}
+
                 {patients.length <= 1 && (
-                  <div className="mt-6 p-6 text-center border-2 border-dashed border-slate-100 rounded-2xl bg-slate-50/50">
-                    <p className="text-slate-500 font-medium text-sm">No more appointments today — your AI is booking tomorrow's slots</p>
+                  <div className="mt-4 p-4 text-center border-2 border-dashed rounded-xl" style={{ borderColor: 'rgba(108,92,231,0.15)', background: 'rgba(108,92,231,0.02)' }}>
+                    <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>No more appointments — AI is booking tomorrow's slots</p>
                   </div>
                 )}
               </div>
             )}
 
             {/* Quick Actions */}
-            <div className="pt-6 mt-6 border-t border-slate-50">
-              <h3 className="text-xs font-black text-slate-400 mb-4 uppercase tracking-widest ml-1">Quick Actions</h3>
-              <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar">
-                <Link href="/dashboard/patients" className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:border-sky-300 hover:text-sky-700 hover:shadow-md transition-all whitespace-nowrap shadow-sm">
-                  <span className="text-sky-500 font-black">+</span> Add Patient
-                </Link>
-                <Link href="/dashboard/appointments" className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:border-sky-300 hover:text-sky-700 hover:shadow-md transition-all whitespace-nowrap shadow-sm">
-                  📅 View Tomorrow
-                </Link>
-                <Link href="/dashboard/billing" className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:border-sky-300 hover:text-sky-700 hover:shadow-md transition-all whitespace-nowrap shadow-sm">
-                  💰 New Invoice
-                </Link>
-                <button className="flex items-center gap-2 px-5 py-3 bg-white border border-slate-100 text-slate-700 rounded-2xl font-bold text-sm hover:border-sky-300 hover:text-sky-700 hover:shadow-md transition-all whitespace-nowrap shadow-sm">
-                  📊 Weekly Report
-                </button>
+            <div className="mt-5 pt-5 border-t" style={{ borderColor: 'var(--border)' }}>
+              <p className="text-[10px] font-black uppercase tracking-widest mb-3" style={{ color: 'var(--text-muted)' }}>Quick Actions</p>
+              <div className="flex gap-2 overflow-x-auto hide-scrollbar pb-1">
+                {[
+                  { label: '+ Add Patient', href: '/dashboard/patients' },
+                  { label: '📅 Tomorrow', href: '/dashboard/appointments' },
+                  { label: '💰 Invoice', href: '/dashboard/billing' },
+                  { label: '📊 Report', href: '/dashboard/billing' },
+                ].map(action => (
+                  <Link key={action.label} href={action.href}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all hover:shadow-sm"
+                    style={{ background: 'white', borderColor: 'var(--border)', color: 'var(--text-secondary)' }}
+                    onMouseEnter={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'rgba(108,92,231,0.3)'; el.style.color = '#6C5CE7'; }}
+                    onMouseLeave={e => { const el = e.currentTarget as HTMLElement; el.style.borderColor = 'var(--border)'; el.style.color = 'var(--text-secondary)'; }}>
+                    {action.label}
+                  </Link>
+                ))}
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Right Column (1/3) */}
-        <div className="space-y-6">
-          {/* Clinic Growth Card */}
-          <div className="bg-gradient-to-br from-sky-600 to-blue-700 rounded-3xl p-8 text-white shadow-lg shadow-sky-600/20">
-            <h3 className="text-lg font-display font-bold mb-4">Clinic Growth</h3>
-            <p className="text-sky-100 text-sm leading-relaxed mb-6">
-              You have booked 24 more appointments this week compared to last week. Your AI is saving you ~14 hours of admin work.
+        <div className="space-y-4">
+          {/* Clinic Growth */}
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.4 }}
+            className="rounded-2xl p-6 text-white relative overflow-hidden"
+            style={{ background: 'linear-gradient(135deg, #6C5CE7 0%, #4F46E5 80%, #312E81 100%)' }}
+          >
+            <div className="absolute top-0 right-0 w-32 h-32 opacity-10"
+              style={{ background: 'radial-gradient(circle, white, transparent)', borderRadius: '0 0 0 100%' }} />
+            <div className="flex items-center gap-2 mb-3">
+              <ArrowUpRight size={18} style={{ color: '#A29BFE' }} />
+              <h3 className="text-base font-black" style={{ fontFamily: 'Outfit, sans-serif' }}>Clinic Growth</h3>
+            </div>
+            <p className="text-sm leading-relaxed mb-5" style={{ color: 'rgba(255,255,255,0.8)' }}>
+              24 more bookings this week vs last week. Your AI is saving ~14 hrs of admin work.
             </p>
-            <button className="bg-white/20 hover:bg-white/30 transition-colors text-white text-sm font-bold py-2.5 px-4 rounded-xl w-full">
-              View Analytics Report
+            <button className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
+              style={{ background: 'rgba(255,255,255,0.15)', color: 'white' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.25)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.15)'; }}>
+              View Analytics
             </button>
-          </div>
+          </motion.div>
 
           {/* Recent Activity */}
-          <div id="recent-activity" className="bg-white rounded-3xl p-8 border border-slate-100 shadow-sm scroll-mt-8">
-            <h3 className="text-lg font-display font-bold text-slate-900 mb-6">Recent Activity</h3>
-            <div className="space-y-6">
-              <div className="flex gap-4">
-                <div className="w-2 h-2 rounded-full bg-sky-500 mt-2 shrink-0"></div>
-                <div>
-                  <p className="text-sm font-medium text-slate-900">New booking via WhatsApp for Rahul M.</p>
-                  <p className="text-xs text-slate-500 mt-1">2 mins ago</p>
+          <motion.div
+            id="recent-activity"
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.48, duration: 0.4 }}
+            className="rounded-2xl border p-5 scroll-mt-8"
+            style={{ background: 'white', borderColor: 'var(--border)' }}
+          >
+            <h3 className="text-base font-black mb-4" style={{ color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif' }}>
+              Recent Activity
+            </h3>
+            <div className="space-y-4">
+              {[
+                { dot: '#6C5CE7', text: 'New booking via WhatsApp for Rahul M.', time: '2 mins ago' },
+                { dot: '#10B981', text: 'Payment received from Priya P.', time: '15 mins ago' },
+                { dot: '#F59E0B', text: 'AI rescheduled 3 appointments.', time: '1 hr ago' },
+              ].map((item, i) => (
+                <div key={i} className="flex gap-3">
+                  <div className="w-2 h-2 rounded-full shrink-0 mt-1.5" style={{ background: item.dot }} />
+                  <div>
+                    <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{item.text}</p>
+                    <p className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>{item.time}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-2 h-2 rounded-full bg-emerald-500 mt-2 shrink-0"></div>
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Payment received from Priya P.</p>
-                  <p className="text-xs text-slate-500 mt-1">15 mins ago</p>
-                </div>
-              </div>
-              <div className="flex gap-4">
-                <div className="w-2 h-2 rounded-full bg-amber-500 mt-2 shrink-0"></div>
-                <div>
-                  <p className="text-sm font-medium text-slate-900">AI rescheduled 3 appointments.</p>
-                  <p className="text-xs text-slate-500 mt-1">1 hour ago</p>
-                </div>
-              </div>
+              ))}
             </div>
-          </div>
+          </motion.div>
         </div>
-
       </div>
+    </div>
+  );
+}
+
+function StatCard({ card }: { card: any }) {
+  return (
+    <div
+      className="relative p-4 md:p-5 rounded-2xl text-white overflow-hidden transition-all duration-300 hover:-translate-y-1 cursor-default touch-target"
+      style={{
+        background: card.gradient,
+        boxShadow: `0 4px 20px ${card.glow}`,
+        minHeight: '110px'
+      }}
+    >
+      {/* Decoration */}
+      <div className="absolute top-0 right-0 w-20 h-20 rounded-full opacity-10"
+        style={{ background: 'radial-gradient(circle, white, transparent)', transform: 'translate(30%, -30%)' }} />
+
+      <div className="flex items-start justify-between mb-3">
+        <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.2)' }}>
+          <card.icon size={16} className="text-white" />
+        </div>
+        <span className="text-[10px] font-black px-2 py-0.5 rounded-md"
+          style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>
+          {card.change}
+        </span>
+      </div>
+
+      <p className="text-[10px] font-bold uppercase tracking-wider opacity-80 mb-1">{card.label}</p>
+      <h2 className="text-xl md:text-2xl font-black" style={{ fontFamily: 'Outfit, sans-serif' }}>
+        {card.value}
+      </h2>
     </div>
   );
 }

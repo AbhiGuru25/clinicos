@@ -34,25 +34,26 @@ export default function PatientsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Patients</h1>
-          <p className="text-slate-500 font-medium">Full medical history and records for all your patients.</p>
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>Patients</h1>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Full medical history and records for all your patients.</p>
         </div>
-        <button className="flex items-center gap-2 px-6 py-3 border border-slate-200 text-slate-600 rounded-2xl font-bold hover:bg-slate-50 transition-colors">
+        <button className="btn-primary flex items-center gap-2 touch-target">
           <Download size={20} />
           Export CSV
         </button>
       </div>
 
-      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm overflow-hidden min-h-[600px]">
-        <div className="p-8 border-b border-slate-50">
+      <div className="zynteq-card overflow-hidden min-h-[600px]">
+        <div className="p-4 md:p-8 border-b" style={{ borderColor: 'var(--border)' }}>
           <div className="relative max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
             <input 
               type="text" 
               placeholder="Search by name or phone..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-slate-50 border-none rounded-2xl font-bold text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-sky-500 transition-all outline-none"
+              className="w-full pl-12 pr-4 py-3 border-none rounded-2xl font-bold placeholder:text-slate-400 outline-none touch-target"
+              style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }}
             />
           </div>
         </div>
@@ -70,67 +71,66 @@ export default function PatientsPage() {
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-slate-50 text-left">
-                  <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Patient Details</th>
-                  <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Phone</th>
-                  <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest text-center">Visits</th>
-                  <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest">Registered</th>
-                  <th className="px-8 py-5 text-xs font-black text-slate-400 uppercase tracking-widest text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPatients.map((p, i) => (
-                  <motion.tr 
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    key={p.id} 
-                    className="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group"
-                  >
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center font-black text-slate-600 group-hover:bg-sky-600 group-hover:text-white transition-colors">
-                          {p.name.charAt(0)}
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-900 leading-none mb-1">{p.name}</p>
-                          <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Patient ID: {p.id.slice(0, 8)}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-2 font-bold text-slate-600">
-                        <Phone size={14} className="text-slate-400" />
-                        {p.phone}
-                      </div>
-                    </td>
-                    <td className="px-8 py-5 text-center">
-                      <div className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-lg bg-sky-50 text-sky-700 font-black text-sm border border-sky-100">
-                        {p.appointments?.length || 0}
-                      </div>
-                    </td>
-                    <td className="px-8 py-5">
-                      <div className="flex items-center gap-2 font-bold text-slate-600">
-                        <Calendar size={14} className="text-slate-400" />
-                        {new Date(p.created_at).toLocaleDateString()}
-                      </div>
-                    </td>
-                    <td className="px-8 py-5 text-right">
-                      <Link 
-                        href={`/dashboard/patients/${p.id}`}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 text-slate-600 font-bold text-sm hover:bg-sky-600 hover:text-white transition-all"
-                      >
-                        View Records
-                        <ExternalLink size={14} />
-                      </Link>
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
+          <div>
+            {/* Desktop Table Header */}
+            <div className="hidden md:grid grid-cols-5 gap-4 px-8 py-5 border-b text-[10px] font-black uppercase tracking-widest" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
+              <div className="col-span-2">Patient Details</div>
+              <div>Phone</div>
+              <div className="text-center">Visits</div>
+              <div className="text-right">Actions</div>
+            </div>
+
+            <div className="p-4 md:p-0 space-y-3 md:space-y-0">
+              {filteredPatients.map((p, i) => (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  key={p.id} 
+                  className="mobile-card-row md:grid md:grid-cols-5 md:gap-4 md:px-8 md:py-5 md:border-b md:rounded-none group transition-all md:items-center"
+                  style={{ borderColor: 'var(--border)' }}
+                >
+                  {/* Patient Details */}
+                  <div className="md:col-span-2 flex items-center gap-4">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white shadow-sm" style={{ background: 'linear-gradient(135deg, #6C5CE7, #4F46E5)' }}>
+                      {p.name.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="font-bold leading-none mb-1 text-sm md:text-base" style={{ color: 'var(--text-primary)' }}>{p.name}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>ID: {p.id.slice(0, 8)}</p>
+                    </div>
+                  </div>
+
+                  {/* Phone */}
+                  <div className="flex items-center gap-2 font-bold text-sm" style={{ color: 'var(--text-secondary)' }}>
+                    <Phone size={14} style={{ color: 'var(--text-muted)' }} />
+                    {p.phone}
+                  </div>
+
+                  {/* Visits */}
+                  <div className="flex items-center md:justify-center gap-2 text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>
+                    <span className="md:hidden text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Visits:</span>
+                    <div className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-lg font-black text-sm" style={{ background: 'rgba(108,92,231,0.1)', color: '#6C5CE7' }}>
+                      {p.appointments?.length || 0}
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex md:justify-end mt-2 md:mt-0">
+                    <Link 
+                      href={`/dashboard/patients/${p.id}`}
+                      className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all touch-target"
+                      style={{ background: 'var(--bg-app)', color: 'var(--text-secondary)' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(108,92,231,0.1)'; (e.currentTarget as HTMLElement).style.color = '#6C5CE7'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-app)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
+                    >
+                      View Records
+                      <ExternalLink size={14} />
+                    </Link>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         )}
       </div>

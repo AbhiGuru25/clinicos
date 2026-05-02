@@ -172,23 +172,24 @@ export default function AppointmentsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">Appointments</h1>
-          <p className="text-slate-500 font-medium">Manage your clinic schedule and visit statuses.</p>
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>Appointments</h1>
+          <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Manage your clinic schedule and visit statuses.</p>
         </div>
-        <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 px-6 py-3 bg-sky-600 text-white rounded-2xl font-bold hover:bg-sky-700 transition-all shadow-lg shadow-sky-100">
+        <button onClick={() => setIsModalOpen(true)} className="btn-primary flex items-center gap-2 touch-target">
           <Plus size={20} />
           Add Appointment
         </button>
       </div>
 
-      <div className="bg-white rounded-[2rem] border border-slate-100 shadow-sm p-8 min-h-[500px]">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-          <div className="flex items-center gap-2 bg-slate-50 p-1 rounded-xl w-fit border border-slate-100">
+      <div className="zynteq-card p-4 md:p-8 min-h-[500px]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-8">
+          <div className="flex items-center gap-1 p-1 rounded-xl w-full md:w-fit overflow-x-auto hide-scrollbar" style={{ background: 'rgba(108,92,231,0.04)', border: '1px solid var(--border)' }}>
             {['Today', 'Tomorrow', 'This Week', 'All'].map(tab => (
               <button 
                 key={tab}
                 onClick={() => setDateFilter(tab)}
-                className={`px-4 py-2 rounded-lg font-bold text-sm transition-all ${dateFilter === tab ? 'bg-white text-sky-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all touch-target ${dateFilter === tab ? 'bg-white shadow-sm' : 'hover:bg-white/50'}`}
+                style={{ color: dateFilter === tab ? '#6C5CE7' : 'var(--text-secondary)' }}
               >
                 {tab}
               </button>
@@ -200,11 +201,15 @@ export default function AppointmentsPage() {
               <button 
                 key={status}
                 onClick={() => setStatusFilter(status)}
-                className={`px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap ${
+                className={`px-4 py-2 rounded-full font-bold text-xs uppercase tracking-wider transition-all whitespace-nowrap touch-target ${
                   statusFilter === status 
-                    ? 'bg-slate-900 text-white' 
-                    : 'bg-slate-100 text-slate-500 hover:bg-slate-200'
+                    ? 'text-white' 
+                    : 'hover:bg-slate-100'
                 }`}
+                style={{
+                  background: statusFilter === status ? 'linear-gradient(135deg, #1A1A2E, #2D2D44)' : 'var(--bg-app)',
+                  color: statusFilter === status ? 'white' : 'var(--text-secondary)'
+                }}
               >
                 {status}
               </button>
@@ -219,31 +224,36 @@ export default function AppointmentsPage() {
         ) : (
           <div className="space-y-4">
             {filteredAppointments.map((a) => (
-              <div key={a.id} className="flex items-center justify-between p-6 rounded-2xl border border-slate-50 bg-slate-50/30 group">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-white border border-slate-100 flex items-center justify-center font-black text-sky-600 shadow-sm group-hover:bg-sky-600 group-hover:text-white transition-all">
+              <div key={a.id} className="zynteq-card flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 mb-3 group hover:shadow-md transition-all">
+                <div className="flex items-center gap-4 mb-4 md:mb-0">
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-white shadow-sm"
+                    style={{ background: 'linear-gradient(135deg, #6C5CE7, #4F46E5)' }}>
                     {a.patients?.name?.charAt(0)}
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-900">{a.patients?.name}</h4>
-                    <p className="text-xs font-bold text-slate-400">{a.patients?.phone}</p>
+                    <h4 className="font-bold text-base" style={{ color: 'var(--text-primary)' }}>{a.patients?.name}</h4>
+                    <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{a.patients?.phone}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-12">
-                  <div className="text-right">
-                    <p className="font-bold text-slate-700">{formatTime(a.appointment_time)}</p>
-                    <p className="text-xs font-bold text-slate-400 tracking-wide">{formatDate(a.appointment_date)}</p>
+                <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto">
+                  <div className="text-left md:text-right">
+                    <p className="font-bold" style={{ color: 'var(--text-primary)' }}>{formatTime(a.appointment_time)}</p>
+                    <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{formatDate(a.appointment_date)}</p>
                   </div>
                   {a.status === 'confirmed' ? (
                     <button 
                       onClick={() => { setSelectedAppointment(a); setIsBillingModalOpen(true); }}
-                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:text-white transition-all"
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all touch-target w-full md:w-auto"
+                      style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.2)' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#10B981'; (e.currentTarget as HTMLElement).style.color = 'white'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(16,185,129,0.1)'; (e.currentTarget as HTMLElement).style.color = '#10B981'; }}
                     >
-                      <CheckCircle2 size={14} />
+                      <CheckCircle2 size={16} />
                       Complete & Bill
                     </button>
                   ) : (
-                    <div className="px-4 py-1.5 rounded-full bg-slate-100 text-slate-400 text-xs font-black uppercase">
+                    <div className="px-4 py-2 rounded-lg text-[10px] font-black uppercase tracking-wider"
+                      style={{ background: 'var(--bg-app)', color: 'var(--text-muted)' }}>
                       {a.status}
                     </div>
                   )}
@@ -260,35 +270,35 @@ export default function AppointmentsPage() {
       <AnimatePresence>
         {isBillingModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsBillingModalOpen(false)} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-lg bg-white rounded-[2.5rem] shadow-2xl overflow-hidden">
-              <div className="p-8 border-b border-slate-100 flex items-center justify-between">
-                <h2 className="text-2xl font-black text-slate-900 tracking-tight">Generate Invoice</h2>
-                <button onClick={() => setIsBillingModalOpen(false)} className="p-2 text-slate-400"><X size={24} /></button>
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsBillingModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-lg zynteq-card overflow-hidden">
+              <div className="p-6 md:p-8 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
+                <h2 className="text-xl md:text-2xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Generate Invoice</h2>
+                <button onClick={() => setIsBillingModalOpen(false)} className="p-2 touch-target" style={{ color: 'var(--text-muted)' }}><X size={24} /></button>
               </div>
 
-              <form onSubmit={handleCompleteAndBill} className="p-8 space-y-6">
-                <div className="p-6 bg-slate-50 rounded-2xl border border-slate-100 flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-sky-600 shadow-sm font-black">
+              <form onSubmit={handleCompleteAndBill} className="p-6 md:p-8 space-y-6">
+                <div className="p-4 md:p-6 rounded-2xl flex items-center gap-4" style={{ background: 'var(--bg-app)', border: '1px solid var(--border)' }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black shadow-sm" style={{ background: 'linear-gradient(135deg, #6C5CE7, #4F46E5)' }}>
                     {selectedAppointment?.patients?.name?.charAt(0)}
                   </div>
                   <div>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Billing To</p>
-                    <p className="font-bold text-slate-900">{selectedAppointment?.patients?.name}</p>
+                    <p className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: 'var(--text-muted)' }}>Billing To</p>
+                    <p className="font-bold" style={{ color: 'var(--text-primary)' }}>{selectedAppointment?.patients?.name}</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Consultation Fee</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Consultation Fee</label>
                     <div className="relative">
-                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-slate-400">₹</span>
-                      <input type="number" value={consultationFee} onChange={(e) => setConsultationFee(e.target.value)} className="w-full pl-8 pr-4 py-3 bg-slate-50 border-none rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-violet-500 outline-none" />
+                      <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold" style={{ color: 'var(--text-muted)' }}>₹</span>
+                      <input type="number" value={consultationFee} onChange={(e) => setConsultationFee(e.target.value)} className="w-full pl-8 pr-4 py-3 border-none rounded-xl font-bold outline-none touch-target" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }} />
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest">GST Rate (%)</label>
-                    <select value={gstRate} onChange={(e) => setGstRate(e.target.value)} className="w-full px-4 py-3 bg-slate-50 border-none rounded-xl font-bold text-slate-900 focus:ring-2 focus:ring-violet-500 outline-none">
+                    <label className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>GST Rate (%)</label>
+                    <select value={gstRate} onChange={(e) => setGstRate(e.target.value)} className="w-full px-4 py-3 border-none rounded-xl font-bold outline-none touch-target" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }}>
                       <option value="0">0% (Exempt)</option>
                       <option value="5">5% GST</option>
                       <option value="12">12% GST</option>
@@ -297,22 +307,22 @@ export default function AppointmentsPage() {
                   </div>
                 </div>
 
-                <div className="p-6 bg-violet-50 rounded-2xl border border-violet-100 space-y-3">
-                  <div className="flex justify-between text-sm font-bold text-violet-700">
+                <div className="p-4 md:p-6 rounded-2xl space-y-3" style={{ background: 'rgba(108,92,231,0.05)', border: '1px solid rgba(108,92,231,0.15)' }}>
+                  <div className="flex justify-between text-sm font-bold" style={{ color: '#4F46E5' }}>
                     <span>Subtotal</span>
                     <span>₹{consultationFee}</span>
                   </div>
-                  <div className="flex justify-between text-sm font-bold text-violet-500">
+                  <div className="flex justify-between text-sm font-bold" style={{ color: '#6C5CE7' }}>
                     <span>GST ({gstRate}%)</span>
                     <span>₹{(Number(consultationFee) * Number(gstRate)) / 100}</span>
                   </div>
-                  <div className="pt-3 border-t border-violet-200 flex justify-between text-lg font-black text-violet-900">
+                  <div className="pt-3 flex justify-between text-lg font-black" style={{ borderTop: '1px solid rgba(108,92,231,0.2)', color: '#312E81' }}>
                     <span>Grand Total</span>
                     <span>₹{Number(consultationFee) + (Number(consultationFee) * Number(gstRate)) / 100}</span>
                   </div>
                 </div>
 
-                <button type="submit" disabled={booking} className="w-full py-4 bg-violet-600 text-white rounded-2xl font-black text-lg hover:bg-violet-700 transition-all shadow-xl shadow-violet-100">
+                <button type="submit" disabled={booking} className="btn-primary w-full touch-target mt-4">
                   {booking ? 'Generating...' : 'Finalize Visit & Send Bill'}
                 </button>
               </form>
