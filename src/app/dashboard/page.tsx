@@ -29,10 +29,13 @@ const cardVariants: Variants = {
 export default function Dashboard() {
   const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [doctorName, setDoctorName] = useState('Doctor');
   const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
     fetchPatients();
+    fetchDoctorName();
+
     // Live clock
     const tick = () => {
       const now = new Date();
@@ -53,6 +56,22 @@ export default function Dashboard() {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  async function fetchDoctorName() {
+    try {
+      const { data: clinic } = await supabase
+        .from('clinics')
+        .select('doctor_name')
+        .limit(1)
+        .single();
+      
+      if (clinic?.doctor_name) {
+        setDoctorName(clinic.doctor_name);
+      }
+    } catch (err) {
+      console.error('Error fetching doctor name:', err);
+    }
+  }
 
   async function fetchPatients() {
     const { data } = await supabase
@@ -124,7 +143,7 @@ export default function Dashboard() {
             {today}
           </p>
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>
-            Welcome, <span className="text-brand-primary">Dr. Sharma</span>
+            Welcome, <span className="text-brand-primary">{doctorName}</span>
           </h1>
           <p className="text-sm font-medium mt-1" style={{ color: 'var(--text-secondary)' }}>
             Here's what's happening at your clinic today.
