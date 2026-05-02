@@ -8,13 +8,13 @@ import {
   Brain, 
   Stethoscope, 
   CalendarCheck, 
-  ClipboardList, 
-  Settings, 
   Plus, 
   Wand2,
-  AlertCircle,
-  Activity
+  Activity,
+  ArrowUpRight,
+  ArrowRight
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export default function Dashboard() {
   const [patients, setPatients] = useState<any[]>([]);
@@ -47,150 +47,169 @@ export default function Dashboard() {
     setLoading(false);
   }
 
+  // Calculate some dummy stats based on fetched data
+  const criticalCount = patients.filter(p => p.priority === 'High' || p.priority?.toLowerCase() === 'critical').length;
+  const routineCount = patients.filter(p => p.priority === 'Low' || p.priority?.toLowerCase() === 'routine').length;
+
   return (
-    <div className="min-h-screen bg-[#0F172A] text-white font-sans overflow-hidden flex">
-      {/* Background Orbs */}
-      <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-[#2D9E7A] rounded-full blur-[100px] opacity-10 animate-pulse"></div>
-        <div className="absolute bottom-[10%] right-[10%] w-[400px] h-[400px] bg-[#4A90D9] rounded-full blur-[100px] opacity-10 animate-pulse delay-700"></div>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Header section */}
+      <header className="flex justify-between items-end">
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 text-xs font-bold tracking-wider uppercase flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+              System Online
+            </span>
+          </div>
+          <h1 className="text-3xl font-display font-bold text-slate-900 tracking-tight">
+            Welcome back, <span className="text-sky-600">Dr. Sharma</span>
+          </h1>
+          <p className="text-slate-500 mt-1 text-sm font-medium">
+            Here's what's happening at your clinic today.
+          </p>
+        </div>
+        <button className="bg-sky-600 hover:bg-sky-700 active:scale-95 transition-all text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-sky-600/20 flex items-center gap-2">
+          <Plus size={18} />
+          New Admission
+        </button>
+      </header>
+
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+            <Users size={64} />
+          </div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
+              <Users className="text-sky-600" size={20} />
+            </div>
+            <h3 className="font-bold text-slate-600 text-sm">Active Admissions</h3>
+          </div>
+          <div className="flex items-end gap-3">
+            <h2 className="text-4xl font-display font-bold text-slate-900 tracking-tight">{patients.length}</h2>
+            <div className="flex items-center text-emerald-600 text-sm font-bold pb-1 bg-emerald-50 px-2 rounded-md">
+              <ArrowUpRight size={16} />
+              <span>12%</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity">
+            <HeartPulse size={64} />
+          </div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center">
+              <HeartPulse className="text-rose-600" size={20} />
+            </div>
+            <h3 className="font-bold text-slate-600 text-sm">Critical Patients</h3>
+          </div>
+          <div className="flex items-end gap-3">
+            <h2 className="text-4xl font-display font-bold text-slate-900 tracking-tight">{criticalCount}</h2>
+            <span className="text-slate-400 text-sm font-medium pb-1">Needs Attention</span>
+          </div>
+        </div>
+
+        <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-800 rounded-2xl p-6 shadow-xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-6 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Brain size={64} className="text-white" />
+          </div>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/10">
+              <Wand2 className="text-sky-300" size={20} />
+            </div>
+            <h3 className="font-bold text-slate-300 text-sm">AI Health Forecast</h3>
+          </div>
+          <div className="mt-1">
+            <h2 className="text-3xl font-display font-bold text-white tracking-tight flex items-baseline gap-2">
+              94.2% <span className="text-emerald-400 text-sm font-medium tracking-normal">Recovery</span>
+            </h2>
+            <p className="text-slate-400 text-xs font-medium mt-1">Predicted rate for Neurology Ward</p>
+          </div>
+        </div>
       </div>
 
-      {/* Sidebar */}
-      <aside className="w-[280px] bg-slate-900/50 backdrop-blur-xl border-r border-teal-500/10 p-10 flex flex-col gap-10 z-10">
-        <div className="flex items-center gap-3 text-2xl font-bold text-[#2D9E7A] font-serif">
-          <Activity size={24} />
-          <span>Clinic<span className="text-white/50">OS</span></span>
-        </div>
-
-        <nav className="flex flex-col gap-2">
-          {[
-            { icon: Users, label: 'Patient Census', active: true },
-            { icon: Brain, label: 'AI Diagnostics' },
-            { icon: CalendarCheck, label: 'Scheduler' },
-            { icon: ClipboardList, label: 'Archives' },
-          ].map((item, i) => (
-            <div 
-              key={i}
-              className={`flex items-center gap-4 px-5 py-3.5 rounded-xl cursor-pointer transition-all ${
-                item.active ? 'bg-[#2D9E7A] text-white shadow-lg shadow-teal-500/20' : 'text-slate-400 hover:bg-slate-800'
-              }`}
-            >
-              <item.icon size={18} />
-              <span className="font-medium text-sm">{item.label}</span>
-            </div>
-          ))}
-          <div className="mt-auto flex items-center gap-4 px-5 py-3.5 rounded-xl text-slate-400 hover:bg-slate-800 cursor-pointer">
-            <Settings size={18} />
-            <span className="font-medium text-sm">Settings</span>
-          </div>
-        </nav>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-10 overflow-y-auto z-10 relative">
-        <header className="flex justify-between items-center mb-12">
-          <div>
-            <h1 className="text-4xl font-serif font-bold">Welcome, <span className="text-[#2D9E7A]">Dr. Sharma</span></h1>
-            <p className="text-slate-400 mt-1">Medical OS v2.0 is running with 99.9% AI accuracy.</p>
-          </div>
-          <button className="bg-[#2D9E7A] hover:scale-105 active:scale-95 transition-all text-white px-7 py-3 rounded-full font-bold shadow-xl shadow-teal-500/30 flex items-center gap-2">
-            <Plus size={18} />
-            New Admission
+      {/* Patient Table Area */}
+      <div className="bg-white border border-slate-100 rounded-2xl shadow-sm overflow-hidden">
+        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+          <h2 className="font-bold text-slate-900 text-lg flex items-center gap-2">
+            <Stethoscope className="text-sky-600" size={20} />
+            Real-time Patient Stream
+          </h2>
+          <button className="text-sm font-bold text-sky-600 hover:text-sky-700 flex items-center gap-1 group">
+            View full census 
+            <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
           </button>
-        </header>
-
-        <div className="grid grid-cols-12 gap-6">
-          {/* KPI Card */}
-          <div className="col-span-8 bg-white/5 border border-teal-500/10 backdrop-blur-md rounded-[32px] p-8 flex items-center gap-16">
-            <div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <Users size={12} /> Active Admissions
-              </p>
-              <h2 className="text-6xl font-bold tracking-tighter">{patients.length}</h2>
-              <p className="text-[#2D9E7A] text-[11px] font-bold mt-2 uppercase">Normal Load Operation</p>
-            </div>
-            <div className="w-px h-20 bg-teal-500/10"></div>
-            <div>
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                <HeartPulse size={12} /> Clinic Status
-              </p>
-              <h2 className="text-6xl font-bold tracking-tighter text-[#10B981]">STABLE</h2>
-              <p className="text-slate-400 text-[11px] font-bold mt-2 uppercase tracking-widest">Real-time Vitals Sync</p>
-            </div>
-          </div>
-
-          {/* AI Predictor */}
-          <div className="col-span-4 bg-white/5 border border-blue-500/20 backdrop-blur-md rounded-[32px] p-8">
-            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-              <Brain size={12} /> AI Health Forecast
-            </p>
-            <p className="text-xs text-slate-400 mb-4">Predicted recovery rate for Neurology Ward</p>
-            <div className="bg-black/20 rounded-2xl p-6 border border-blue-500/10">
-              <h3 className="text-4xl font-bold text-[#4A90D9]">94.2%</h3>
-              <p className="text-[#10B981] text-[10px] font-bold flex items-center gap-1 mt-1">
-                <Wand2 size={10} /> HIGH CONFIDENCE
-              </p>
-            </div>
-          </div>
-
-          {/* Patient Table */}
-          <div className="col-span-12 bg-white/5 border border-teal-500/10 backdrop-blur-md rounded-[32px] p-8 mt-4">
-            <div className="flex justify-between items-center mb-8">
-              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                <Stethoscope size={12} /> Real-time Patient Stream
-              </p>
-            </div>
-            
-            <table className="w-full text-left">
-              <thead>
-                <tr className="text-[11px] text-slate-500 uppercase tracking-widest border-b border-teal-500/5">
-                  <th className="pb-4 px-4">Patient Name</th>
-                  <th className="pb-4 px-4">ID</th>
-                  <th className="pb-4 px-4">Department</th>
-                  <th className="pb-4 px-4">Priority</th>
+        </div>
+        
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-slate-50 border-b border-slate-100">
+                <th className="py-3 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Patient Name</th>
+                <th className="py-3 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Medical ID</th>
+                <th className="py-3 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Department</th>
+                <th className="py-3 px-6 text-xs font-bold text-slate-500 uppercase tracking-wider">Priority</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <tr><td colSpan={4} className="py-12 text-center text-slate-500 font-medium">Scanning database...</td></tr>
+              ) : patients.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="py-12 text-center">
+                    <div className="flex flex-col items-center justify-center">
+                      <div className="w-12 h-12 rounded-full bg-slate-50 flex items-center justify-center mb-3">
+                        <Users className="text-slate-400" size={24} />
+                      </div>
+                      <p className="text-slate-600 font-bold">No active patients</p>
+                      <p className="text-slate-400 text-sm mt-1">Waiting for admissions via WhatsApp.</p>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="divide-y divide-white/5">
-                {loading ? (
-                  <tr><td colSpan={4} className="py-20 text-center text-slate-500">Scanning neural database...</td></tr>
-                ) : patients.length === 0 ? (
-                  <tr><td colSpan={4} className="py-20 text-center text-slate-500">No active patients in census.</td></tr>
-                ) : patients.map((p, i) => (
-                  <tr key={i} className="group hover:bg-white/5 transition-all">
-                    <td className="py-5 px-4 font-bold">{p.name || p.full_name || 'Unknown Patient'}</td>
-                    <td className="py-5 px-4 text-slate-400 text-sm">MED-{p.id.toString().slice(-4)}</td>
-                    <td className="py-5 px-4 text-slate-400 text-sm">{p.department || 'General'}</td>
-                    <td className="py-5 px-4">
-                      <span className={`text-[10px] font-black px-3 py-1 rounded-full ${
-                        p.priority === 'High' ? 'bg-red-500/10 text-red-400' : 'bg-teal-500/10 text-teal-400'
-                      }`}>
-                        {p.priority || 'ROUTINE'}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ) : patients.map((p, i) => (
+                <tr key={i} className="group hover:bg-slate-50/80 transition-colors">
+                  <td className="py-4 px-6">
+                    <div className="font-bold text-slate-900">{p.name || p.full_name || 'Unknown Patient'}</div>
+                  </td>
+                  <td className="py-4 px-6 text-slate-500 text-sm font-medium">MED-{p.id.toString().slice(-4)}</td>
+                  <td className="py-4 px-6 text-slate-500 text-sm font-medium">{p.department || 'General'}</td>
+                  <td className="py-4 px-6">
+                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-black tracking-wider uppercase border ${
+                      p.priority === 'High' || p.priority?.toLowerCase() === 'critical'
+                        ? 'bg-rose-50 text-rose-700 border-rose-100' 
+                        : p.priority === 'Mid' || p.priority?.toLowerCase() === 'urgent'
+                        ? 'bg-amber-50 text-amber-700 border-amber-100'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-100'
+                    }`}>
+                      {p.priority || 'ROUTINE'}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
+      </div>
 
-        {/* Command Bar */}
-        <div className="fixed bottom-10 left-[320px] right-10 max-w-4xl mx-auto z-50">
-          <div className="bg-slate-800/80 backdrop-blur-2xl border border-teal-500/20 rounded-full p-2 pl-4 flex items-center gap-4 shadow-2xl">
-            <div className="w-12 h-12 bg-[#2D9E7A] rounded-full flex items-center justify-center text-white shadow-lg shadow-teal-500/40">
-              <Wand2 size={20} />
-            </div>
-            <input 
-              type="text" 
-              className="flex-1 bg-transparent border-none outline-none text-white placeholder-slate-400 font-medium"
-              placeholder="Ask AI: 'Who needs immediate attention in Cardiology?'"
-            />
-            <button className="bg-[#2D9E7A] text-white px-6 py-3 rounded-full font-bold text-sm">
-              Consult AI
-            </button>
+      {/* Floating AI Command Bar */}
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 ml-32 z-50 w-full max-w-2xl">
+        <div className="bg-white border border-slate-200 rounded-full p-2 pl-4 flex items-center gap-3 shadow-[0_8px_30px_rgb(0,0,0,0.08)] backdrop-blur-xl">
+          <div className="w-10 h-10 bg-sky-50 rounded-full flex items-center justify-center">
+            <Wand2 className="text-sky-600" size={18} />
           </div>
+          <input 
+            type="text" 
+            className="flex-1 bg-transparent border-none outline-none text-slate-800 placeholder-slate-400 font-medium text-sm"
+            placeholder="Ask AI: 'Who needs immediate attention in Cardiology?'"
+          />
+          <button className="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-full font-bold text-sm transition-colors shadow-md">
+            Consult AI
+          </button>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
