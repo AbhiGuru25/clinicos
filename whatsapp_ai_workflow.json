@@ -1,0 +1,87 @@
+{
+  "name": "ClinicOS AI Receptionist (Evolution API)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-webhook",
+        "options": {}
+      },
+      "id": "webhook-1",
+      "name": "WhatsApp Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300]
+    },
+    {
+      "parameters": {
+        "model": "llama-3.3-70b-versatile",
+        "options": {
+          "systemMessage": "You are the AI Receptionist for Dr. Sharma's Clinic. Your goal is to book appointments on WhatsApp. Be professional, polite, and speak Hindi or English based on the patient. Always confirm the Name, Date, and Time before booking."
+        }
+      },
+      "id": "ai-agent-1",
+      "name": "Clinic AI Brain",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8081/message/sendText/Clinic_final",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "YourSecretKey123"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{$node[\"WhatsApp Webhook\"].json[\"body\"][\"entry\"][0][\"changes\"][0][\"value\"][\"messages\"][0][\"from\"]}}"
+            },
+            {
+              "name": "text",
+              "value": "={{$node[\"Clinic AI Brain\"].json[\"output\"]}}"
+            }
+          ]
+        }
+      },
+      "id": "http-request-1",
+      "name": "Send WhatsApp Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [750, 300]
+    }
+  ],
+  "connections": {
+    "WhatsApp Webhook": {
+      "main": [
+        [
+          {
+            "node": "Clinic AI Brain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clinic AI Brain": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

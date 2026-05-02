@@ -1,0 +1,10 @@
+services:
+  evolution-api:
+    image: atendai/evolution-api:latest
+    restart: always
+    ports:
+      - "8080:8080" # <--- THIS LINE WAS MISSING
+    environment:
+      - SERVER_URL=http://localhost:8080
+      - AUTHENTICATION_API_KEY=YourSecretKey123
+      - DATABASE_ENABLED=false
