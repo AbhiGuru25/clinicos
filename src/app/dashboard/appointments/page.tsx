@@ -22,6 +22,7 @@ export default function AppointmentsPage() {
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [booking, setBooking] = useState(false);
+  const [clinicId, setClinicId] = useState<string | null>(null);
   
   // Billing State
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
@@ -86,7 +87,12 @@ export default function AppointmentsPage() {
   };
 
   useEffect(() => {
-    fetchAppointments();
+    const init = async () => {
+      const { data: clinic } = await supabase.from('clinics').select('id').limit(1).single();
+      if (clinic) setClinicId(clinic.id);
+      fetchAppointments();
+    };
+    init();
   }, []);
 
   useEffect(() => {
@@ -123,11 +129,11 @@ export default function AppointmentsPage() {
     setBooking(true);
     let patientId = selectedPatient?.id;
     if (isNewPatient) {
-      const { data: newP, error: pErr } = await supabase.from('patients').insert([{ name: newPatientName, phone: newPatientPhone }]).select().single();
+      const { data: newP, error: pErr } = await supabase.from('patients').insert([{ clinic_id: clinicId, name: newPatientName, phone: newPatientPhone }]).select().single();
       if (pErr) { alert(pErr.message); setBooking(false); return; }
       patientId = newP.id;
     }
-    const { error } = await supabase.from('appointments').insert([{ patient_id: patientId, appointment_date: appointmentDate, appointment_time: appointmentTime, status: 'confirmed', notes: notes }]);
+    const { error } = await supabase.from('appointments').insert([{ clinic_id: clinicId, patient_id: patientId, appointment_date: appointmentDate, appointment_time: appointmentTime, status: 'confirmed', notes: notes }]);
     if (error) alert(error.message);
     else { setIsModalOpen(false); fetchAppointments(); }
     setBooking(false);
@@ -152,6 +158,7 @@ export default function AppointmentsPage() {
     // 2. Generate Invoice Record
     const { error: iErr } = await supabase.from('invoices').insert([
       {
+        clinic_id: clinicId,
         appointment_id: selectedAppointment.id,
         amount: fee,
         gst_amount: gst,
