@@ -76,7 +76,7 @@ export default function SettingsPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>Clinic Settings</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2 text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>Clinic Settings</h1>
           <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Configure your profile, schedule, and WhatsApp automation.</p>
         </div>
         <AnimatePresence>
@@ -109,9 +109,9 @@ export default function SettingsPage() {
                 item.active ? '' : 'hover:bg-white/5'
               }`}
               style={{
-                background: item.active ? 'linear-gradient(135deg, rgba(108,92,231,0.1), rgba(79,70,229,0.1))' : 'transparent',
-                border: item.active ? '1px solid rgba(108,92,231,0.2)' : '1px solid transparent',
-                color: item.active ? '#6C5CE7' : 'var(--text-muted)'
+                background: item.active ? 'rgba(37, 99, 235, 0.1)' : 'transparent',
+                border: item.active ? '1px solid rgba(37, 99, 235, 0.2)' : '1px solid transparent',
+                color: item.active ? 'var(--brand-primary)' : 'var(--text-muted)'
               }}
             >
               <item.icon size={20} />
@@ -123,12 +123,12 @@ export default function SettingsPage() {
         <div className="md:col-span-3 space-y-6">
           <form onSubmit={handleSave} className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="zynteq-card p-6 md:p-8 space-y-6">
+              <div className="clinic-card p-6 md:p-8 space-y-6">
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(108,92,231,0.1)', color: '#6C5CE7' }}>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--brand-primary)' }}>
                     <Activity size={20} />
                   </div>
-                  <h2 className="text-xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Clinic Profile</h2>
+                  <h2 className="text-xl font-bold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>Clinic Profile</h2>
                 </div>
                 
                 <div className="space-y-4">
@@ -174,44 +174,44 @@ export default function SettingsPage() {
                 </div>
               </div>
 
-              <div className="zynteq-card p-6 md:p-8 space-y-6">
+              <div className="clinic-card p-6 md:p-8 space-y-6">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981' }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: 'var(--success-bg)', color: 'var(--success-text)' }}>
                       <Wifi size={20} />
                     </div>
-                    <h2 className="text-xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>WhatsApp Engine</h2>
+                    <h2 className="text-xl font-bold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>WhatsApp Engine</h2>
                   </div>
                   <div className="px-3 py-1.5 rounded-full flex items-center gap-2 text-[10px] font-black uppercase tracking-wider w-fit" 
                     style={{ 
                       background: isConnected ? 'rgba(16,185,129,0.1)' : 'rgba(245,158,11,0.1)', 
                       color: isConnected ? '#10B981' : '#F59E0B' 
                     }}>
-                    <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`} />
+                    <div className={`w-1.5 h-1.5 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-amber-500'}`} />
                     {isConnected ? 'Active' : 'Setup Required'}
                   </div>
                 </div>
 
                 {!isConnected && (
-                  <div className="rounded-2xl p-5 mb-6 shadow-sm" style={{ background: 'linear-gradient(135deg, rgba(108,92,231,0.05), rgba(79,70,229,0.05))', border: '1px solid rgba(108,92,231,0.2)' }}>
+                  <div className="rounded-2xl p-5 mb-6 shadow-sm" style={{ background: 'rgba(37, 99, 235, 0.05)', border: '1px solid rgba(37, 99, 235, 0.2)' }}>
                     <div className="flex items-center gap-2 mb-2">
                       <span className="text-xl">⚡</span>
-                      <h3 className="font-bold" style={{ color: '#A29BFE' }}>Quick Setup — Takes 5 minutes</h3>
+                      <h3 className="font-bold text-brand-primary">Quick Setup — Takes 5 minutes</h3>
                     </div>
                     <p className="text-sm font-medium mb-4" style={{ color: 'var(--text-secondary)' }}>
                       Your WhatsApp automation is one connection away from going live for your patients.
                     </p>
                     <div className="space-y-3">
                       <div className="flex items-start gap-3">
-                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: 'rgba(108,92,231,0.2)', color: '#A29BFE', border: '1px solid rgba(108,92,231,0.3)' }}>1</div>
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--brand-primary)', border: '1px solid rgba(37, 99, 235, 0.2)' }}>1</div>
                         <p className="text-sm font-medium pt-0.5" style={{ color: 'var(--text-primary)' }}>Enter your Evolution API URL</p>
                       </div>
                       <div className="flex items-start gap-3">
-                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: 'rgba(108,92,231,0.2)', color: '#A29BFE', border: '1px solid rgba(108,92,231,0.3)' }}>2</div>
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--brand-primary)', border: '1px solid rgba(37, 99, 235, 0.2)' }}>2</div>
                         <p className="text-sm font-medium pt-0.5" style={{ color: 'var(--text-primary)' }}>Enter your Secret Key</p>
                       </div>
                       <div className="flex items-start gap-3">
-                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: 'rgba(108,92,231,0.2)', color: '#A29BFE', border: '1px solid rgba(108,92,231,0.3)' }}>3</div>
+                        <div className="w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--brand-primary)', border: '1px solid rgba(37, 99, 235, 0.2)' }}>3</div>
                         <p className="text-sm font-medium pt-0.5" style={{ color: 'var(--text-primary)' }}>Click Test Connection</p>
                       </div>
                     </div>

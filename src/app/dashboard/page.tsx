@@ -72,8 +72,8 @@ export default function Dashboard() {
       change: '+12%',
       positive: true,
       icon: CalendarDays,
-      gradient: 'linear-gradient(135deg, #6C5CE7 0%, #4F46E5 100%)',
-      glow: 'rgba(108,92,231,0.35)',
+      iconColor: 'var(--brand-primary)',
+      iconBg: 'rgba(37, 99, 235, 0.1)',
     },
     {
       label: 'Total Patients',
@@ -81,8 +81,8 @@ export default function Dashboard() {
       change: '+5%',
       positive: true,
       icon: Users,
-      gradient: 'linear-gradient(135deg, #00B4D8 0%, #0096B7 100%)',
-      glow: 'rgba(0,180,216,0.35)',
+      iconColor: 'var(--brand-primary)',
+      iconBg: 'rgba(37, 99, 235, 0.1)',
     },
     {
       label: 'Revenue Today',
@@ -90,8 +90,8 @@ export default function Dashboard() {
       change: '+18%',
       positive: true,
       icon: TrendingUp,
-      gradient: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
-      glow: 'rgba(16,185,129,0.35)',
+      iconColor: 'var(--success-text)',
+      iconBg: 'var(--success-bg)',
     },
     {
       label: 'Pending Tasks',
@@ -99,8 +99,8 @@ export default function Dashboard() {
       change: '-2',
       positive: true,
       icon: Clock,
-      gradient: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)',
-      glow: 'rgba(245,158,11,0.35)',
+      iconColor: 'var(--text-secondary)',
+      iconBg: 'rgba(100, 116, 139, 0.1)',
       href: '#recent-activity',
     },
     {
@@ -109,8 +109,8 @@ export default function Dashboard() {
       change: '↑ +3%',
       positive: true,
       icon: CheckCircle2,
-      gradient: 'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)',
-      glow: 'rgba(236,72,153,0.35)',
+      iconColor: 'var(--success-text)',
+      iconBg: 'var(--success-bg)',
     },
   ];
 
@@ -120,11 +120,11 @@ export default function Dashboard() {
       {/* ─── Header ─── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: '#6C5CE7' }}>
+          <p className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--brand-primary)' }}>
             {today}
           </p>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif' }}>
-            Welcome, <span style={{ background: 'linear-gradient(135deg, #6C5CE7, #00B4D8)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>Dr. Sharma</span>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Welcome, <span className="text-brand-primary">Dr. Sharma</span>
           </h1>
           <p className="text-sm font-medium mt-1" style={{ color: 'var(--text-secondary)' }}>
             Here's what's happening at your clinic today.
@@ -189,7 +189,7 @@ export default function Dashboard() {
             style={{ background: 'white', borderColor: 'var(--border)' }}>
             <div className="flex items-center justify-between mb-5">
               <div>
-                <h2 className="text-lg font-black tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif' }}>
+                <h2 className="text-lg font-bold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>
                   Today's Appointments
                 </h2>
                 <p className="text-xs font-medium mt-0.5" style={{ color: 'var(--text-muted)' }}>Live synced</p>
@@ -287,22 +287,19 @@ export default function Dashboard() {
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4, duration: 0.4 }}
-            className="rounded-2xl p-6 text-white relative overflow-hidden"
-            style={{ background: 'linear-gradient(135deg, #6C5CE7 0%, #4F46E5 80%, #312E81 100%)' }}
+            className="clinic-card p-6 relative overflow-hidden"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 opacity-10"
-              style={{ background: 'radial-gradient(circle, white, transparent)', borderRadius: '0 0 0 100%' }} />
             <div className="flex items-center gap-2 mb-3">
-              <ArrowUpRight size={18} style={{ color: '#A29BFE' }} />
-              <h3 className="text-base font-black" style={{ fontFamily: 'Outfit, sans-serif' }}>Clinic Growth</h3>
+              <ArrowUpRight size={18} style={{ color: 'var(--success-text)' }} />
+              <h3 className="text-base font-bold text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>Clinic Growth</h3>
             </div>
-            <p className="text-sm leading-relaxed mb-5" style={{ color: 'rgba(255,255,255,0.8)' }}>
+            <p className="text-sm leading-relaxed mb-5" style={{ color: 'var(--text-secondary)' }}>
               24 more bookings this week vs last week. Your AI is saving ~14 hrs of admin work.
             </p>
-            <button className="w-full py-2.5 rounded-xl text-sm font-bold transition-all"
-              style={{ background: 'rgba(255,255,255,0.15)', color: 'white' }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.25)'; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(255,255,255,0.15)'; }}>
+            <button className="w-full py-2.5 rounded-xl text-sm font-bold transition-all border"
+              style={{ background: 'white', color: 'var(--brand-primary)', borderColor: 'var(--border)' }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-app)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'white'; }}>
               View Analytics
             </button>
           </motion.div>
@@ -316,7 +313,7 @@ export default function Dashboard() {
             className="rounded-2xl border p-5 scroll-mt-8"
             style={{ background: 'white', borderColor: 'var(--border)' }}
           >
-            <h3 className="text-base font-black mb-4" style={{ color: 'var(--text-primary)', fontFamily: 'Outfit, sans-serif' }}>
+            <h3 className="text-base font-bold mb-4" style={{ color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif' }}>
               Recent Activity
             </h3>
             <div className="space-y-4">
@@ -351,29 +348,21 @@ export default function Dashboard() {
 function StatCard({ card }: { card: any }) {
   return (
     <div
-      className="relative p-4 md:p-5 rounded-2xl text-white overflow-hidden transition-all duration-300 hover:-translate-y-1 cursor-default touch-target"
-      style={{
-        background: card.gradient,
-        boxShadow: `0 4px 20px ${card.glow}`,
-        minHeight: '110px'
-      }}
+      className="clinic-card relative p-4 md:p-5 cursor-default h-full"
+      style={{ minHeight: '110px' }}
     >
-      {/* Decoration */}
-      <div className="absolute top-0 right-0 w-20 h-20 rounded-full opacity-10"
-        style={{ background: 'radial-gradient(circle, white, transparent)', transform: 'translate(30%, -30%)' }} />
-
       <div className="flex items-start justify-between mb-3">
-        <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl flex items-center justify-center" style={{ background: 'rgba(255,255,255,0.2)' }}>
-          <card.icon size={16} className="text-white" />
+        <div className="w-8 h-8 md:w-9 md:h-9 rounded-xl flex items-center justify-center" style={{ background: card.iconBg }}>
+          <card.icon size={16} style={{ color: card.iconColor }} />
         </div>
-        <span className="text-[10px] font-black px-2 py-0.5 rounded-md"
-          style={{ background: 'rgba(255,255,255,0.2)', color: 'white' }}>
+        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md"
+          style={{ background: 'var(--bg-app)', color: 'var(--text-secondary)' }}>
           {card.change}
         </span>
       </div>
 
-      <p className="text-[10px] font-bold uppercase tracking-wider opacity-80 mb-1">{card.label}</p>
-      <h2 className={`text-xl md:text-2xl ${card.label === 'Revenue Today' ? 'font-[800]' : 'font-black'}`} style={{ fontFamily: 'Outfit, sans-serif' }}>
+      <p className="text-[10px] font-semibold uppercase tracking-wider mb-1" style={{ color: 'var(--text-secondary)' }}>{card.label}</p>
+      <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>
         {card.value}
       </h2>
     </div>

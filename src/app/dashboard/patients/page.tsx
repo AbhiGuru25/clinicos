@@ -34,7 +34,7 @@ export default function PatientsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>Patients</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2 text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>Patients</h1>
           <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Full medical history and records for all your patients.</p>
         </div>
         <button className="btn-primary flex items-center gap-2 touch-target">
@@ -43,7 +43,7 @@ export default function PatientsPage() {
         </button>
       </div>
 
-      <div className="zynteq-card overflow-hidden min-h-[600px]">
+      <div className="clinic-card overflow-hidden min-h-[600px]">
         <div className="p-4 md:p-8 border-b" style={{ borderColor: 'var(--border)' }}>
           <div className="relative max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
@@ -93,7 +93,7 @@ export default function PatientsPage() {
                 >
                   {/* Patient Details */}
                   <div className="md:col-span-2 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center font-black text-white shadow-sm" style={{ background: 'linear-gradient(135deg, #6C5CE7, #4F46E5)' }}>
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-sm" style={{ background: 'var(--brand-primary)' }}>
                       {p.name.charAt(0)}
                     </div>
                     <div>
@@ -111,7 +111,7 @@ export default function PatientsPage() {
                   {/* Visits */}
                   <div className="flex items-center md:justify-center gap-2 text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>
                     <span className="md:hidden text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Visits:</span>
-                    <div className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-lg font-black text-sm" style={{ background: 'rgba(108,92,231,0.1)', color: '#6C5CE7' }}>
+                    <div className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-lg font-bold text-sm" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--brand-primary)' }}>
                       {p.appointments?.length || 0}
                     </div>
                   </div>
@@ -127,10 +127,10 @@ export default function PatientsPage() {
                   <div className="flex md:justify-end mt-2 md:mt-0">
                     <Link 
                       href={`/dashboard/patients/${p.id}`}
-                      className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all touch-target"
-                      style={{ background: 'var(--bg-app)', color: 'var(--text-secondary)' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(108,92,231,0.1)'; (e.currentTarget as HTMLElement).style.color = '#6C5CE7'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-app)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
+                      className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all touch-target border"
+                      style={{ background: 'white', color: 'var(--brand-primary)', borderColor: 'var(--border)' }}
+                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-app)'; }}
+                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'white'; }}
                     >
                       View Records
                       <ExternalLink size={14} />

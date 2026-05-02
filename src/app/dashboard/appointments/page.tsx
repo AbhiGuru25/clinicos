@@ -172,7 +172,7 @@ export default function AppointmentsPage() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>Appointments</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2 text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>Appointments</h1>
           <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Manage your clinic schedule and visit statuses.</p>
         </div>
         <button onClick={() => setIsModalOpen(true)} className="btn-primary flex items-center gap-2 touch-target">
@@ -188,8 +188,7 @@ export default function AppointmentsPage() {
               <button 
                 key={tab}
                 onClick={() => setDateFilter(tab)}
-                className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all touch-target ${dateFilter === tab ? 'bg-white shadow-sm' : 'hover:bg-white/50'}`}
-                style={{ color: dateFilter === tab ? '#6C5CE7' : 'var(--text-secondary)' }}
+                className={`px-4 py-2 rounded-lg font-bold text-sm whitespace-nowrap transition-all touch-target ${dateFilter === tab ? 'bg-white shadow-sm text-brand-primary' : 'hover:bg-white/50 text-slate-500'}`}
               >
                 {tab}
               </button>
@@ -207,7 +206,7 @@ export default function AppointmentsPage() {
                     : 'hover:bg-slate-100'
                 }`}
                 style={{
-                  background: statusFilter === status ? 'linear-gradient(135deg, #1A1A2E, #2D2D44)' : 'var(--bg-app)',
+                  background: statusFilter === status ? 'var(--brand-primary)' : 'var(--bg-app)',
                   color: statusFilter === status ? 'white' : 'var(--text-secondary)'
                 }}
               >
@@ -224,10 +223,10 @@ export default function AppointmentsPage() {
         ) : (
           <div className="space-y-4">
             {filteredAppointments.map((a) => (
-              <div key={a.id} className="zynteq-card flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 mb-3 group hover:shadow-md transition-all">
+              <div key={a.id} className="clinic-card flex flex-col md:flex-row md:items-center justify-between p-4 md:p-6 mb-3 group transition-all">
                 <div className="flex items-center gap-4 mb-4 md:mb-0">
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center font-black text-white shadow-sm"
-                    style={{ background: 'linear-gradient(135deg, #6C5CE7, #4F46E5)' }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center font-bold text-white shadow-sm"
+                    style={{ background: 'var(--brand-primary)' }}>
                     {a.patients?.name?.charAt(0)}
                   </div>
                   <div>
@@ -243,10 +242,8 @@ export default function AppointmentsPage() {
                   {a.status === 'confirmed' ? (
                     <button 
                       onClick={() => { setSelectedAppointment(a); setIsBillingModalOpen(true); }}
-                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all touch-target w-full md:w-auto"
-                      style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981', border: '1px solid rgba(16,185,129,0.2)' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#10B981'; (e.currentTarget as HTMLElement).style.color = 'white'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'rgba(16,185,129,0.1)'; (e.currentTarget as HTMLElement).style.color = '#10B981'; }}
+                      className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all touch-target w-full md:w-auto hover:scale-105"
+                      style={{ background: 'var(--success-bg)', color: 'var(--success-text)', border: '1px solid rgba(22, 163, 74, 0.2)' }}
                     >
                       <CheckCircle2 size={16} />
                       Complete & Bill
@@ -261,9 +258,9 @@ export default function AppointmentsPage() {
               </div>
             ))}
             
-            <div className="mt-8 p-6 md:p-8 text-center border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3" style={{ borderColor: 'rgba(108,92,231,0.15)', background: 'rgba(108,92,231,0.02)' }}>
+            <div className="mt-8 p-6 md:p-8 text-center border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-3" style={{ borderColor: 'var(--border)', background: 'var(--bg-app)' }}>
               <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>No more appointments scheduled.</p>
-              <button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-lg transition-all" style={{ background: 'rgba(108,92,231,0.1)', color: '#6C5CE7' }}>
+              <button onClick={() => setIsModalOpen(true)} className="btn-primary text-xs flex items-center gap-2">
                 <Plus size={16} /> Add Appointment
               </button>
             </div>
@@ -278,15 +275,15 @@ export default function AppointmentsPage() {
         {isBillingModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsBillingModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-lg zynteq-card overflow-hidden">
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-lg clinic-card overflow-hidden">
               <div className="p-6 md:p-8 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
-                <h2 className="text-xl md:text-2xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Generate Invoice</h2>
-                <button onClick={() => setIsBillingModalOpen(false)} className="p-2 touch-target" style={{ color: 'var(--text-muted)' }}><X size={24} /></button>
+                <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>Generate Invoice</h2>
+                <button onClick={() => setIsBillingModalOpen(false)} className="p-2 touch-target hover:bg-slate-100 rounded-lg" style={{ color: 'var(--text-muted)' }}><X size={24} /></button>
               </div>
 
               <form onSubmit={handleCompleteAndBill} className="p-6 md:p-8 space-y-6">
                 <div className="p-4 md:p-6 rounded-2xl flex items-center gap-4" style={{ background: 'var(--bg-app)', border: '1px solid var(--border)' }}>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-black shadow-sm" style={{ background: 'linear-gradient(135deg, #6C5CE7, #4F46E5)' }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold shadow-sm" style={{ background: 'var(--brand-primary)' }}>
                     {selectedAppointment?.patients?.name?.charAt(0)}
                   </div>
                   <div>
@@ -314,16 +311,16 @@ export default function AppointmentsPage() {
                   </div>
                 </div>
 
-                <div className="p-4 md:p-6 rounded-2xl space-y-3" style={{ background: 'rgba(108,92,231,0.05)', border: '1px solid rgba(108,92,231,0.15)' }}>
-                  <div className="flex justify-between text-sm font-bold" style={{ color: '#4F46E5' }}>
+                <div className="p-4 md:p-6 rounded-2xl space-y-3" style={{ background: 'var(--bg-app)', border: '1px solid var(--border)' }}>
+                  <div className="flex justify-between text-sm font-bold text-slate-700">
                     <span>Subtotal</span>
                     <span>₹{consultationFee}</span>
                   </div>
-                  <div className="flex justify-between text-sm font-bold" style={{ color: '#6C5CE7' }}>
+                  <div className="flex justify-between text-sm font-bold text-slate-600">
                     <span>GST ({gstRate}%)</span>
                     <span>₹{(Number(consultationFee) * Number(gstRate)) / 100}</span>
                   </div>
-                  <div className="pt-3 flex justify-between text-lg font-black" style={{ borderTop: '1px solid rgba(108,92,231,0.2)', color: '#312E81' }}>
+                  <div className="pt-3 flex justify-between text-lg font-extrabold text-brand-primary" style={{ borderTop: '1px solid var(--border)' }}>
                     <span>Grand Total</span>
                     <span>₹{Number(consultationFee) + (Number(consultationFee) * Number(gstRate)) / 100}</span>
                   </div>

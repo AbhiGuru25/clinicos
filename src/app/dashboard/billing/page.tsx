@@ -121,7 +121,7 @@ export default function BillingPage() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-black tracking-tight mb-2" style={{ fontFamily: 'Outfit, sans-serif' }}>Billing & Invoices</h1>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2 text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>Billing & Invoices</h1>
           <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Automated GST compliance and revenue tracking.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
@@ -139,11 +139,11 @@ export default function BillingPage() {
 
       {/* Financial Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-        <div className="zynteq-card p-6 md:p-8">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: 'rgba(108,92,231,0.1)', color: '#6C5CE7' }}>
+        <div className="clinic-card p-6 md:p-8">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: 'var(--success-bg)', color: 'var(--success-text)' }}>
             <ReceiptIndianRupee size={20} />
           </div>
-          <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Total Revenue</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Total Revenue</p>
           <h3 className="text-3xl font-black" style={{ color: 'var(--text-primary)' }}>₹{totalRevenue.toLocaleString()}</h3>
           {totalRevenue === 0 ? (
             <p className="text-[10px] font-bold mt-2" style={{ color: 'var(--text-muted)' }}>Complete appointments to track revenue</p>
@@ -151,29 +151,29 @@ export default function BillingPage() {
             <p className="text-[10px] font-black uppercase mt-2 tracking-widest" style={{ color: '#10B981' }}>+18% growth</p>
           )}
         </div>
-        <div className="zynteq-card p-6 md:p-8">
-          <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: 'rgba(0,180,216,0.1)', color: '#00B4D8' }}>
+        <div className="clinic-card p-6 md:p-8">
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--brand-primary)' }}>
             <FileText size={20} />
           </div>
-          <p className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Invoices Issued</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: 'var(--text-muted)' }}>Invoices Issued</p>
           <h3 className="text-3xl font-black" style={{ color: 'var(--text-primary)' }}>{invoices.length}</h3>
-          <p className="text-[10px] font-black uppercase mt-2 tracking-widest" style={{ color: 'var(--text-muted)' }}>100% automated</p>
+          <p className="text-[10px] font-bold uppercase mt-2 tracking-widest" style={{ color: 'var(--text-muted)' }}>100% automated</p>
         </div>
-        <div className="p-6 md:p-8 rounded-[2rem] text-white" style={{ background: 'linear-gradient(135deg, #6C5CE7, #4F46E5)', boxShadow: '0 12px 32px rgba(108,92,231,0.2)' }}>
-          <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center mb-4">
+        <div className="clinic-card p-6 md:p-8 rounded-[2rem] text-slate-900" style={{ background: 'var(--bg-app)' }}>
+          <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-4" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--brand-primary)' }}>
             <Send size={20} />
           </div>
-          <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-white/70">WhatsApp Delivery</p>
+          <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-slate-500">WhatsApp Delivery</p>
           <h3 className="text-3xl font-black italic">Active</h3>
-          <p className="text-[10px] font-bold mt-2 uppercase tracking-widest text-white/70">Bills sent instantly</p>
+          <p className="text-[10px] font-bold mt-2 uppercase tracking-widest text-slate-500">Bills sent instantly</p>
         </div>
       </div>
 
       {/* 7-Day Revenue Chart */}
-      <div className="zynteq-card p-4 md:p-8">
+      <div className="clinic-card p-4 md:p-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 md:mb-8 gap-4">
           <div>
-            <h2 className="text-xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Revenue Trend</h2>
+            <h2 className="text-xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>Revenue Trend</h2>
             <p className="text-sm font-medium" style={{ color: 'var(--text-muted)' }}>Past 7 days performance</p>
           </div>
           {totalRevenue > 0 && (
@@ -195,24 +195,24 @@ export default function BillingPage() {
             <div key={i} className="flex-1 flex flex-col items-center gap-2 md:gap-3 group h-full">
               <div className="relative w-full flex justify-center h-full items-end">
                 <div className="w-full max-w-[2rem] md:max-w-[3rem] rounded-t-xl transition-all" 
-                  style={{ height: '100%', background: d.isToday ? 'rgba(108,92,231,0.15)' : 'rgba(255,255,255,0.03)' }}>
+                  style={{ height: '100%', background: d.isToday ? 'rgba(37, 99, 235, 0.1)' : 'rgba(241, 245, 249, 1)' }}>
                   <div className="absolute bottom-0 w-full max-w-[2rem] md:max-w-[3rem] rounded-t-xl transition-all duration-500 hover:brightness-110" 
-                    style={{ height: d.height, background: d.isToday ? '#6C5CE7' : 'rgba(255,255,255,0.1)' }}></div>
+                    style={{ height: d.height, background: d.isToday ? 'var(--brand-primary)' : 'var(--border-strong)' }}></div>
                 </div>
                 <div className="absolute -top-8 text-[10px] font-bold px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
                   style={{ background: 'var(--bg-app)', color: 'var(--text-primary)', border: '1px solid var(--border)' }}>
                   ₹{d.amount}
                 </div>
               </div>
-              <p className="text-[10px] font-black uppercase tracking-widest" style={{ color: d.isToday ? '#6C5CE7' : 'var(--text-muted)' }}>{d.day}</p>
+              <p className="text-[10px] font-bold uppercase tracking-widest" style={{ color: d.isToday ? 'var(--brand-primary)' : 'var(--text-muted)' }}>{d.day}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="zynteq-card overflow-hidden min-h-[500px]">
+      <div className="clinic-card overflow-hidden min-h-[500px]">
         <div className="p-4 md:p-8 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ borderColor: 'var(--border)' }}>
-          <h2 className="text-xl font-black tracking-tight" style={{ fontFamily: 'Outfit, sans-serif' }}>Billing History</h2>
+          <h2 className="text-xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>Billing History</h2>
           <div className="flex gap-2">
             <input type="text" placeholder="Search Invoices..." className="w-full sm:w-auto px-4 py-2 border-none rounded-xl text-xs font-bold outline-none touch-target" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }} />
           </div>
@@ -222,10 +222,10 @@ export default function BillingPage() {
           <div className="p-20 text-center text-slate-400 font-bold italic">Analyzing revenue data...</div>
         ) : invoices.length === 0 ? (
           <div className="p-20 text-center flex flex-col items-center justify-center">
-            <div className="w-20 h-20 rounded-[2rem] flex items-center justify-center mb-6" style={{ background: 'rgba(108,92,231,0.1)', color: '#6C5CE7' }}>
+            <div className="w-20 h-20 rounded-[2rem] flex items-center justify-center mb-6" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--brand-primary)' }}>
               <ReceiptIndianRupee size={40} />
             </div>
-            <h3 className="text-xl font-black mb-3">No Invoices Yet</h3>
+            <h3 className="text-xl font-bold mb-3 text-slate-900">No Invoices Yet</h3>
             <p className="font-medium mb-8 max-w-sm leading-relaxed" style={{ color: 'var(--text-muted)' }}>
               Complete your first appointment to auto-generate your first invoice.
             </p>
@@ -265,8 +265,8 @@ export default function BillingPage() {
                   <div className="flex justify-between items-center md:block mb-4 md:mb-0">
                     <span className="md:hidden text-[10px] font-bold uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Amount</span>
                     <div>
-                      <p className="font-black text-lg md:leading-none" style={{ color: 'var(--text-primary)' }}>₹{inv.total}</p>
-                      <p className="text-[10px] font-bold uppercase tracking-widest hidden md:block" style={{ color: '#6C5CE7' }}>Incl. GST</p>
+                      <p className="font-extrabold text-lg md:leading-none text-slate-900">₹{inv.total}</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest hidden md:block" style={{ color: 'var(--text-secondary)' }}>Incl. GST</p>
                     </div>
                   </div>
                   <div className="mb-4 md:mb-0 flex md:block">
@@ -276,7 +276,7 @@ export default function BillingPage() {
                     </div>
                   </div>
                   <div className="flex items-center justify-end gap-2 md:opacity-40 group-hover:opacity-100 transition-opacity mt-4 md:mt-0 pt-4 md:pt-0" style={{ borderTop: 'md:hidden 1px solid var(--border)' }}>
-                    <button onClick={() => generatePDF(inv)} className="p-2.5 md:p-2 rounded-lg transition-all touch-target" style={{ background: 'rgba(108,92,231,0.1)', color: '#6C5CE7' }}>
+                    <button onClick={() => generatePDF(inv)} className="p-2.5 md:p-2 rounded-lg transition-all touch-target" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--brand-primary)' }}>
                       <Download size={18} />
                     </button>
                     <button className="p-2.5 md:p-2 rounded-lg transition-all touch-target" style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981' }}>
