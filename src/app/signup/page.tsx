@@ -68,10 +68,11 @@ export default function SignupPage() {
       setSuccess(true);
       setLoading(false);
       
-      // 4. Redirect to dashboard
-      setTimeout(() => { 
-        window.location.href = '/dashboard'; 
-      }, 1500);
+      // 4. Redirect to dashboard if session exists (email confirmation disabled)
+      if (authData.session) {
+        router.refresh();
+        router.push('/dashboard');
+      }
 
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred.');
@@ -163,7 +164,9 @@ export default function SignupPage() {
               </div>
               <div>
                 <h2 className="text-2xl font-extrabold text-slate-900 mb-1">Account Created!</h2>
-                <p className="text-sm font-medium text-slate-500">Preparing your smart clinic...</p>
+                <p className="text-sm font-medium text-slate-500">
+                  Please check your email to verify your account, or wait while we redirect you...
+                </p>
               </div>
             </motion.div>
           )}

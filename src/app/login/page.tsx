@@ -26,8 +26,8 @@ export default function LoginPage() {
         console.log('Login successful:', data);
         setSuccess(true);
         setLoading(false);
+        router.refresh();
         router.push('/dashboard');
-        setTimeout(() => { window.location.href = '/dashboard'; }, 1500);
       }
     } catch {
       setError('An unexpected error occurred. Please try again.');
