@@ -8,7 +8,7 @@ import {
   Brain, 
   Stethoscope, 
   CalendarCheck, 
-  FileMedical, 
+  ClipboardList, 
   Settings, 
   Plus, 
   Wand2,
@@ -67,7 +67,7 @@ export default function Dashboard() {
             { icon: Users, label: 'Patient Census', active: true },
             { icon: Brain, label: 'AI Diagnostics' },
             { icon: CalendarCheck, label: 'Scheduler' },
-            { icon: FileMedical, label: 'Archives' },
+            { icon: ClipboardList, label: 'Archives' },
           ].map((item, i) => (
             <div 
               key={i}
