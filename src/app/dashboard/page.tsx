@@ -88,6 +88,7 @@ export default function Dashboard() {
 
   async function fetchDoctorName() {
     try {
+      // 1. Try fetching from clinics table
       const { data: clinic } = await supabase
         .from('clinics')
         .select('doctor_name')
@@ -96,6 +97,16 @@ export default function Dashboard() {
       
       if (clinic?.doctor_name) {
         setDoctorName(clinic.doctor_name);
+        return;
+      }
+
+      // 2. Fallback to Auth User metadata
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.user_metadata?.full_name) {
+        setDoctorName(user.user_metadata.full_name);
+      } else if (user?.email) {
+        const nameFromEmail = user.email.split('@')[0];
+        setDoctorName(nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1));
       }
     } catch (err) {
       console.error('Error fetching doctor name:', err);
