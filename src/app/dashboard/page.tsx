@@ -29,6 +29,7 @@ const cardVariants: Variants = {
 export default function Dashboard() {
   const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [doctorName, setDoctorName] = useState('Doctor');
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [messages, setMessages] = useState<any[]>([]);
@@ -39,6 +40,11 @@ export default function Dashboard() {
     fetchDoctorName();
     fetchStats();
     fetchMessages();
+
+    // Safety timeout: force loading to false after 3 seconds
+    const safetyTimeout = setTimeout(() => {
+      setLoading(false);
+    }, 3000);
 
     // Live clock
     const tick = () => {
@@ -59,6 +65,7 @@ export default function Dashboard() {
       .subscribe();
 
     return () => {
+      clearTimeout(safetyTimeout);
       clearInterval(interval);
       supabase.removeChannel(channel);
     };
@@ -115,15 +122,16 @@ export default function Dashboard() {
 
   async function fetchPatients() {
     try {
-      const { data, error } = await supabase
+      const { data, error: dbError } = await supabase
         .from('patients')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (dbError) throw dbError;
       if (data) setPatients(data);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error fetching patients:', err);
+      setError(err.message || 'Failed to connect to database');
     } finally {
       setLoading(false);
     }
@@ -182,6 +190,26 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 page-enter">
+      {error && (
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="p-4 rounded-2xl flex items-center gap-3 text-sm font-bold border"
+          style={{ background: 'var(--error-bg)', color: 'var(--error-text)', borderColor: 'rgba(239, 44, 44, 0.2)' }}
+        >
+          <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center shrink-0">⚠️</div>
+          <div className="flex-1">
+            <p>Database Connection Error</p>
+            <p className="text-[10px] opacity-80 font-medium leading-tight">Verify your Supabase URL/Key in Vercel settings. Error: {error}</p>
+          </div>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-4 py-2 rounded-xl bg-white/20 hover:bg-white/30 transition-all text-xs"
+          >
+            Retry
+          </button>
+        </motion.div>
+      )}
 
       {/* ─── Header ─── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
