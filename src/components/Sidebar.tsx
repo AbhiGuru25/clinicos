@@ -50,14 +50,17 @@ export default function Sidebar() {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    console.log('Logout clicked');
+    // Ensure the redirect happens regardless of auth state
     try {
-      await supabase.auth.signOut();
-      window.location.href = '/login';
-    } catch (err) {
-      console.error('Logout error:', err);
-      window.location.href = '/login';
+      supabase.auth.signOut().catch(console.error);
+    } catch (e) {
+      console.error(e);
     }
+    
+    // Use window.location for a definitive hard redirect
+    window.location.href = '/login';
   };
 
   const SidebarContent = () => (
@@ -135,7 +138,7 @@ export default function Sidebar() {
         {/* Sign Out */}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-all font-semibold text-sm group"
+          className="flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-all font-semibold text-sm group cursor-pointer relative z-20"
           style={{ color: 'var(--text-secondary)' }}
           onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--error-bg)'; (e.currentTarget as HTMLElement).style.color = 'var(--error-text)'; }}
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
