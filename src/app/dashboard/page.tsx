@@ -65,12 +65,17 @@ export default function Dashboard() {
   }, []);
 
   async function fetchMessages() {
-    const { data } = await supabase
-      .from('whatsapp_messages')
-      .select('*, patients(name)')
-      .order('created_at', { ascending: false })
-      .limit(4);
-    if (data) setMessages(data);
+    try {
+      const { data, error } = await supabase
+        .from('whatsapp_messages')
+        .select('*, patients(name)')
+        .order('created_at', { ascending: false })
+        .limit(4);
+      if (error) throw error;
+      if (data) setMessages(data);
+    } catch (err) {
+      console.error('Error fetching messages:', err);
+    }
   }
 
   async function fetchStats() {
@@ -98,12 +103,19 @@ export default function Dashboard() {
   }
 
   async function fetchPatients() {
-    const { data } = await supabase
-      .from('patients')
-      .select('*')
-      .order('created_at', { ascending: false });
-    if (data) setPatients(data);
-    setLoading(false);
+    try {
+      const { data, error } = await supabase
+        .from('patients')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      if (data) setPatients(data);
+    } catch (err) {
+      console.error('Error fetching patients:', err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const today = new Date().toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long' });

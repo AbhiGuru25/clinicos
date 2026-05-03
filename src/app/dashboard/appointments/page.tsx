@@ -113,15 +113,20 @@ export default function AppointmentsPage() {
   }, [patientSearch]);
 
   async function fetchAppointments() {
-    const { data, error } = await supabase
-      .from('appointments')
-      .select('*, patients(name, phone)')
-      .order('appointment_date', { ascending: true })
-      .order('appointment_time', { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from('appointments')
+        .select('*, patients(name, phone)')
+        .order('appointment_date', { ascending: true })
+        .order('appointment_time', { ascending: true });
 
-    if (error) console.error(error);
-    else setAppointments(data || []);
-    setLoading(false);
+      if (error) throw error;
+      setAppointments(data || []);
+    } catch (err) {
+      console.error('Error fetching appointments:', err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const handleBook = async (e: React.FormEvent) => {

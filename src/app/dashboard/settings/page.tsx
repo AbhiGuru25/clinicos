@@ -35,22 +35,28 @@ export default function SettingsPage() {
   }, []);
 
   async function fetchClinic() {
-    const { data, error } = await supabase
-      .from('clinics')
-      .select('*')
-      .limit(1)
-      .single();
+    try {
+      const { data, error } = await supabase
+        .from('clinics')
+        .select('*')
+        .limit(1)
+        .single();
 
-    if (data) {
-      setClinic(data);
-      setClinicName(data.name || '');
-      setAddress(data.address || '');
-      setPhone(data.whatsapp_number || '');
-      setEvolutionUrl(data.evolution_url || '');
-      setEvolutionKey(data.evolution_apikey || '');
-      setInstanceName(data.evolution_instance || '');
+      if (error) throw error;
+      if (data) {
+        setClinic(data);
+        setClinicName(data.name || '');
+        setAddress(data.address || '');
+        setPhone(data.whatsapp_number || '');
+        setEvolutionUrl(data.evolution_url || '');
+        setEvolutionKey(data.evolution_apikey || '');
+        setInstanceName(data.evolution_instance || '');
+      }
+    } catch (err) {
+      console.error('Error fetching clinic:', err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }
 
   async function handleSave(e: React.FormEvent) {

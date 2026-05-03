@@ -51,8 +51,13 @@ export default function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/login');
+    try {
+      await supabase.auth.signOut();
+      window.location.href = '/login';
+    } catch (err) {
+      console.error('Logout error:', err);
+      window.location.href = '/login';
+    }
   };
 
   const SidebarContent = () => (

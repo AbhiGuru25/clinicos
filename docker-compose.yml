@@ -1,10 +1,44 @@
 services:
+  evolution-db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=rootpass
+      - MYSQL_DATABASE=evolution
+      - MYSQL_USER=evolution
+      - MYSQL_PASSWORD=evolutionpass
+    volumes:
+      - evolution_db_data:/var/lib/mysql
+
   evolution-api:
     image: atendai/evolution-api:latest
     restart: always
     ports:
-      - "8080:8080" # <--- THIS LINE WAS MISSING
+      - "8081:8080"
+    depends_on:
+      - evolution-db
     environment:
-      - SERVER_URL=http://localhost:8080
+      - SERVER_URL=http://localhost:8081
       - AUTHENTICATION_API_KEY=YourSecretKey123
-      - DATABASE_ENABLED=false
+      - DATABASE_ENABLED=true
+      - DATABASE_PROVIDER=mysql
+      - DATABASE_CONNECTION_URI=mysql://evolution:evolutionpass@evolution-db:3306/evolution
+    volumes:
+      - evolution_instances:/evolution/instances
+
+  n8n:
+    image: n8nio/n8n:latest
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=http
+      - NODE_ENV=production
+    volumes:
+      - D:/N8N:/home/node/.n8n
+
+volumes:
+  evolution_db_data:
+  evolution_instances:

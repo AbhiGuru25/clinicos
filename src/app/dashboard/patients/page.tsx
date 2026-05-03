@@ -15,14 +15,19 @@ export default function PatientsPage() {
   }, []);
 
   async function fetchPatients() {
-    const { data, error } = await supabase
-      .from('patients')
-      .select('*, appointments(id)')
-      .order('name', { ascending: true });
+    try {
+      const { data, error } = await supabase
+        .from('patients')
+        .select('*, appointments(id)')
+        .order('name', { ascending: true });
 
-    if (error) console.error(error);
-    else setPatients(data || []);
-    setLoading(false);
+      if (error) throw error;
+      setPatients(data || []);
+    } catch (err) {
+      console.error('Error fetching patients:', err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   const filteredPatients = patients.filter(p => 
