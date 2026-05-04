@@ -64,7 +64,7 @@ export async function POST(req: Request) {
     }
 
     // 3. Store the message
-    await supabaseAdmin
+    const { data: newMessage, error: msgError } = await supabaseAdmin
       .from('whatsapp_messages')
       .insert({
         clinic_id: clinic.id,
@@ -73,7 +73,22 @@ export async function POST(req: Request) {
         content: textContent,
         type: 'incoming',
         status: 'received'
-      });
+      })
+      .select()
+      .single();
+
+    // 4. Trigger n8n Master Workflow (Async - don't wait for it to respond to sender)
+    if (newMessage && process.env.N8N_WEBHOOK_URL) {
+      fetch(process.env.N8N_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: newMessage,
+          patient: patient,
+          clinic: clinic
+        })
+      }).catch(err => console.error('n8n Trigger Error:', err));
+    }
 
     return NextResponse.json({ status: 'success' });
   } catch (err: any) {
