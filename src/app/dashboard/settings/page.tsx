@@ -25,6 +25,7 @@ export default function SettingsPage() {
   const [evolutionUrl, setEvolutionUrl] = useState('');
   const [evolutionKey, setEvolutionKey] = useState('');
   const [instanceName, setInstanceName] = useState('');
+  const [doctorName, setDoctorName] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -48,6 +49,7 @@ export default function SettingsPage() {
       if (data) {
         setClinic(data);
         setClinicName(data.name || '');
+        setDoctorName(data.doctor_name || '');
         setAddress(data.address || '');
         setPhone(data.whatsapp_number || '');
         setEvolutionUrl(data.evolution_url || '');
@@ -69,6 +71,7 @@ export default function SettingsPage() {
       .from('clinics')
       .update({
         name: clinicName,
+        doctor_name: doctorName,
         whatsapp_number: phone,
         address: address,
         evolution_url: evolutionUrl,
@@ -146,6 +149,17 @@ export default function SettingsPage() {
                 </div>
                 
                 <div className="space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Doctor Name</label>
+                    <input 
+                      type="text" 
+                      placeholder="e.g. Dr. Abhi Virani"
+                      value={doctorName}
+                      onChange={(e) => setDoctorName(e.target.value)}
+                      className="w-full px-4 py-3 border-none rounded-xl font-bold outline-none touch-target"
+                      style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }}
+                    />
+                  </div>
                   <div className="space-y-1.5">
                     <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Clinic Name</label>
                     <input 
