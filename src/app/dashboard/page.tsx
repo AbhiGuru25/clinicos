@@ -226,6 +226,12 @@ export default function Dashboard() {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Live AI Pulse */}
+          <div className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border border-blue-100 bg-blue-50/50">
+            <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-blue-600">AI Receptionist Active</span>
+          </div>
+
           {/* Notification Bell */}
           <button className="relative p-2.5 rounded-xl border transition-all hover:scale-105 touch-target"
             style={{ background: 'white', borderColor: 'var(--border)', boxShadow: '0 1px 4px rgba(108,92,231,0.08)' }}>
@@ -239,9 +245,9 @@ export default function Dashboard() {
             style={{ background: 'white', borderColor: 'var(--border)' }}>
             <div className="text-right">
               <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Clinic Status</p>
-              <p className="text-sm font-bold" style={{ color: '#10B981' }}>Open & Active</p>
+              <p className="text-sm font-bold" style={{ color: '#10B981' }}>Live & Syncing</p>
             </div>
-            <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ background: 'rgba(16,185,129,0.1)' }}>
+            <div className="w-9 h-9 rounded-lg flex items-center justify-center pulse-purple" style={{ background: 'rgba(16,185,129,0.1)' }}>
               <Activity size={18} style={{ color: '#10B981' }} />
             </div>
           </div>
@@ -417,19 +423,30 @@ export default function Dashboard() {
                 </div>
               ) : (
                 messages.map((msg, i) => (
-                  <div key={msg.id} className="flex gap-3">
-                    <div className="w-2 h-2 rounded-full shrink-0 mt-1.5" 
-                      style={{ background: msg.type === 'incoming' ? '#6C5CE7' : '#10B981' }} />
-                    <div>
-                      <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
-                        {msg.type === 'incoming' ? 'New message from' : 'Message sent to'} {msg.patients?.name || msg.sender_number}
-                      </p>
-                      <p className="text-xs font-medium mt-0.5 truncate max-w-[200px]" style={{ color: 'var(--text-muted)' }}>
+                  <div key={msg.id} className="flex gap-4 p-3 rounded-xl transition-all hover:bg-slate-50 border border-transparent hover:border-slate-100">
+                    <div className={`w-10 h-10 rounded-xl shrink-0 flex items-center justify-center ${
+                      msg.type === 'incoming' ? 'bg-indigo-50 text-indigo-600' : 'bg-emerald-50 text-emerald-600'
+                    }`}>
+                      {msg.type === 'incoming' ? <Users size={18} /> : <CheckCircle2 size={18} />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <p className="text-sm font-bold truncate" style={{ color: 'var(--text-primary)' }}>
+                          {msg.patients?.name || msg.sender_number}
+                        </p>
+                        <span className="text-[10px] font-bold whitespace-nowrap" style={{ color: 'var(--brand-primary)' }}>
+                          {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                      <p className="text-xs font-medium line-clamp-2 leading-relaxed" style={{ color: 'var(--text-muted)' }}>
                         "{msg.content}"
                       </p>
-                      <p className="text-[10px] font-bold mt-1 uppercase" style={{ color: 'var(--brand-primary)' }}>
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </p>
+                      <div className="mt-2 flex items-center gap-1.5">
+                        <div className={`w-1.5 h-1.5 rounded-full ${msg.type === 'incoming' ? 'bg-indigo-400' : 'bg-emerald-400'}`} />
+                        <span className="text-[10px] font-black uppercase tracking-widest opacity-60">
+                          {msg.type === 'incoming' ? 'Incoming WhatsApp' : 'AI Response Sent'}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 ))
