@@ -88,11 +88,19 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     const init = async () => {
-      const { data: clinic } = await supabase.from('clinics').select('id').limit(1).single();
-      if (clinic) setClinicId(clinic.id);
-      fetchAppointments();
+      try {
+        const { data: clinic } = await supabase.from('clinics').select('id').limit(1).single();
+        if (clinic) setClinicId(clinic.id);
+        fetchAppointments();
+      } catch (err) {
+        console.error('Init error:', err);
+        setLoading(false);
+      }
     };
     init();
+
+    const timeout = setTimeout(() => setLoading(false), 3000);
+    return () => clearTimeout(timeout);
   }, []);
 
   useEffect(() => {

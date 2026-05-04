@@ -12,6 +12,8 @@ export default function PatientsPage() {
 
   useEffect(() => {
     fetchPatients();
+    const timeout = setTimeout(() => setLoading(false), 3000);
+    return () => clearTimeout(timeout);
   }, []);
 
   async function fetchPatients() {

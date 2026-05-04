@@ -32,6 +32,8 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchClinic();
+    const timeout = setTimeout(() => setLoading(false), 3000);
+    return () => clearTimeout(timeout);
   }, []);
 
   async function fetchClinic() {
