@@ -23,6 +23,7 @@ services:
       - DATABASE_ENABLED=true
       - DATABASE_PROVIDER=mysql
       - DATABASE_CONNECTION_URI=mysql://evolution:evolutionpass@evolution-db:3306/evolution
+      - CONFIG_SESSION_PHONE_VERSION=2.3000.1023181082
     volumes:
       - evolution_instances:/evolution/instances
 
