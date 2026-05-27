@@ -1,33 +1,18 @@
 services:
-  evolution-db:
-    image: mysql:8.0
-    restart: always
-    environment:
-      - MYSQL_ROOT_PASSWORD=rootpass
-      - MYSQL_DATABASE=evolution
-      - MYSQL_USER=evolution
-      - MYSQL_PASSWORD=evolutionpass
-    volumes:
-      - evolution_db_data:/var/lib/mysql
 
+  # ─── Evolution API (WhatsApp Bot) ─────────────────────────────────────────
   evolution-api:
-    image: atendai/evolution-api:latest
+    image: atendai/evolution-api:v1.8.2
     restart: always
     ports:
       - "8081:8080"
-    depends_on:
-      - evolution-db
     environment:
       - SERVER_URL=http://localhost:8081
       - AUTHENTICATION_API_KEY=YourSecretKey123
-      - DATABASE_ENABLED=true
-      - DATABASE_PROVIDER=mysql
-      - DATABASE_CONNECTION_URI=mysql://evolution:evolutionpass@evolution-db:3306/evolution
-      - CONFIG_SESSION_PHONE_VERSION=2.3000.1023181082
-      - WEB_VERSION=2.3000.1023181082
     volumes:
       - evolution_instances:/evolution/instances
 
+  # ─── n8n (Workflow Automation) ────────────────────────────────────────────
   n8n:
     image: n8nio/n8n:latest
     restart: always
@@ -42,5 +27,4 @@ services:
       - D:/N8N:/home/node/.n8n
 
 volumes:
-  evolution_db_data:
   evolution_instances:

@@ -288,8 +288,86 @@ export default function AppointmentsPage() {
         )}
       </div>
 
-      {/* Booking Modal (Omitted for brevity, keep existing) */}
-      
+      {/* Booking Modal */}
+      <AnimatePresence>
+        {isModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsModalOpen(false)} className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="relative w-full max-w-lg clinic-card overflow-hidden">
+              <div className="p-6 md:p-8 border-b flex items-center justify-between" style={{ borderColor: 'var(--border)' }}>
+                <h2 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>New Appointment</h2>
+                <button onClick={() => setIsModalOpen(false)} className="p-2 touch-target hover:bg-slate-100 rounded-lg" style={{ color: 'var(--text-muted)' }}><X size={24} /></button>
+              </div>
+
+              <form onSubmit={handleBook} className="p-6 md:p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                
+                {/* Patient Selection */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Patient Details</label>
+                    <button type="button" onClick={() => setIsNewPatient(!isNewPatient)} className="text-[10px] font-black uppercase tracking-widest text-brand-primary hover:underline">
+                      {isNewPatient ? 'Select Existing Patient' : '+ New Patient'}
+                    </button>
+                  </div>
+
+                  {isNewPatient ? (
+                    <div className="grid grid-cols-2 gap-4">
+                      <input required type="text" placeholder="Full Name" value={newPatientName} onChange={e => setNewPatientName(e.target.value)} className="w-full px-4 py-3 border-none rounded-xl font-bold outline-none touch-target" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }} />
+                      <input required type="tel" placeholder="Phone Number" value={newPatientPhone} onChange={e => setNewPatientPhone(e.target.value)} className="w-full px-4 py-3 border-none rounded-xl font-bold outline-none touch-target" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }} />
+                    </div>
+                  ) : (
+                    <div className="relative">
+                      <Search className="absolute left-4 top-1/2 -translate-y-1/2" size={18} style={{ color: 'var(--text-muted)' }} />
+                      <input type="text" placeholder="Search patient name..." value={patientSearch} onChange={e => setPatientSearch(e.target.value)} className="w-full pl-12 pr-4 py-3 border-none rounded-xl font-bold outline-none touch-target" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }} />
+                      
+                      {/* Search Results Dropdown */}
+                      {searchResults.length > 0 && !selectedPatient && (
+                        <div className="absolute top-full mt-2 w-full rounded-xl border overflow-hidden shadow-lg z-10" style={{ background: 'white', borderColor: 'var(--border)' }}>
+                          {searchResults.map(p => (
+                            <button key={p.id} type="button" onClick={() => { setSelectedPatient(p); setPatientSearch(p.name); setSearchResults([]); }} className="w-full text-left px-4 py-3 hover:bg-slate-50 font-bold text-sm border-b last:border-b-0" style={{ color: 'var(--text-primary)', borderColor: 'var(--border)' }}>
+                              {p.name} <span className="text-xs font-medium ml-2" style={{ color: 'var(--text-muted)' }}>{p.phone}</span>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {selectedPatient && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                          <span className="text-xs font-bold px-2 py-1 rounded-md" style={{ background: 'var(--success-bg)', color: 'var(--success-text)' }}>Selected</span>
+                          <button type="button" onClick={() => { setSelectedPatient(null); setPatientSearch(''); }} className="text-slate-400 hover:text-slate-600"><X size={16} /></button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Date & Time */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Date</label>
+                    <input required type="date" value={appointmentDate} onChange={e => setAppointmentDate(e.target.value)} className="w-full px-4 py-3 border-none rounded-xl font-bold outline-none touch-target" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }} />
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Time</label>
+                    <input required type="time" value={appointmentTime} onChange={e => setAppointmentTime(e.target.value)} className="w-full px-4 py-3 border-none rounded-xl font-bold outline-none touch-target" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }} />
+                  </div>
+                </div>
+
+                {/* Notes */}
+                <div className="space-y-2">
+                  <label className="text-[10px] font-black uppercase tracking-widest" style={{ color: 'var(--text-muted)' }}>Notes (Optional)</label>
+                  <textarea value={notes} onChange={e => setNotes(e.target.value)} placeholder="Reason for visit..." className="w-full px-4 py-3 border-none rounded-xl font-medium outline-none h-24 resize-none" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }} />
+                </div>
+
+                <button type="submit" disabled={booking || (!isNewPatient && !selectedPatient)} className="btn-primary w-full touch-target mt-4 disabled:opacity-50">
+                  {booking ? 'Booking...' : 'Confirm Appointment'}
+                </button>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Billing & Completion Modal */}
       <AnimatePresence>
         {isBillingModalOpen && (
@@ -346,7 +424,7 @@ export default function AppointmentsPage() {
                   </div>
                 </div>
 
-                <button type="submit" disabled={booking} className="btn-primary w-full touch-target mt-4">
+                <button type="submit" disabled={booking} className="btn-primary w-full touch-target mt-4 disabled:opacity-50">
                   {booking ? 'Generating...' : 'Finalize Visit & Send Bill'}
                 </button>
               </form>
@@ -354,8 +432,6 @@ export default function AppointmentsPage() {
           </div>
         )}
       </AnimatePresence>
-      
-      {/* Existing Booking Modal (Hidden for space but still exists in file) */}
     </div>
   );
 }

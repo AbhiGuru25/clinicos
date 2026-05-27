@@ -1,0 +1,251 @@
+{
+  "name": "ClinicOS Master AI Receptionist (With Booking Tools)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "clinicos-webhook",
+        "options": {}
+      },
+      "id": "webhook-1",
+      "name": "WhatsApp Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "You are the AI Receptionist for Dr. Sharma's Clinic. Your goal is to help patients book appointments via WhatsApp.\n\nRULES:\n1. Always ask for the patient's name and preferred date/time.\n2. Before booking, you MUST use the 'check_availability' tool to ensure the date is free.\n3. If the date has booked slots, offer them a different time.\n4. When booking, use the 'book_appointment' tool and provide their name, phone, date (YYYY-MM-DD), and time (HH:MM).\n5. Reply in a friendly, professional tone (in English or Hindi)."
+        }
+      },
+      "id": "ai-agent-1",
+      "name": "Clinic AI Brain",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1,
+      "position": [300, 300]
+    },
+    {
+      "parameters": {
+        "model": "llama3-70b-8192"
+      },
+      "id": "groq-model-1",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [300, 500]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.data.key.remoteJid || 'default' }}"
+      },
+      "id": "memory-1",
+      "name": "Simple Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1,
+      "position": [450, 500]
+    },
+    {
+      "parameters": {
+        "name": "check_availability",
+        "description": "Check which appointments are already booked on a given date. Input should be the date in YYYY-MM-DD format.",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"date\": {\n      \"type\": \"string\",\n      \"description\": \"The date to check (YYYY-MM-DD)\"\n    }\n  }\n}"
+      },
+      "id": "tool-check",
+      "name": "Check Availability Tool",
+      "type": "@n8n/n8n-nodes-langchain.tool",
+      "typeVersion": 1,
+      "position": [600, 450]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "appointments",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "appointment_date",
+              "condition": "eq",
+              "keyValue": "={{ $fromAI('date') }}"
+            }
+          ]
+        }
+      },
+      "id": "supabase-get",
+      "name": "Check Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [800, 450]
+    },
+    {
+      "parameters": {
+        "name": "book_appointment",
+        "description": "Book a new appointment. You must provide the patient's name, phone, date, and time.",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"patient_name\": {\n      \"type\": \"string\"\n    },\n    \"phone\": {\n      \"type\": \"string\"\n    },\n    \"date\": {\n      \"type\": \"string\"\n    },\n    \"time\": {\n      \"type\": \"string\"\n    }\n  }\n}"
+      },
+      "id": "tool-book",
+      "name": "Book Appointment Tool",
+      "type": "@n8n/n8n-nodes-langchain.tool",
+      "typeVersion": 1,
+      "position": [600, 650]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "tableId": "appointments",
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "appointment_date",
+              "fieldValue": "={{ $fromAI('date') }}"
+            },
+            {
+              "fieldId": "appointment_time",
+              "fieldValue": "={{ $fromAI('time') }}"
+            },
+            {
+              "fieldId": "notes",
+              "fieldValue": "={{ $fromAI('patient_name') }} - {{ $fromAI('phone') }}"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "scheduled"
+            }
+          ]
+        }
+      },
+      "id": "supabase-insert",
+      "name": "Insert Supabase",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [800, 650]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://localhost:8081/message/sendText/ClinicBot1",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "YourSecretKey123"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "number",
+              "value": "={{ $json.body.data.key.remoteJid }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.output }}"
+            }
+          ]
+        }
+      },
+      "id": "http-reply",
+      "name": "Send WhatsApp Reply",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [600, 200]
+    }
+  ],
+  "connections": {
+    "WhatsApp Webhook": {
+      "main": [
+        [
+          {
+            "node": "Clinic AI Brain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clinic AI Brain": {
+      "main": [
+        [
+          {
+            "node": "Send WhatsApp Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Clinic AI Brain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Clinic AI Brain",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Availability Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Clinic AI Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Supabase": {
+      "main": [
+        [
+          {
+            "node": "Check Availability Tool",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Book Appointment Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "Clinic AI Brain",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Supabase": {
+      "main": [
+        [
+          {
+            "node": "Book Appointment Tool",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

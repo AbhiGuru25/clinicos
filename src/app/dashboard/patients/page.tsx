@@ -37,6 +37,25 @@ export default function PatientsPage() {
     p.phone.includes(searchQuery)
   );
 
+  const exportCSV = () => {
+    const headers = ['Patient ID', 'Name', 'Phone', 'Registered Date', 'Total Visits'];
+    const rows = filteredPatients.map(p => [
+      p.id,
+      p.name,
+      p.phone,
+      new Date(p.created_at).toLocaleDateString(),
+      p.appointments?.length || 0
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'clinic_patients.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -44,7 +63,7 @@ export default function PatientsPage() {
           <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2 text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>Patients</h1>
           <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Full medical history and records for all your patients.</p>
         </div>
-        <button className="btn-primary flex items-center gap-2 touch-target">
+        <button onClick={exportCSV} className="btn-primary flex items-center gap-2 touch-target">
           <Download size={20} />
           Export CSV
         </button>

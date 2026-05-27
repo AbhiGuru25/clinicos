@@ -19,6 +19,69 @@ import 'jspdf-autotable';
 export default function BillingPage() {
   const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredInvoices = invoices.filter(inv => {
+    const search = searchQuery.toLowerCase();
+    const patientName = inv.appointments?.patients?.name?.toLowerCase() || '';
+    const invoiceId = `CL-${inv.id.slice(0, 4).toUpperCase()}`.toLowerCase();
+    return patientName.includes(search) || invoiceId.includes(search);
+  });
+
+  const exportCSV = () => {
+    const headers = ['Invoice ID', 'Date', 'Patient Name', 'Phone', 'Total Amount', 'Status'];
+    const rows = filteredInvoices.map(inv => [
+      `CL-${inv.id.slice(0, 8).toUpperCase()}`,
+      new Date(inv.created_at).toLocaleDateString(),
+      inv.appointments?.patients?.name || 'Unknown',
+      inv.appointments?.patients?.phone || 'N/A',
+      inv.total,
+      'Paid'
+    ]);
+    const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute('download', 'clinic_invoices.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const sendWhatsApp = async (inv: any) => {
+    try {
+      const patientName = inv.appointments?.patients?.name || 'Valued Patient';
+      const patientPhone = inv.appointments?.patients?.phone;
+      if (!patientPhone) {
+        alert("Patient does not have a phone number on file.");
+        return;
+      }
+      
+      const message = `Hello ${patientName}! Your invoice #CL-${inv.id.slice(0, 4).toUpperCase()} for ₹${inv.total} has been generated successfully. Thank you for visiting ClinicOS.`;
+      
+      // Sending to local Evolution API (assuming ClinicBot1 and 8081 based on previous context)
+      const res = await fetch('http://localhost:8081/message/sendText/ClinicBot1', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': 'YOUR_SECRET_KEY' // Will need proper config in real prod
+        },
+        body: JSON.stringify({
+          number: patientPhone,
+          text: message
+        })
+      });
+
+      if (res.ok) {
+        alert("WhatsApp message sent successfully!");
+      } else {
+        alert("Failed to send WhatsApp message. Ensure your local Evolution API is running.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error connecting to Evolution API.");
+    }
+  };
 
   const generatePDF = (invoice: any) => {
     const doc = new jsPDF();
@@ -125,15 +188,15 @@ export default function BillingPage() {
           <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Automated GST compliance and revenue tracking.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-3">
-          <button className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all touch-target w-full sm:w-auto"
+          <button onClick={exportCSV} className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all touch-target w-full sm:w-auto"
             style={{ background: 'var(--bg-app)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}>
             <BarChart3 size={20} />
             Export Report
           </button>
-          <button className="btn-primary flex items-center justify-center gap-2 touch-target w-full sm:w-auto">
+          <a href="/dashboard/appointments" className="btn-primary flex items-center justify-center gap-2 touch-target w-full sm:w-auto">
             <Plus size={20} />
             New Invoice
-          </button>
+          </a>
         </div>
       </div>
 
@@ -214,7 +277,7 @@ export default function BillingPage() {
         <div className="p-4 md:p-8 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ borderColor: 'var(--border)' }}>
           <h2 className="text-xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>Billing History</h2>
           <div className="flex gap-2">
-            <input type="text" placeholder="Search Invoices..." className="w-full sm:w-auto px-4 py-2 border-none rounded-xl text-xs font-bold outline-none touch-target" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }} />
+            <input type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search Invoices..." className="w-full sm:w-auto px-4 py-2 border-none rounded-xl text-xs font-bold outline-none touch-target" style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }} />
           </div>
         </div>
 
@@ -245,7 +308,7 @@ export default function BillingPage() {
             </div>
 
             <div className="p-4 md:p-0 space-y-3 md:space-y-0">
-              {invoices.map((inv, i) => (
+              {filteredInvoices.map((inv, i) => (
                 <motion.div 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -279,7 +342,7 @@ export default function BillingPage() {
                     <button onClick={() => generatePDF(inv)} className="p-2.5 md:p-2 rounded-lg transition-all touch-target" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--brand-primary)' }}>
                       <Download size={18} />
                     </button>
-                    <button className="p-2.5 md:p-2 rounded-lg transition-all touch-target" style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981' }}>
+                    <button onClick={() => sendWhatsApp(inv)} className="p-2.5 md:p-2 rounded-lg transition-all touch-target" style={{ background: 'rgba(16,185,129,0.1)', color: '#10B981' }}>
                       <Send size={18} />
                     </button>
                     <button className="p-2.5 md:p-2 rounded-lg transition-all touch-target" style={{ color: 'var(--text-muted)' }}>
