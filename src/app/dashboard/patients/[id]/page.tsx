@@ -236,7 +236,6 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
           </div>
         </div>
       </div>
-      </div>
 
       <AnimatePresence>
         {isPrescriptionModalOpen && (
