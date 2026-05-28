@@ -3,6 +3,7 @@ import { useState, useEffect, use } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, Phone, Activity, Clock, Edit, FileText, Plus, X, Download, Send } from 'lucide-react';
+import MedicalDocuments from '@/components/MedicalDocuments';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -235,6 +236,12 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
             )}
           </div>
         </div>
+      </div>
+
+      {/* ─── Medical Documents & Reports ─── */}
+      <div className="clinic-card p-6">
+        <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">Medical Documents & Reports</h3>
+        <MedicalDocuments patientId={id} />
       </div>
 
       <AnimatePresence>
