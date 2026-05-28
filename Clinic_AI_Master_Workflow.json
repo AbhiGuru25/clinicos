@@ -95,33 +95,35 @@
     },
     {
       "parameters": {
-        "operation": "insert",
-        "tableId": "appointments",
-        "fieldsUi": {
-          "fieldValues": [
+        "method": "POST",
+        "url": "http://localhost:3000/api/ai/book",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
             {
-              "fieldId": "appointment_date",
-              "fieldValue": "={{ $fromAI('date') }}"
+              "name": "patient_name",
+              "value": "={{ $fromAI('patient_name') }}"
             },
             {
-              "fieldId": "appointment_time",
-              "fieldValue": "={{ $fromAI('time') }}"
+              "name": "phone",
+              "value": "={{ $fromAI('phone') }}"
             },
             {
-              "fieldId": "notes",
-              "fieldValue": "={{ $fromAI('patient_name') }} - {{ $fromAI('phone') }}"
+              "name": "date",
+              "value": "={{ $fromAI('date') }}"
             },
             {
-              "fieldId": "status",
-              "fieldValue": "scheduled"
+              "name": "time",
+              "value": "={{ $fromAI('time') }}"
             }
           ]
-        }
+        },
+        "options": {}
       },
       "id": "supabase-insert",
       "name": "Insert Supabase",
-      "type": "n8n-nodes-base.supabase",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
       "position": [800, 650]
     },
     {

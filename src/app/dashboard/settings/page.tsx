@@ -26,6 +26,8 @@ export default function SettingsPage() {
   const [evolutionKey, setEvolutionKey] = useState('');
   const [instanceName, setInstanceName] = useState('');
   const [doctorName, setDoctorName] = useState('');
+  const [baseFee, setBaseFee] = useState('500');
+  const [gstRate, setGstRate] = useState('18');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
@@ -55,6 +57,8 @@ export default function SettingsPage() {
         setEvolutionUrl(data.evolution_url || '');
         setEvolutionKey(data.evolution_apikey || '');
         setInstanceName(data.evolution_instance || '');
+        setBaseFee(data.base_fee?.toString() || '500');
+        setGstRate(data.gst_rate?.toString() || '18');
       }
     } catch (err) {
       console.error('Error fetching clinic:', err);
@@ -77,6 +81,8 @@ export default function SettingsPage() {
         evolution_url: evolutionUrl,
         evolution_apikey: evolutionKey,
         evolution_instance: instanceName,
+        base_fee: parseInt(baseFee) || 0,
+        gst_rate: parseInt(gstRate) || 0,
       })
       .eq('id', clinic.id);
 
@@ -197,6 +203,34 @@ export default function SettingsPage() {
                         className="w-full pl-10 pr-4 py-3 border-none rounded-xl font-bold outline-none touch-target"
                         style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }}
                       />
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Base Consultation Fee (₹)</label>
+                      <input 
+                        type="number" 
+                        placeholder="e.g. 500"
+                        value={baseFee}
+                        onChange={(e) => setBaseFee(e.target.value)}
+                        className="w-full px-4 py-3 border-none rounded-xl font-bold outline-none touch-target"
+                        style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Default GST Rate (%)</label>
+                      <select 
+                        value={gstRate}
+                        onChange={(e) => setGstRate(e.target.value)}
+                        className="w-full px-4 py-3 border-none rounded-xl font-bold outline-none touch-target appearance-none"
+                        style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }}
+                      >
+                        <option value="0">0% (Exempt)</option>
+                        <option value="5">5%</option>
+                        <option value="12">12%</option>
+                        <option value="18">18%</option>
+                      </select>
                     </div>
                   </div>
                 </div>

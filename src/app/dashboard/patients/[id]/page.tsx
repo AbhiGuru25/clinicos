@@ -7,6 +7,7 @@ import MedicalDocuments from '@/components/MedicalDocuments';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { motion, AnimatePresence } from 'framer-motion';
+import { uploadPatientDocument } from '@/lib/patientDocuments';
 
 export default function PatientDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -21,6 +22,7 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
   const [medicines, setMedicines] = useState<{name: string, dosage: string, frequency: string, duration: string}[]>([]);
   const [newMedicine, setNewMedicine] = useState({name: '', dosage: '', frequency: '', duration: ''});
   const [prescriptionNotes, setPrescriptionNotes] = useState('');
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     if (id) {
@@ -64,7 +66,7 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
     }
   };
 
-  const generatePrescriptionPDF = () => {
+  const generatePrescriptionPDF = async () => {
     const doc = new jsPDF();
     
     // Header
@@ -105,7 +107,22 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
     }
 
     // Save
-    doc.save(`Prescription_${patient.name.replace(/\s+/g, '_')}.pdf`);
+    const filename = `Prescription_${patient.name.replace(/\s+/g, '_')}.pdf`;
+    doc.save(filename);
+
+    // Silently upload to Supabase medical_records
+    try {
+      const pdfBlob = doc.output('blob');
+      const pdfFile = new File([pdfBlob], filename, { type: 'application/pdf' });
+      const { doc: uploadedDoc, error } = await uploadPatientDocument(id, pdfFile);
+      if (error) {
+        console.error('Error uploading prescription PDF:', error);
+      } else if (uploadedDoc) {
+        setRefreshKey(prev => prev + 1);
+      }
+    } catch (uploadErr) {
+      console.error('Failed to auto-upload prescription PDF:', uploadErr);
+    }
   };
 
   const sendPrescriptionWhatsApp = async () => {
@@ -241,7 +258,7 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
       {/* ─── Medical Documents & Reports ─── */}
       <div className="clinic-card p-6">
         <h3 className="text-sm font-bold text-slate-900 mb-4 uppercase tracking-wider">Medical Documents & Reports</h3>
-        <MedicalDocuments patientId={id} />
+        <MedicalDocuments patientId={id} key={refreshKey} />
       </div>
 
       <AnimatePresence>
