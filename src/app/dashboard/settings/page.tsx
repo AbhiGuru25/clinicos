@@ -90,25 +90,47 @@ export default function SettingsPage() {
     e.preventDefault();
     setSaving(true);
     
-    const { error } = await supabase
-      .from('clinics')
-      .update({
-        name: clinicName,
-        doctor_name: doctorName,
-        whatsapp_number: phone,
-        address: address,
-        evolution_url: evolutionUrl,
-        evolution_apikey: evolutionKey,
-        evolution_instance: instanceName,
-        base_fee: parseInt(baseFee) || 0,
-        gst_rate: parseInt(gstRate) || 0,
-      })
-      .eq('id', clinic.id);
+    try {
+      if (clinic?.id) {
+        await supabase
+          .from('clinics')
+          .update({
+            name: clinicName,
+            doctor_name: doctorName,
+            whatsapp_number: phone,
+            address: address,
+            evolution_url: evolutionUrl,
+            evolution_apikey: evolutionKey,
+            evolution_instance: instanceName,
+            base_fee: parseInt(baseFee) || 800,
+            gst_rate: parseInt(gstRate) || 18,
+          })
+          .eq('id', clinic.id);
+      } else {
+        const { data: newC } = await supabase
+          .from('clinics')
+          .insert([{
+            name: clinicName,
+            doctor_name: doctorName,
+            whatsapp_number: phone,
+            address: address,
+            evolution_url: evolutionUrl,
+            evolution_apikey: evolutionKey,
+            evolution_instance: instanceName,
+            base_fee: parseInt(baseFee) || 800,
+            gst_rate: parseInt(gstRate) || 18,
+          }])
+          .select()
+          .single();
 
-    setSaving(false);
-    if (!error) {
+        if (newC) setClinic(newC);
+      }
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
+    } catch (err: any) {
+      console.error('Save settings error:', err);
+    } finally {
+      setSaving(false);
     }
   }
 
