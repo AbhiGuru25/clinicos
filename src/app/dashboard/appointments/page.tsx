@@ -38,7 +38,7 @@ export default function AppointmentsPage() {
   const [patientSearch, setPatientSearch] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<any>(null);
-  const [isNewPatient, setIsNewPatient] = useState(false);
+  const [isNewPatient, setIsNewPatient] = useState(true);
   const [newPatientName, setNewPatientName] = useState('');
   const [newPatientPhone, setNewPatientPhone] = useState('');
 
@@ -532,9 +532,9 @@ export default function AppointmentsPage() {
                 {/* Patient Selector Toggle */}
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Patient Details</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Patient Information</label>
                     <button type="button" onClick={() => setIsNewPatient(!isNewPatient)} className="text-xs font-bold text-blue-600 hover:underline">
-                      {isNewPatient ? 'Select Existing Patient' : '+ New Patient'}
+                      {isNewPatient ? 'Search Existing Patient Database' : '+ Register New Walk-In Patient'}
                     </button>
                   </div>
 
