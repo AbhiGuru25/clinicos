@@ -101,7 +101,7 @@ export default function SignupPage() {
                 <label className="text-[10px] font-bold uppercase tracking-widest text-slate-500 ml-1">Clinic Name</label>
                 <div className="relative">
                   <Building className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input type="text" required value={clinicName} onChange={(e) => setClinicName(e.target.value)} placeholder="Shah Multispeciality Clinic" className="w-full pl-11 pr-4 py-3 rounded-xl font-bold text-slate-900 placeholder:font-medium outline-none transition-all border touch-target" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }} />
+                  <input type="text" required value={clinicName} onChange={(e) => setClinicName(e.target.value)} placeholder="KK Neuro Vision Therapy Institute" className="w-full pl-11 pr-4 py-3 rounded-xl font-bold text-slate-900 placeholder:font-medium outline-none transition-all border touch-target" style={{ background: 'var(--bg-app)', borderColor: 'var(--border)' }} />
                 </div>
               </div>
 

@@ -189,7 +189,7 @@ export default function SettingsPage() {
                     <label className="text-[10px] font-black uppercase tracking-widest ml-1" style={{ color: 'var(--text-muted)' }}>Clinic Name</label>
                     <input 
                       type="text" 
-                      placeholder="e.g. Shah Multispeciality Clinic"
+                      placeholder="e.g. KK Neuro Vision Therapy Institute"
                       value={clinicName}
                       onChange={(e) => setClinicName(e.target.value)}
                       className="w-full px-4 py-3 border-none rounded-xl font-bold outline-none touch-target"

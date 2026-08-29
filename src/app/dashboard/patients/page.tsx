@@ -33,8 +33,8 @@ export default function PatientsPage() {
   }
 
   const filteredPatients = patients.filter(p => 
-    p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.phone.includes(searchQuery)
+    (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.phone || '').includes(searchQuery)
   );
 
   const exportCSV = () => {

@@ -104,12 +104,12 @@ export default function BillingPage() {
     // Clinic Info (Right Side)
     doc.setFontSize(10);
     doc.setTextColor(30);
-    doc.text('Shah Multispeciality Clinic', 140, 20);
+    doc.text('KK Neuro Vision Therapy Institute', 140, 20);
     doc.setFontSize(8);
     doc.setTextColor(100);
-    doc.text('Ambli Road, Ahmedabad, GJ', 140, 25);
+    doc.text('Healthcare Hub, Near Circle, Ahmedabad, GJ', 140, 25);
     doc.text('GSTIN: 24AAAAA0000A1Z5', 140, 30);
-    doc.text('+91 63524 49698', 140, 35);
+    doc.text('+91 95588 55508', 140, 35);
 
     // Separator
     doc.setDrawColor(240);

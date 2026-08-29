@@ -78,8 +78,8 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
     doc.text('Smart Medical Management', 14, 32);
     doc.setFontSize(10);
     doc.setTextColor(30);
-    doc.text('Shah Multispeciality Clinic', 140, 20);
-    doc.text('Dr. Sarah Shah, MD', 140, 26);
+    doc.text('KK Neuro Vision Therapy Institute', 140, 20);
+    doc.text('Dr. Vikash & Team', 140, 26);
     
     // Patient Info
     doc.setFontSize(14);
