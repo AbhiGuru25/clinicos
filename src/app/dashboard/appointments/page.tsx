@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabase';
 import { 
   Calendar, 
@@ -21,6 +22,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function AppointmentsPage() {
+  const [mounted, setMounted] = useState(false);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBillingModalOpen, setIsBillingModalOpen] = useState(false);
@@ -107,6 +109,7 @@ export default function AppointmentsPage() {
   };
 
   useEffect(() => {
+    setMounted(true);
     const init = async () => {
       try {
         const { data: clinic } = await supabase.from('clinics').select('id').limit(1).single();
@@ -556,192 +559,198 @@ export default function AppointmentsPage() {
       </div>
 
       {/* ─── Walk-In Appointment Modal ─── */}
-      <AnimatePresence>
-        {isModalOpen && (
-          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
-            {/* Full Screen Viewport Backdrop */}
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              onClick={() => setIsModalOpen(false)} 
-              className="fixed inset-0 bg-slate-950/75 backdrop-blur-md" 
-            />
+      {mounted && createPortal(
+        <AnimatePresence>
+          {isModalOpen && (
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+              {/* Full Screen Viewport Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                onClick={() => setIsModalOpen(false)} 
+                className="fixed inset-0 bg-slate-950/80 backdrop-blur-md" 
+              />
 
-            {/* Modal Card */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 15 }} 
-              animate={{ opacity: 1, scale: 1, y: 0 }} 
-              exit={{ opacity: 0, scale: 0.95, y: 15 }} 
-              className="relative w-full max-w-lg bg-white rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-900/30 overflow-hidden z-10"
-            >
-              {/* Card Header */}
-              <div className="p-6 md:p-7 border-b border-slate-100 bg-gradient-to-r from-blue-50/80 via-indigo-50/30 to-white flex items-center justify-between">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/30">
-                    <UserPlus size={22} />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Add Walk-In / New Visit</h2>
-                    <p className="text-xs font-semibold text-slate-500">KK Neuro Vision Therapy Institute</p>
-                  </div>
-                </div>
-                <button 
-                  onClick={() => setIsModalOpen(false)} 
-                  className="p-2.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-all border border-transparent hover:border-slate-200"
-                >
-                  <X size={20} />
-                </button>
-              </div>
-
-              {/* Form Body */}
-              <form onSubmit={handleBook} className="p-6 md:p-7 space-y-5">
-                {/* Patient Information Selector */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Patient Information</label>
-                    <button type="button" onClick={() => setIsNewPatient(!isNewPatient)} className="text-xs font-bold text-blue-600 hover:underline">
-                      {isNewPatient ? 'Search Existing Patient Database' : '+ Register New Walk-In Patient'}
-                    </button>
-                  </div>
-
-                  {isNewPatient ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Patient Full Name</label>
-                        <input required type="text" placeholder="e.g. Rahul Sharma" value={newPatientName} onChange={e => setNewPatientName(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-semibold outline-none text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Mobile Phone Number</label>
-                        <input required type="tel" placeholder="e.g. 9825012345" value={newPatientPhone} onChange={e => setNewPatientPhone(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-semibold outline-none text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
-                      </div>
+              {/* Modal Card */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 15 }} 
+                animate={{ opacity: 1, scale: 1, y: 0 }} 
+                exit={{ opacity: 0, scale: 0.95, y: 15 }} 
+                className="relative w-full max-w-lg bg-white rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-900/30 overflow-hidden z-10"
+              >
+                {/* Card Header */}
+                <div className="p-6 md:p-7 border-b border-slate-100 bg-gradient-to-r from-blue-50/80 via-indigo-50/30 to-white flex items-center justify-between">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/30">
+                      <UserPlus size={22} />
                     </div>
-                  ) : (
-                    <div className="relative">
-                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-                      <input 
-                        type="text" 
-                        placeholder="Search existing patient name or phone..." 
-                        value={selectedPatient ? selectedPatient.name : patientSearch} 
-                        onChange={e => { setSelectedPatient(null); setPatientSearch(e.target.value); }} 
-                        className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl font-semibold outline-none text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" 
-                      />
-                      {searchResults.length > 0 && !selectedPatient && (
-                        <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-20 overflow-hidden">
-                          {searchResults.map(p => (
-                            <div key={p.id} onClick={() => { setSelectedPatient(p); setSearchResults([]); }} className="p-3.5 hover:bg-blue-50/80 cursor-pointer flex justify-between items-center text-xs font-bold border-b border-slate-100 last:border-none transition-all">
-                              <span className="text-slate-900">{p.name}</span>
-                              <span className="text-slate-500">{p.phone}</span>
-                            </div>
-                          ))}
+                    <div>
+                      <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Add Walk-In / New Visit</h2>
+                      <p className="text-xs font-semibold text-slate-500">KK Neuro Vision Therapy Institute</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setIsModalOpen(false)} 
+                    className="p-2.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-all border border-transparent hover:border-slate-200"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Form Body */}
+                <form onSubmit={handleBook} className="p-6 md:p-7 space-y-5">
+                  {/* Patient Information Selector */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Patient Information</label>
+                      <button type="button" onClick={() => setIsNewPatient(!isNewPatient)} className="text-xs font-bold text-blue-600 hover:underline">
+                        {isNewPatient ? 'Search Existing Patient Database' : '+ Register New Walk-In Patient'}
+                      </button>
+                    </div>
+
+                    {isNewPatient ? (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Patient Full Name</label>
+                          <input required type="text" placeholder="e.g. Rahul Sharma" value={newPatientName} onChange={e => setNewPatientName(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-semibold outline-none text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
                         </div>
-                      )}
+                        <div>
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1 block">Mobile Phone Number</label>
+                          <input required type="tel" placeholder="e.g. 9825012345" value={newPatientPhone} onChange={e => setNewPatientPhone(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-semibold outline-none text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                        <input 
+                          type="text" 
+                          placeholder="Search existing patient name or phone..." 
+                          value={selectedPatient ? selectedPatient.name : patientSearch} 
+                          onChange={e => { setSelectedPatient(null); setPatientSearch(e.target.value); }} 
+                          className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-xl font-semibold outline-none text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" 
+                        />
+                        {searchResults.length > 0 && !selectedPatient && (
+                          <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-20 overflow-hidden">
+                            {searchResults.map(p => (
+                              <div key={p.id} onClick={() => { setSelectedPatient(p); setSearchResults([]); }} className="p-3.5 hover:bg-blue-50/80 cursor-pointer flex justify-between items-center text-xs font-bold border-b border-slate-100 last:border-none transition-all">
+                                <span className="text-slate-900">{p.name}</span>
+                                <span className="text-slate-500">{p.phone}</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Visit Date & Time Slot */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Visit Date</label>
+                      <input required type="date" value={appointmentDate} onChange={e => setAppointmentDate(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
                     </div>
-                  )}
-                </div>
-
-                {/* Visit Date & Time Slot */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Visit Date</label>
-                    <input required type="date" value={appointmentDate} onChange={e => setAppointmentDate(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Time Slot</label>
+                      <input required type="time" value={appointmentTime} onChange={e => setAppointmentTime(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
+                    </div>
                   </div>
+
+                  {/* Notes */}
                   <div>
-                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Time Slot</label>
-                    <input required type="time" value={appointmentTime} onChange={e => setAppointmentTime(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Consultation / Vision Therapy Notes</label>
+                    <input type="text" placeholder="e.g. Amblyopia Evaluation, Strabismus Check" value={notes} onChange={e => setNotes(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-semibold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
                   </div>
-                </div>
 
-                {/* Notes */}
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Consultation / Vision Therapy Notes</label>
-                  <input type="text" placeholder="e.g. Amblyopia Evaluation, Strabismus Check" value={notes} onChange={e => setNotes(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-semibold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
-                </div>
-
-                {/* Buttons */}
-                <div className="pt-3 flex items-center gap-3">
-                  <button type="button" onClick={() => setIsModalOpen(false)} className="w-1/2 py-3 rounded-xl font-bold text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Cancel</button>
-                  <button type="submit" disabled={booking} className="w-1/2 btn-primary text-xs py-3 font-extrabold shadow-lg shadow-blue-500/25">{booking ? 'Saving Visit...' : 'Confirm Booking'}</button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                  {/* Buttons */}
+                  <div className="pt-3 flex items-center gap-3">
+                    <button type="button" onClick={() => setIsModalOpen(false)} className="w-1/2 py-3 rounded-xl font-bold text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Cancel</button>
+                    <button type="submit" disabled={booking} className="w-1/2 btn-primary text-xs py-3 font-extrabold shadow-lg shadow-blue-500/25">{booking ? 'Saving Visit...' : 'Confirm Booking'}</button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
 
       {/* ─── Complete & Billing Modal ─── */}
-      <AnimatePresence>
-        {isBillingModalOpen && selectedAppointment && (
-          <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
-            {/* Full Screen Viewport Backdrop */}
-            <motion.div 
-              initial={{ opacity: 0 }} 
-              animate={{ opacity: 1 }} 
-              exit={{ opacity: 0 }} 
-              onClick={() => setIsBillingModalOpen(false)} 
-              className="fixed inset-0 bg-slate-950/75 backdrop-blur-md" 
-            />
+      {mounted && createPortal(
+        <AnimatePresence>
+          {isBillingModalOpen && selectedAppointment && (
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+              {/* Full Screen Viewport Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                onClick={() => setIsBillingModalOpen(false)} 
+                className="fixed inset-0 bg-slate-950/80 backdrop-blur-md" 
+              />
 
-            {/* Modal Card */}
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95, y: 15 }} 
-              animate={{ opacity: 1, scale: 1, y: 0 }} 
-              exit={{ opacity: 0, scale: 0.95, y: 15 }} 
-              className="relative w-full max-w-md bg-white rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-900/30 overflow-hidden z-10"
-            >
-              <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-emerald-50/80 via-teal-50/30 to-white flex justify-between items-center">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white font-bold shadow-md shadow-emerald-500/30">
-                    <CheckCircle2 size={20} />
+              {/* Modal Card */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 15 }} 
+                animate={{ opacity: 1, scale: 1, y: 0 }} 
+                exit={{ opacity: 0, scale: 0.95, y: 15 }} 
+                className="relative w-full max-w-md bg-white rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-900/30 overflow-hidden z-10"
+              >
+                <div className="p-6 border-b border-slate-100 bg-gradient-to-r from-emerald-50/80 via-teal-50/30 to-white flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-600 flex items-center justify-center text-white font-bold shadow-md shadow-emerald-500/30">
+                      <CheckCircle2 size={20} />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-extrabold text-slate-900">Complete & Bill Visit</h2>
+                      <p className="text-xs font-semibold text-slate-500">Patient: {selectedAppointment.patients?.name || selectedAppointment.patient_name || 'Valued Patient'}</p>
+                    </div>
                   </div>
+                  <button onClick={() => setIsBillingModalOpen(false)} className="p-2 hover:bg-white rounded-xl text-slate-400 hover:text-slate-600 transition-all"><X size={20} /></button>
+                </div>
+
+                <form onSubmit={handleCompleteAndBill} className="p-6 space-y-5">
                   <div>
-                    <h2 className="text-lg font-extrabold text-slate-900">Complete & Bill Visit</h2>
-                    <p className="text-xs font-semibold text-slate-500">Patient: {selectedAppointment.patients?.name || selectedAppointment.patient_name || 'Valued Patient'}</p>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Consultation Fee (₹)</label>
+                    <input type="number" required value={consultationFee} onChange={e => setConsultationFee(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-black text-lg text-slate-900 bg-slate-50/50 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
                   </div>
-                </div>
-                <button onClick={() => setIsBillingModalOpen(false)} className="p-2 hover:bg-white rounded-xl text-slate-400 hover:text-slate-600 transition-all"><X size={20} /></button>
-              </div>
 
-              <form onSubmit={handleCompleteAndBill} className="p-6 space-y-5">
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Consultation Fee (₹)</label>
-                  <input type="number" required value={consultationFee} onChange={e => setConsultationFee(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-black text-lg text-slate-900 bg-slate-50/50 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all" />
-                </div>
-
-                <div>
-                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">GST Tax Rate (%)</label>
-                  <select value={gstRate} onChange={e => setGstRate(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-bold text-sm bg-slate-50/50 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-900">
-                    <option value="0">0% (Exempt)</option>
-                    <option value="5">5% GST</option>
-                    <option value="12">12% GST</option>
-                    <option value="18">18% GST (Standard)</option>
-                  </select>
-                </div>
-
-                <div className="p-4 rounded-2xl bg-emerald-50/40 border border-emerald-100 space-y-1.5">
-                  <div className="flex justify-between text-xs font-semibold text-slate-600">
-                    <span>Consultation Fee:</span>
-                    <span>₹{consultationFee}</span>
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">GST Tax Rate (%)</label>
+                    <select value={gstRate} onChange={e => setGstRate(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-bold text-sm bg-slate-50/50 focus:bg-white focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 transition-all text-slate-900">
+                      <option value="0">0% (Exempt)</option>
+                      <option value="5">5% GST</option>
+                      <option value="12">12% GST</option>
+                      <option value="18">18% GST (Standard)</option>
+                    </select>
                   </div>
-                  <div className="flex justify-between text-xs font-semibold text-slate-600">
-                    <span>GST ({gstRate}%):</span>
-                    <span>₹{((Number(consultationFee) * Number(gstRate)) / 100).toFixed(2)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm font-black text-emerald-700 pt-2 border-t border-emerald-200/60">
-                    <span>Total Billable Amount:</span>
-                    <span>₹{(Number(consultationFee) + (Number(consultationFee) * Number(gstRate)) / 100).toFixed(2)}</span>
-                  </div>
-                </div>
 
-                <div className="pt-2 flex items-center gap-3">
-                  <button type="button" onClick={() => setIsBillingModalOpen(false)} className="w-1/2 py-3 rounded-xl font-bold text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Cancel</button>
-                  <button type="submit" disabled={booking} className="w-1/2 py-3 rounded-xl font-extrabold text-xs text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/25 transition-all">{booking ? 'Processing...' : 'Complete & Generate Bill'}</button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+                  <div className="p-4 rounded-2xl bg-emerald-50/40 border border-emerald-100 space-y-1.5">
+                    <div className="flex justify-between text-xs font-semibold text-slate-600">
+                      <span>Consultation Fee:</span>
+                      <span>₹{consultationFee}</span>
+                    </div>
+                    <div className="flex justify-between text-xs font-semibold text-slate-600">
+                      <span>GST ({gstRate}%):</span>
+                      <span>₹{((Number(consultationFee) * Number(gstRate)) / 100).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-sm font-black text-emerald-700 pt-2 border-t border-emerald-200/60">
+                      <span>Total Billable Amount:</span>
+                      <span>₹{(Number(consultationFee) + (Number(consultationFee) * Number(gstRate)) / 100).toFixed(2)}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex items-center gap-3">
+                    <button type="button" onClick={() => setIsBillingModalOpen(false)} className="w-1/2 py-3 rounded-xl font-bold text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Cancel</button>
+                    <button type="submit" disabled={booking} className="w-1/2 py-3 rounded-xl font-extrabold text-xs text-white bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/25 transition-all">{booking ? 'Processing...' : 'Complete & Generate Bill'}</button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
