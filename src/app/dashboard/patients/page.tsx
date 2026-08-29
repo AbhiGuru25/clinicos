@@ -1,17 +1,55 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
-import { Users, Search, Download, ExternalLink, Calendar, Phone, Activity } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { 
+  Users, 
+  Search, 
+  Download, 
+  ExternalLink, 
+  Calendar, 
+  Phone, 
+  Activity,
+  UserPlus,
+  MessageSquare,
+  X,
+  UserCheck,
+  FolderPlus,
+  Filter
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PatientsPage() {
+  const [mounted, setMounted] = useState(false);
   const [patients, setPatients] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [clinicId, setClinicId] = useState<string | null>(null);
+
+  // New Patient Form State
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [gender, setGender] = useState('Male');
+  const [age, setAge] = useState('');
+  const [notes, setNotes] = useState('');
 
   useEffect(() => {
-    fetchPatients();
+    setMounted(true);
+    const init = async () => {
+      try {
+        const { data: clinic } = await supabase.from('clinics').select('id').limit(1).single();
+        if (clinic) setClinicId(clinic.id);
+        fetchPatients();
+      } catch (err) {
+        console.error('Init error:', err);
+        setLoading(false);
+      }
+    };
+    init();
+
     const timeout = setTimeout(() => setLoading(false), 3000);
     return () => clearTimeout(timeout);
   }, []);
@@ -21,7 +59,7 @@ export default function PatientsPage() {
       const { data, error } = await supabase
         .from('patients')
         .select('*, appointments(id)')
-        .order('name', { ascending: true });
+        .order('created_at', { ascending: false });
 
       if (error) throw error;
       setPatients(data || []);
@@ -32,142 +70,382 @@ export default function PatientsPage() {
     }
   }
 
+  const handleRegisterPatient = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      // 1. Check if patient phone already exists
+      const { data: existing } = await supabase
+        .from('patients')
+        .select('id')
+        .eq('phone', phone)
+        .maybeSingle();
+
+      if (existing?.id) {
+        alert('ℹ️ A patient with this phone number already exists!');
+        setIsModalOpen(false);
+        setSaving(false);
+        return;
+      }
+
+      // 2. Insert Patient
+      const { error } = await supabase
+        .from('patients')
+        .insert([{ 
+          clinic_id: clinicId, 
+          name, 
+          phone, 
+          gender,
+          age: age ? Number(age) : null,
+          medical_notes: notes 
+        }]);
+
+      if (error) throw error;
+
+      alert('✅ New Patient Registered Successfully!');
+      setIsModalOpen(false);
+      setName('');
+      setPhone('');
+      setAge('');
+      setNotes('');
+      fetchPatients();
+    } catch (err: any) {
+      alert(`Registration Error: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const filteredPatients = patients.filter(p => 
     (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (p.phone || '').includes(searchQuery)
+    (p.phone || '').includes(searchQuery) ||
+    (p.id || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Quick Stats
+  const totalPatients = patients.length;
+  const repeatPatients = patients.filter(p => (p.appointments?.length || 0) > 1).length;
+  const newThisMonth = patients.filter(p => {
+    if (!p.created_at) return false;
+    const d = new Date(p.created_at);
+    const now = new Date();
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  }).length;
+
   const exportCSV = () => {
-    const headers = ['Patient ID', 'Name', 'Phone', 'Registered Date', 'Total Visits'];
+    const headers = ['Patient ID', 'Name', 'Phone', 'Gender', 'Age', 'Registered Date', 'Total Visits'];
     const rows = filteredPatients.map(p => [
       p.id,
-      p.name,
-      p.phone,
-      new Date(p.created_at).toLocaleDateString(),
+      `"${p.name || ''}"`,
+      `"${p.phone || ''}"`,
+      p.gender || 'N/A',
+      p.age || 'N/A',
+      p.created_at ? new Date(p.created_at).toLocaleDateString() : 'N/A',
       p.appointments?.length || 0
     ]);
     const csvContent = [headers.join(','), ...rows.map(e => e.join(','))].join('\n');
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.setAttribute('download', 'clinic_patients.csv');
+    link.setAttribute('download', `patients_records_${new Date().toISOString().split('T')[0]}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6 page-enter">
+      {/* ─── Header ─── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight mb-2 text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>Patients</h1>
-          <p className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>Full medical history and records for all your patients.</p>
+          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>
+            Patients Directory
+          </h1>
+          <p className="text-sm font-medium text-slate-500 mt-1">
+            Complete medical records, vision therapy history, and patient database.
+          </p>
         </div>
-        <button onClick={exportCSV} className="btn-primary flex items-center gap-2 touch-target">
-          <Download size={20} />
-          Export CSV
-        </button>
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={exportCSV} 
+            className="px-4 py-2.5 rounded-xl border border-slate-200 bg-white font-bold text-xs text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-2 touch-target"
+          >
+            <Download size={16} />
+            <span>Export CSV</span>
+          </button>
+          <button 
+            onClick={() => setIsModalOpen(true)} 
+            className="btn-primary flex items-center justify-center gap-2 touch-target shadow-lg shadow-blue-500/20"
+          >
+            <UserPlus size={18} />
+            <span>+ Register Patient</span>
+          </button>
+        </div>
       </div>
 
-      <div className="clinic-card overflow-hidden min-h-[600px]">
-        <div className="p-4 md:p-8 border-b" style={{ borderColor: 'var(--border)' }}>
-          <div className="relative max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2" size={20} style={{ color: 'var(--text-muted)' }} />
-            <input 
-              type="text" 
-              placeholder="Search by name or phone..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 border-none rounded-2xl font-bold placeholder:text-slate-400 outline-none touch-target"
-              style={{ background: 'var(--bg-app)', color: 'var(--text-primary)' }}
-            />
+      {/* ─── Patient Metrics Bar ─── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <div className="clinic-card p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-bold">
+            <Users size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Total Patients</p>
+            <p className="text-xl font-extrabold text-slate-900">{totalPatients}</p>
           </div>
         </div>
 
+        <div className="clinic-card p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600 font-bold">
+            <UserCheck size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">New This Month</p>
+            <p className="text-xl font-extrabold text-emerald-600">{newThisMonth}</p>
+          </div>
+        </div>
+
+        <div className="clinic-card p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600 font-bold">
+            <Activity size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Repeat Patients</p>
+            <p className="text-xl font-extrabold text-purple-600">{repeatPatients}</p>
+          </div>
+        </div>
+
+        <div className="clinic-card p-4 flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 font-bold">
+            <FolderPlus size={20} />
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Medical Files</p>
+            <p className="text-xl font-extrabold text-amber-600">{totalPatients}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Search & Patient Table Card ─── */}
+      <div className="clinic-card overflow-hidden min-h-[550px]">
+        {/* Search Bar Header */}
+        <div className="p-4 md:p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="relative w-full md:w-96">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search patient by name, mobile, or ID..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold placeholder:text-slate-400 focus:outline-none focus:border-blue-500 bg-slate-50/50"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <X size={14} />
+              </button>
+            )}
+          </div>
+          
+          <p className="text-xs font-semibold text-slate-400">
+            Showing <span className="font-extrabold text-slate-800">{filteredPatients.length}</span> patient record(s)
+          </p>
+        </div>
+
+        {/* Patients Table */}
         {loading ? (
-          <div className="p-20 text-center text-slate-400 font-bold">Syncing medical records...</div>
+          <div className="p-20 text-center text-slate-400 font-bold">
+            <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin mx-auto mb-3" />
+            Syncing medical database...
+          </div>
         ) : filteredPatients.length === 0 ? (
-          <div className="p-20 text-center">
-            <div className="w-16 h-16 rounded-3xl bg-sky-50 flex items-center justify-center text-sky-600 mb-6 mx-auto">
-              <Users size={32} />
+          <div className="p-16 text-center border-2 border-dashed border-slate-200 rounded-2xl m-6 bg-slate-50/50">
+            <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 mb-3 mx-auto font-bold">
+              <Users size={28} />
             </div>
-            <h3 className="text-xl font-black text-slate-900 mb-2">No Patients Found</h3>
-            <p className="text-slate-400 font-medium max-w-sm mx-auto">
-              {searchQuery ? "No matches for your search." : "Your patient list will populate here as they book via WhatsApp."}
+            <h3 className="text-base font-bold text-slate-800 mb-1">No Patients Found</h3>
+            <p className="text-xs text-slate-500 max-w-xs mx-auto mb-4">
+              {searchQuery ? "No matches for your search query." : "Your patient directory will populate automatically when patients book."}
             </p>
+            <button onClick={() => setIsModalOpen(true)} className="btn-primary text-xs inline-flex items-center gap-2">
+              <UserPlus size={16} /> Register First Patient
+            </button>
           </div>
         ) : (
           <div>
             {/* Desktop Table Header */}
-            <div className="hidden md:grid grid-cols-6 gap-4 px-8 py-5 border-b text-[10px] font-black uppercase tracking-widest" style={{ borderColor: 'var(--border)', color: 'var(--text-muted)' }}>
-              <div className="col-span-2">Patient Details</div>
-              <div>Phone</div>
-              <div className="text-center">Visits</div>
-              <div>Registered</div>
-              <div className="text-right">Actions</div>
+            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-100 bg-slate-50/70 text-[10px] font-black uppercase tracking-wider text-slate-400">
+              <div className="col-span-4">Patient Information</div>
+              <div className="col-span-3">Contact Details</div>
+              <div className="col-span-2 text-center">Visits</div>
+              <div className="col-span-2">Registered On</div>
+              <div className="col-span-1 text-right">Records</div>
             </div>
 
-            <div className="p-4 md:p-0 space-y-3 md:space-y-0">
-              {filteredPatients.map((p, i) => (
-                <motion.div 
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  key={p.id} 
-                  className="mobile-card-row md:grid md:grid-cols-6 md:gap-4 md:px-8 md:py-5 md:border-b md:rounded-none group transition-all md:items-center"
-                  style={{ borderColor: 'var(--border)' }}
-                >
-                  {/* Patient Details */}
-                  <div className="md:col-span-2 flex items-center gap-4">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white shadow-sm" style={{ background: 'var(--brand-primary)' }}>
-                      {p.name.charAt(0)}
+            {/* Rows List */}
+            <div className="divide-y divide-slate-100">
+              {filteredPatients.map((p, i) => {
+                const pPhone = p.phone || '';
+                const cleanPhone = pPhone.replace(/[^0-9]/g, '');
+
+                return (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.03 }}
+                    key={p.id} 
+                    className="p-4 md:px-6 md:py-4 md:grid md:grid-cols-12 md:gap-4 md:items-center hover:bg-slate-50/80 transition-all group"
+                  >
+                    {/* Patient Name & Avatar */}
+                    <div className="md:col-span-4 flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center font-extrabold text-white text-sm shadow-md shadow-blue-500/20 shrink-0">
+                        {(p.name || 'P').charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-extrabold text-slate-900 text-sm">{p.name || 'Unnamed Patient'}</p>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ID: {p.id.slice(0, 8)}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-bold leading-none mb-1 text-sm md:text-base" style={{ color: 'var(--text-primary)' }}>{p.name}</p>
-                      <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>ID: {p.id.slice(0, 8)}</p>
+
+                    {/* Contact Info & Direct Actions */}
+                    <div className="md:col-span-3 mt-2 md:mt-0 flex items-center justify-between md:justify-start gap-3">
+                      <span className="text-xs font-semibold text-slate-600">{pPhone || 'No Phone'}</span>
+                      {cleanPhone && (
+                        <div className="flex items-center gap-2">
+                          <a 
+                            href={`tel:${cleanPhone}`} 
+                            className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all text-xs font-bold flex items-center gap-1"
+                            title="Call Patient"
+                          >
+                            <Phone size={12} />
+                          </a>
+                          <a 
+                            href={`https://wa.me/${cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone}`} 
+                            target="_blank" 
+                            rel="noreferrer"
+                            className="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-all text-xs font-bold flex items-center gap-1"
+                            title="WhatsApp Chat"
+                          >
+                            <MessageSquare size={12} />
+                          </a>
+                        </div>
+                      )}
                     </div>
-                  </div>
 
-                  {/* Phone */}
-                  <div className="flex items-center gap-2 font-bold text-sm" style={{ color: 'var(--text-secondary)' }}>
-                    <Phone size={14} style={{ color: 'var(--text-muted)' }} />
-                    {p.phone}
-                  </div>
-
-                  {/* Visits */}
-                  <div className="flex items-center md:justify-center gap-2 text-sm font-bold" style={{ color: 'var(--text-secondary)' }}>
-                    <span className="md:hidden text-[10px] uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>Visits:</span>
-                    <div className="inline-flex items-center justify-center min-w-[2rem] h-8 px-2 rounded-lg font-bold text-sm" style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--brand-primary)' }}>
-                      {p.appointments?.length || 0}
+                    {/* Visits Badge */}
+                    <div className="md:col-span-2 mt-2 md:mt-0 flex items-center md:justify-center">
+                      <div className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 font-extrabold text-xs">
+                        <Activity size={12} />
+                        <span>{p.appointments?.length || 0} Visit(s)</span>
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Registered */}
-                  <div className="flex items-center gap-2 text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>
-                    <Calendar size={14} className="hidden md:block" style={{ color: 'var(--text-muted)' }} />
-                    <span className="md:hidden text-[10px] uppercase font-bold tracking-wider mr-1" style={{ color: 'var(--text-muted)' }}>Registered:</span>
-                    {p.created_at ? new Date(p.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}
-                  </div>
+                    {/* Date */}
+                    <div className="md:col-span-2 mt-2 md:mt-0 text-xs font-semibold text-slate-500 flex items-center gap-1.5">
+                      <Calendar size={13} className="text-slate-400" />
+                      <span>{p.created_at ? new Date(p.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
+                    </div>
 
-                  {/* Actions */}
-                  <div className="flex md:justify-end mt-2 md:mt-0">
-                    <Link 
-                      href={`/dashboard/patients/${p.id}`}
-                      className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all touch-target border"
-                      style={{ background: 'white', color: 'var(--brand-primary)', borderColor: 'var(--border)' }}
-                      onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg-app)'; }}
-                      onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'white'; }}
-                    >
-                      View Records
-                      <ExternalLink size={14} />
-                    </Link>
-                  </div>
-                </motion.div>
-              ))}
+                    {/* View Records Link */}
+                    <div className="md:col-span-1 mt-3 md:mt-0 flex md:justify-end">
+                      <Link 
+                        href={`/dashboard/patients/${p.id}`}
+                        className="w-full md:w-auto inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl font-extrabold text-xs text-blue-600 bg-blue-50/70 border border-blue-100 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                      >
+                        <span>File</span>
+                        <ExternalLink size={12} />
+                      </Link>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </div>
           </div>
         )}
       </div>
+
+      {/* ─── Register New Patient Modal (React Portal) ─── */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {isModalOpen && (
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+              {/* Full Screen Backdrop */}
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }} 
+                onClick={() => setIsModalOpen(false)} 
+                className="fixed inset-0 bg-slate-950/80 backdrop-blur-md" 
+              />
+
+              {/* Modal Card */}
+              <motion.div 
+                initial={{ opacity: 0, scale: 0.95, y: 15 }} 
+                animate={{ opacity: 1, scale: 1, y: 0 }} 
+                exit={{ opacity: 0, scale: 0.95, y: 15 }} 
+                className="relative w-full max-w-lg bg-white rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-900/30 overflow-hidden z-10"
+              >
+                {/* Header */}
+                <div className="p-6 md:p-7 border-b border-slate-100 bg-gradient-to-r from-blue-50/80 via-indigo-50/30 to-white flex items-center justify-between">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-11 h-11 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/30">
+                      <UserPlus size={22} />
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-extrabold text-slate-900 tracking-tight">Register New Patient</h2>
+                      <p className="text-xs font-semibold text-slate-500">KK Neuro Vision Therapy Institute</p>
+                    </div>
+                  </div>
+                  <button 
+                    onClick={() => setIsModalOpen(false)} 
+                    className="p-2.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-white/80 transition-all border border-transparent hover:border-slate-200"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleRegisterPatient} className="p-6 md:p-7 space-y-4">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Patient Full Name</label>
+                    <input required type="text" placeholder="e.g. Vikram Shah" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-semibold outline-none text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Mobile Phone</label>
+                      <input required type="tel" placeholder="e.g. 9825012345" value={phone} onChange={e => setPhone(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-semibold outline-none text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
+                    </div>
+                    <div>
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Gender</label>
+                      <select value={gender} onChange={e => setGender(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-semibold outline-none text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900">
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Age (Years)</label>
+                    <input type="number" placeholder="e.g. 28" value={age} onChange={e => setAge(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-semibold outline-none text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Initial Medical / Vision Therapy Notes</label>
+                    <input type="text" placeholder="e.g. Referred for Amblyopia evaluation" value={notes} onChange={e => setNotes(e.target.value)} className="w-full px-4 py-3 border border-slate-200 rounded-xl font-semibold outline-none text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
+                  </div>
+
+                  <div className="pt-3 flex items-center gap-3">
+                    <button type="button" onClick={() => setIsModalOpen(false)} className="w-1/2 py-3 rounded-xl font-bold text-xs bg-slate-100 text-slate-600 hover:bg-slate-200 transition-all">Cancel</button>
+                    <button type="submit" disabled={saving} className="w-1/2 btn-primary text-xs py-3 font-extrabold shadow-lg shadow-blue-500/25">{saving ? 'Registering...' : 'Save Patient Record'}</button>
+                  </div>
+                </form>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
