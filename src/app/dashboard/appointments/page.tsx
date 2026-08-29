@@ -21,6 +21,23 @@ import {
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
+const TIME_SLOTS = [
+  '08:00 AM', '08:30 AM',
+  '09:00 AM', '09:30 AM',
+  '10:00 AM', '10:30 AM',
+  '11:00 AM', '11:30 AM',
+  '12:00 PM', '12:30 PM',
+  '01:00 PM', '01:30 PM',
+  '02:00 PM', '02:30 PM',
+  '03:00 PM', '03:30 PM',
+  '04:00 PM', '04:30 PM',
+  '05:00 PM', '05:30 PM',
+  '06:00 PM', '06:30 PM',
+  '07:00 PM', '07:30 PM',
+  '08:00 PM', '08:30 PM',
+  '09:00 PM'
+];
+
 export default function AppointmentsPage() {
   const [mounted, setMounted] = useState(false);
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -46,7 +63,7 @@ export default function AppointmentsPage() {
 
   // Appointment Form
   const [appointmentDate, setAppointmentDate] = useState('');
-  const [appointmentTime, setAppointmentTime] = useState('');
+  const [appointmentTime, setAppointmentTime] = useState('10:00 AM');
   const [notes, setNotes] = useState('');
 
   // Filters
@@ -85,6 +102,7 @@ export default function AppointmentsPage() {
 
   const formatTime = (timeStr: string) => {
     if (!timeStr) return '';
+    if (timeStr.includes('AM') || timeStr.includes('PM')) return timeStr;
     try {
       const [hour, min] = timeStr.split(':');
       const d = new Date();
@@ -223,6 +241,7 @@ export default function AppointmentsPage() {
       setSelectedPatient(null);
       setPatientSearch('');
       setNotes('');
+      setAppointmentTime('10:00 AM');
       fetchAppointments(); 
     }
     setBooking(false);
@@ -651,8 +670,17 @@ export default function AppointmentsPage() {
                       <input required type="date" value={appointmentDate} onChange={e => setAppointmentDate(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
                     </div>
                     <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Time Slot</label>
-                      <input required type="time" value={appointmentTime} onChange={e => setAppointmentTime(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Time Slot (12-Hr AM/PM)</label>
+                      <select 
+                        required 
+                        value={appointmentTime} 
+                        onChange={e => setAppointmentTime(e.target.value)} 
+                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900 cursor-pointer"
+                      >
+                        {TIME_SLOTS.map(slot => (
+                          <option key={slot} value={slot}>{slot}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
 
