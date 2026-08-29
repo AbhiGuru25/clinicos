@@ -166,19 +166,60 @@ export default function AppointmentsPage() {
     e.preventDefault();
     setBooking(true);
     let patientId = selectedPatient?.id;
-    if (isNewPatient) {
-      const { data: newP, error: pErr } = await supabase.from('patients').insert([{ clinic_id: clinicId, name: newPatientName, phone: newPatientPhone }]).select().single();
-      if (pErr) { alert(pErr.message); setBooking(false); return; }
-      patientId = newP.id;
+    const pName = isNewPatient ? newPatientName : (selectedPatient?.name || 'Walk-In Patient');
+    const pPhone = isNewPatient ? newPatientPhone : (selectedPatient?.phone || '');
+
+    if (isNewPatient && newPatientPhone) {
+      try {
+        // 1. Check if patient with this phone already exists in patients table
+        const { data: existingP } = await supabase
+          .from('patients')
+          .select('id')
+          .eq('phone', newPatientPhone)
+          .maybeSingle();
+
+        if (existingP?.id) {
+          patientId = existingP.id;
+        } else {
+          // 2. Create new patient record
+          const { data: newP, error: pErr } = await supabase
+            .from('patients')
+            .insert([{ clinic_id: clinicId, name: newPatientName, phone: newPatientPhone }])
+            .select()
+            .single();
+
+          if (pErr) {
+            console.error('Patient insert warning:', pErr);
+          } else if (newP) {
+            patientId = newP.id;
+          }
+        }
+      } catch (err) {
+        console.error('Patient handling error:', err);
+      }
     }
-    const { error } = await supabase.from('appointments').insert([{ clinic_id: clinicId, patient_id: patientId, appointment_date: appointmentDate, appointment_time: appointmentTime, status: 'confirmed', notes: notes }]);
-    if (error) alert(error.message);
-    else { 
+
+    // 3. Insert Appointment with fallback fields
+    const { error } = await supabase.from('appointments').insert([{ 
+      clinic_id: clinicId, 
+      patient_id: patientId || null, 
+      patient_name: pName,
+      phone_number: pPhone,
+      appointment_date: appointmentDate, 
+      appointment_time: appointmentTime, 
+      status: 'confirmed', 
+      notes: notes 
+    }]);
+
+    if (error) {
+      alert(`Booking Error: ${error.message}`);
+    } else { 
       setIsModalOpen(false); 
       setNewPatientName('');
       setNewPatientPhone('');
       setSelectedPatient(null);
       setPatientSearch('');
+      setNotes('');
       fetchAppointments(); 
     }
     setBooking(false);
