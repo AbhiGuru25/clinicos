@@ -102,18 +102,16 @@ export default function Dashboard() {
         .limit(1)
         .single();
       
-      if (clinic?.doctor_name) {
+      if (clinic?.doctor_name && !clinic.doctor_name.toLowerCase().includes('name2')) {
         setDoctorName(clinic.doctor_name);
         return;
       }
 
       // 2. Fallback to Dr. Vikash or Auth User metadata
       const { data: { user } } = await supabase.auth.getUser();
-      if (user?.user_metadata?.full_name) {
-        setDoctorName(user.user_metadata.full_name);
-      } else if (user?.email && !user.email.includes('name2')) {
-        const nameFromEmail = user.email.split('@')[0];
-        setDoctorName(nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1));
+      const metaName = user?.user_metadata?.full_name;
+      if (metaName && !metaName.toLowerCase().includes('name2') && metaName.toLowerCase() !== 'doctor') {
+        setDoctorName(metaName);
       } else {
         setDoctorName('Dr. Vikash');
       }
