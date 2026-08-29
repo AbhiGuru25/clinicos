@@ -26,7 +26,7 @@ export default function AppointmentsPage() {
   
   // Billing State
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
-  const [consultationFee, setConsultationFee] = useState('500');
+  const [consultationFee, setConsultationFee] = useState('800');
   const [gstRate, setGstRate] = useState('18');
 
   // Search State
@@ -188,6 +188,39 @@ export default function AppointmentsPage() {
     setBooking(false);
   };
 
+  const handleSendReminder = async (appointment: any) => {
+    const phone = appointment.patients?.phone || appointment.phone_number;
+    if (!phone) {
+      alert("No phone number found for this patient.");
+      return;
+    }
+    const cleanPhone = phone.replace(/[^0-9]/g, '');
+    const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+    const msg = `Hi ${appointment.patients?.name || 'Patient'}! 🙏\n\nThis is a friendly reminder for your upcoming appointment at *KK Neuro Vision Therapy Institute*.\n\n📅 Date: ${formatDate(appointment.appointment_date)}\n⏰ Time: ${formatTime(appointment.appointment_time)}\n📍 Location: KK Neuro Vision Therapy Institute, Ahmedabad.\n\nSee you soon!`;
+
+    try {
+      const res = await fetch('http://localhost:8081/message/sendText/ClinicBot1', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': 'yaot6e7yab8rlcxl95uw'
+        },
+        body: JSON.stringify({
+          number: formattedPhone,
+          text: msg,
+          textMessage: { text: msg }
+        })
+      });
+      if (res.ok) {
+        alert(`✅ WhatsApp reminder sent to ${appointment.patients?.name || 'Patient'} (${formattedPhone})!`);
+      } else {
+        window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+      }
+    } catch {
+      window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -254,11 +287,20 @@ export default function AppointmentsPage() {
                     <p className="text-xs font-medium" style={{ color: 'var(--text-muted)' }}>{a.patients?.phone}</p>
                   </div>
                 </div>
-                <div className="flex items-center justify-between md:justify-end gap-6 w-full md:w-auto">
-                  <div className="text-left md:text-right">
+                <div className="flex items-center justify-between md:justify-end gap-3 w-full md:w-auto">
+                  <div className="text-left md:text-right mr-2">
                     <p className="font-bold" style={{ color: 'var(--text-primary)' }}>{formatTime(a.appointment_time)}</p>
                     <p className="text-[10px] font-bold uppercase tracking-wider" style={{ color: 'var(--text-muted)' }}>{formatDate(a.appointment_date)}</p>
                   </div>
+                  <button
+                    onClick={() => handleSendReminder(a)}
+                    className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-all touch-target hover:scale-105"
+                    style={{ background: 'rgba(37, 99, 235, 0.1)', color: 'var(--brand-primary)', border: '1px solid rgba(37, 99, 235, 0.2)' }}
+                    title="Send WhatsApp Reminder"
+                  >
+                    <Phone size={14} />
+                    Reminder
+                  </button>
                   {a.status === 'confirmed' ? (
                     <button 
                       onClick={() => { setSelectedAppointment(a); setIsBillingModalOpen(true); }}

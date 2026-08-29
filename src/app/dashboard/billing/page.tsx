@@ -51,35 +51,40 @@ export default function BillingPage() {
   const sendWhatsApp = async (inv: any) => {
     try {
       const patientName = inv.appointments?.patients?.name || 'Valued Patient';
-      const patientPhone = inv.appointments?.patients?.phone;
-      if (!patientPhone) {
+      const rawPhone = inv.appointments?.patients?.phone || inv.phone_number;
+      if (!rawPhone) {
         alert("Patient does not have a phone number on file.");
         return;
       }
+      const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+      const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
       
-      const message = `Hello ${patientName}! Your invoice #CL-${inv.id.slice(0, 4).toUpperCase()} for ₹${inv.total} has been generated successfully. Thank you for visiting ClinicOS.`;
+      const message = `Hello ${patientName}! 🙏\n\nYour invoice #CL-${inv.id.slice(0, 4).toUpperCase()} for ₹${inv.total} at *KK Neuro Vision Therapy Institute* has been generated.\n\nThank you for visiting KK Neuro Vision Therapy Institute!`;
       
-      // Sending to local Evolution API (assuming ClinicBot1 and 8081 based on previous context)
       const res = await fetch('http://localhost:8081/message/sendText/ClinicBot1', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'apikey': 'YOUR_SECRET_KEY' // Will need proper config in real prod
+          'apikey': 'yaot6e7yab8rlcxl95uw'
         },
         body: JSON.stringify({
-          number: patientPhone,
-          text: message
+          number: formattedPhone,
+          text: message,
+          textMessage: { text: message }
         })
       });
 
       if (res.ok) {
-        alert("WhatsApp message sent successfully!");
+        alert(`✅ Invoice sent to ${patientName} via WhatsApp (${formattedPhone})!`);
       } else {
-        alert("Failed to send WhatsApp message. Ensure your local Evolution API is running.");
+        window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
       }
-    } catch (err) {
-      console.error(err);
-      alert("Error connecting to Evolution API.");
+    } catch {
+      const rawPhone = inv.appointments?.patients?.phone || inv.phone_number || '';
+      const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+      const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+      const message = `Hello ${inv.appointments?.patients?.name || 'Patient'}! 🙏\n\nYour invoice #CL-${inv.id.slice(0, 4).toUpperCase()} for ₹${inv.total} at *KK Neuro Vision Therapy Institute* has been generated.`;
+      window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
     }
   };
 

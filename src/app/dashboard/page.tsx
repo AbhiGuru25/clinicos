@@ -30,7 +30,7 @@ export default function Dashboard() {
   const [patients, setPatients] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [doctorName, setDoctorName] = useState('Doctor');
+  const [doctorName, setDoctorName] = useState('Dr. Vikash');
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [messages, setMessages] = useState<any[]>([]);
   const [currentTime, setCurrentTime] = useState('');
@@ -107,16 +107,19 @@ export default function Dashboard() {
         return;
       }
 
-      // 2. Fallback to Auth User metadata
+      // 2. Fallback to Dr. Vikash or Auth User metadata
       const { data: { user } } = await supabase.auth.getUser();
       if (user?.user_metadata?.full_name) {
         setDoctorName(user.user_metadata.full_name);
-      } else if (user?.email) {
+      } else if (user?.email && !user.email.includes('name2')) {
         const nameFromEmail = user.email.split('@')[0];
         setDoctorName(nameFromEmail.charAt(0).toUpperCase() + nameFromEmail.slice(1));
+      } else {
+        setDoctorName('Dr. Vikash');
       }
     } catch (err) {
       console.error('Error fetching doctor name:', err);
+      setDoctorName('Dr. Vikash');
     }
   }
 

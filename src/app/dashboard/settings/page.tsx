@@ -50,18 +50,37 @@ export default function SettingsPage() {
       if (error) throw error;
       if (data) {
         setClinic(data);
-        setClinicName(data.name || '');
-        setDoctorName(data.doctor_name || '');
-        setAddress(data.address || '');
-        setPhone(data.whatsapp_number || '');
-        setEvolutionUrl(data.evolution_url || '');
-        setEvolutionKey(data.evolution_apikey || '');
-        setInstanceName(data.evolution_instance || '');
-        setBaseFee(data.base_fee?.toString() || '500');
+        setClinicName(data.name || 'KK Neuro Vision Therapy Institute');
+        setDoctorName(data.doctor_name || 'Dr. Vikash');
+        setAddress(data.address || 'Healthcare Hub, Near Circle, Ahmedabad, Gujarat');
+        setPhone(data.whatsapp_number || '9558855508');
+        setEvolutionUrl(data.evolution_url || 'http://localhost:8081');
+        setEvolutionKey(data.evolution_apikey || 'yaot6e7yab8rlcxl95uw');
+        setInstanceName(data.evolution_instance || 'ClinicBot1');
+        setBaseFee(data.base_fee?.toString() || '800');
         setGstRate(data.gst_rate?.toString() || '18');
+      } else {
+        setClinicName('KK Neuro Vision Therapy Institute');
+        setDoctorName('Dr. Vikash');
+        setAddress('Healthcare Hub, Near Circle, Ahmedabad, Gujarat');
+        setPhone('9558855508');
+        setEvolutionUrl('http://localhost:8081');
+        setEvolutionKey('yaot6e7yab8rlcxl95uw');
+        setInstanceName('ClinicBot1');
+        setBaseFee('800');
+        setGstRate('18');
       }
     } catch (err) {
       console.error('Error fetching clinic:', err);
+      setClinicName('KK Neuro Vision Therapy Institute');
+      setDoctorName('Dr. Vikash');
+      setAddress('Healthcare Hub, Near Circle, Ahmedabad, Gujarat');
+      setPhone('9558855508');
+      setEvolutionUrl('http://localhost:8081');
+      setEvolutionKey('yaot6e7yab8rlcxl95uw');
+      setInstanceName('ClinicBot1');
+      setBaseFee('800');
+      setGstRate('18');
     } finally {
       setLoading(false);
     }
