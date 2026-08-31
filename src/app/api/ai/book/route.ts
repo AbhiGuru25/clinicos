@@ -17,11 +17,45 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+/**
+ * Deep recursive extractor for Omnidim JSON payloads.
+ * Locates full_name, phone_number, preferred_date_slot, main_concern anywhere in nested JSON.
+ */
+function extractOmnidimData(obj: any): { name?: string; phone?: string; slot?: string; concern?: string } {
+  if (!obj || typeof obj !== 'object') return {};
+
+  let name = obj.full_name || obj.patient_name || obj.caller_name || obj.customer?.name;
+  let phone = obj.phone_number || obj.caller_phone || obj.customer_phone || obj.customer?.number || obj.from;
+  let slot = obj.preferred_date_slot || obj.date_slot || obj.slot;
+  let concern = obj.main_concern || obj.concern || obj.notes;
+
+  // Search nested objects
+  for (const key of Object.keys(obj)) {
+    const val = obj[key];
+    if (val && typeof val === 'object' && !Array.isArray(val)) {
+      const nested = extractOmnidimData(val);
+      if (!name && nested.name) name = nested.name;
+      if (!phone && nested.phone) phone = nested.phone;
+      if (!slot && nested.slot) slot = nested.slot;
+      if (!concern && nested.concern) concern = nested.concern;
+    }
+  }
+
+  // Fallback to top-level name/phone/time/date if still missing
+  if (!name && typeof obj.name === 'string' && obj.name !== 'Voice AI Patient') name = obj.name;
+  if (!phone && (typeof obj.phone === 'string' || typeof obj.number === 'string')) phone = obj.phone || obj.number;
+  if (!slot && (typeof obj.time === 'string' || typeof obj.date === 'string')) slot = obj.time || obj.date;
+
+  return { name, phone, slot, concern };
+}
+
 function parseDateAndTime(slotStr: string, defaultDate: string) {
   let targetDate = defaultDate;
   let targetTime = '10:00:00';
 
-  if (!slotStr) return { date: targetDate, time: targetTime };
+  if (!slotStr || slotStr === 'NA' || slotStr === 'Not provided') {
+    return { date: targetDate, time: targetTime };
+  }
 
   const lower = slotStr.toLowerCase();
   const currentYear = new Date().getFullYear();
@@ -114,24 +148,18 @@ export async function POST(req: Request) {
 
     console.log('[Omnidim AI Booking API] Received payload:', JSON.stringify(payload));
 
-    // Support flat body OR Omnidim extracted_variables OR data.extracted_variables
-    const vars = payload.extracted_variables || 
-                 payload.data?.extracted_variables || 
-                 payload.call?.extracted_variables || 
-                 payload.variables || 
-                 payload;
+    // Extract variables using deep recursive extractor
+    const extracted = extractOmnidimData(payload);
 
-    const patientName = vars.full_name || vars.patient_name || vars.name || 'Voice AI Patient';
-    let rawPhone = vars.phone_number || vars.phone || vars.caller_phone || payload.caller_number || payload.from || payload.customer_phone || '';
-    const rawSlot = vars.preferred_date_slot || vars.date_slot || vars.time || vars.date || '';
-    const mainConcern = vars.main_concern || vars.notes || 'Voice AI Appointment Inquiry';
+    const patientName = extracted.name && extracted.name !== 'NA' && extracted.name !== 'Not provided' 
+      ? extracted.name 
+      : 'Voice AI Patient';
 
-    // Handle Web Calls where phone number is "Not provided", "NA", "None", or empty
-    const cleanPhoneCheck = normalizePhone(rawPhone);
-    if (!cleanPhoneCheck) {
-      console.warn(`[Omnidim AI Booking API] Unrecognized or missing phone ("${rawPhone}"). Using default fallback phone.`);
-      rawPhone = '9558855508'; // Default clinic / test caller phone
-    }
+    let rawPhone = extracted.phone || '';
+    const rawSlot = extracted.slot || '';
+    const mainConcern = extracted.concern && extracted.concern !== 'NA' && extracted.concern !== 'Not provided' 
+      ? extracted.concern 
+      : 'Voice AI Appointment Inquiry';
 
     // Handle empty Omnidim test ping request gracefully
     if (Object.keys(payload).length === 0) {
@@ -140,6 +168,13 @@ export async function POST(req: Request) {
         message: 'Omnidim API Connection Verified Successfully! Endpoint is online.',
         test_patient: patientName
       }, { headers: corsHeaders });
+    }
+
+    // Clean phone number or assign clean fallback
+    let cleanPhone = normalizePhone(rawPhone);
+    if (!cleanPhone || cleanPhone.length < 10) {
+      // Use fallback phone if caller phone is missing or unextracted
+      cleanPhone = '9558855508';
     }
 
     const todayStr = new Date().toISOString().split('T')[0];
@@ -154,10 +189,10 @@ export async function POST(req: Request) {
 
     // Smart Deduplicated Patient Lookup / Registration / Name Sync
     const patient = await findOrCreatePatient(supabaseAdmin, {
-      phone: rawPhone,
+      phone: cleanPhone,
       name: patientName,
       clinicId: clinic?.id,
-      history: mainConcern !== 'Not provided' && mainConcern !== 'Voice AI Appointment Inquiry' ? `Concern: ${mainConcern}` : undefined
+      history: mainConcern !== 'Voice AI Appointment Inquiry' ? `Concern: ${mainConcern}` : undefined
     });
 
     // Insert appointment into OPD Queue
