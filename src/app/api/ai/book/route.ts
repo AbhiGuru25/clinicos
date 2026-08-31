@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
-import { findOrCreatePatient } from '@/lib/phone';
+import { findOrCreatePatient, normalizePhone } from '@/lib/phone';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cqxvcdrverdwhxccyluz.supabase.co',
@@ -19,32 +19,85 @@ export async function OPTIONS() {
 
 function parseDateAndTime(slotStr: string, defaultDate: string) {
   let targetDate = defaultDate;
-  let targetTime = '10:00 AM';
+  let targetTime = '10:00:00';
 
   if (!slotStr) return { date: targetDate, time: targetTime };
 
   const lower = slotStr.toLowerCase();
-  const today = new Date();
+  const currentYear = new Date().getFullYear();
 
+  // 1. Handle relative dates
   if (lower.includes('tomorrow')) {
     const tmrw = new Date(Date.now() + 86400000);
     targetDate = tmrw.toISOString().split('T')[0];
   } else if (lower.includes('today')) {
-    targetDate = today.toISOString().split('T')[0];
+    targetDate = new Date().toISOString().split('T')[0];
   } else {
-    const matchDate = slotStr.match(/\d{4}-\d{2}-\d{2}/);
-    if (matchDate) targetDate = matchDate[0];
+    // 2. Check for explicit YYYY-MM-DD
+    const matchISO = slotStr.match(/\d{4}-\d{2}-\d{2}/);
+    if (matchISO) {
+      targetDate = matchISO[0];
+    } else {
+      // 3. Check for month names (e.g. "first of September", "September 1", "1st Sept")
+      const monthMap: Record<string, number> = {
+        january: 0, jan: 0,
+        february: 1, feb: 1,
+        march: 2, mar: 2,
+        april: 3, apr: 3,
+        may: 4,
+        june: 5, jun: 5,
+        july: 6, jul: 6,
+        august: 7, aug: 7,
+        september: 8, sept: 8, sep: 8,
+        october: 9, oct: 9,
+        november: 10, nov: 10,
+        december: 11, dec: 11
+      };
+
+      let monthIndex = -1;
+      let dayNumber = 1;
+
+      for (const [mName, mIdx] of Object.entries(monthMap)) {
+        if (lower.includes(mName)) {
+          monthIndex = mIdx;
+          break;
+        }
+      }
+
+      if (monthIndex !== -1) {
+        if (lower.includes('first') || lower.includes('1st') || lower.includes('one')) dayNumber = 1;
+        else if (lower.includes('second') || lower.includes('2nd') || lower.includes('two')) dayNumber = 2;
+        else if (lower.includes('third') || lower.includes('3rd') || lower.includes('three')) dayNumber = 3;
+        else if (lower.includes('fourth') || lower.includes('4th')) dayNumber = 4;
+        else if (lower.includes('fifth') || lower.includes('5th')) dayNumber = 5;
+        else {
+          const dayMatch = lower.match(/\b([1-9]|[12][0-9]|3[01])(st|nd|rd|th)?\b/);
+          if (dayMatch) dayNumber = parseInt(dayMatch[1], 10);
+        }
+
+        const parsedD = new Date(currentYear, monthIndex, dayNumber);
+        targetDate = parsedD.toISOString().split('T')[0];
+      }
+    }
   }
 
-  const matchTime = slotStr.match(/\b(1[0-2]|0?[1-9])(?::([0-5][0-9]))?\s*(am|pm)\b/i);
+  // 4. Extract time & convert to 24-hour SQL TIME format HH:MM:SS
+  const matchTime = slotStr.match(/\b(1[0-2]|0?[1-9])(?::([0-5][0-9]))?\s*(am|pm)?\b/i);
   if (matchTime) {
-    targetTime = matchTime[0].toUpperCase();
+    let hour = parseInt(matchTime[1], 10);
+    let min = matchTime[2] || '00';
+    let period = (matchTime[3] || (hour < 8 || hour === 12 ? 'PM' : 'AM')).toUpperCase();
+
+    if (period === 'PM' && hour < 12) hour += 12;
+    if (period === 'AM' && hour === 12) hour = 0;
+
+    targetTime = `${String(hour).padStart(2, '0')}:${min}:00`;
   } else if (lower.includes('evening')) {
-    targetTime = '05:00 PM';
+    targetTime = '17:00:00';
   } else if (lower.includes('afternoon')) {
-    targetTime = '02:00 PM';
+    targetTime = '14:00:00';
   } else if (lower.includes('morning')) {
-    targetTime = '10:00 AM';
+    targetTime = '10:00:00';
   }
 
   return { date: targetDate, time: targetTime };
@@ -69,7 +122,7 @@ export async function POST(req: Request) {
     const rawSlot = vars.preferred_date_slot || vars.date_slot || vars.time || vars.date || '';
     const mainConcern = vars.main_concern || vars.notes || 'Voice AI Appointment Inquiry';
 
-    // Handle empty Omnidim ping / test API request gracefully
+    // Handle empty ping gracefully
     if (!rawPhone || Object.keys(payload).length === 0) {
       return NextResponse.json({
         status: 'success',
@@ -88,12 +141,12 @@ export async function POST(req: Request) {
       .limit(1)
       .single();
 
-    // Smart Deduplicated Patient Lookup / Registration
+    // Smart Deduplicated Patient Lookup / Registration / Name Sync
     const patient = await findOrCreatePatient(supabaseAdmin, {
       phone: rawPhone,
       name: patientName,
       clinicId: clinic?.id,
-      history: mainConcern !== 'Voice AI Appointment Inquiry' ? `Concern: ${mainConcern}` : undefined
+      history: mainConcern !== 'Not provided' && mainConcern !== 'Voice AI Appointment Inquiry' ? `Concern: ${mainConcern}` : undefined
     });
 
     // Insert appointment into OPD Queue

@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Normalizes any phone number format (e.g., '+91 6352449698', '916352449698', '06352449698', '6352449698')
+ * Normalizes any phone number format (e.g., '+91 6352 44 9698', '916352449698', '06352449698', '6352449698')
  * to a clean 10-digit standard Indian phone string: '6352449698'.
  */
 export function normalizePhone(rawPhone: string): string {
@@ -20,6 +20,7 @@ export function normalizePhone(rawPhone: string): string {
 /**
  * Smart Patient Finder / Creator to eliminate duplicate patient records.
  * Searches for any variation of phone number (with or without 91/+91).
+ * Updates patient name and clinic ID if new details are provided.
  */
 export async function findOrCreatePatient(
   supabaseAdmin: any,
@@ -38,6 +39,8 @@ export async function findOrCreatePatient(
   const cleanPhone = normalizePhone(phone);
   if (!cleanPhone) throw new Error('Valid phone number is required');
 
+  const formattedName = name && name.trim() !== '' ? name.trim() : '';
+
   // Search by exact clean 10-digit, 12-digit, or +91 format
   const { data: existingPatients } = await supabaseAdmin
     .from('patients')
@@ -48,16 +51,30 @@ export async function findOrCreatePatient(
   let targetPatient = existingPatients?.[0];
 
   if (targetPatient) {
-    // Update existing patient if cleanPhone or new name provided
+    // Update existing patient if phone format or name needs updating
     const updatePayload: any = {};
     if (targetPatient.phone !== cleanPhone) {
       updatePayload.phone = cleanPhone;
     }
-    if (name && name !== 'New WhatsApp Patient' && name !== 'WhatsApp Patient' && targetPatient.name !== name) {
-      updatePayload.name = name;
+
+    const isGenericName = !targetPatient.name || 
+      targetPatient.name.toLowerCase() === 'new whatsapp patient' || 
+      targetPatient.name.toLowerCase() === 'whatsapp patient' || 
+      targetPatient.name.toLowerCase() === 'voice ai patient' ||
+      targetPatient.name.toLowerCase() === 'walk-in patient' ||
+      targetPatient.name.toLowerCase() === 'omnidim test' ||
+      targetPatient.name.toLowerCase() === 'test voice caller';
+
+    if (formattedName && (isGenericName || targetPatient.name !== formattedName)) {
+      updatePayload.name = formattedName;
     }
+
     if (clinicId && !targetPatient.clinic_id) {
       updatePayload.clinic_id = clinicId;
+    }
+
+    if (history && !targetPatient.history) {
+      updatePayload.history = history;
     }
 
     if (Object.keys(updatePayload).length > 0) {
@@ -75,7 +92,7 @@ export async function findOrCreatePatient(
 
   // Create new patient with clean phone number
   const patPayload: any = {
-    name: name || 'Walk-In Patient',
+    name: formattedName || 'Walk-In Patient',
     phone: cleanPhone,
     history: history || ''
   };
