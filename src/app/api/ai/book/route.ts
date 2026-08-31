@@ -17,10 +17,6 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
-/**
- * Deep recursive extractor for Omnidim JSON payloads.
- * Locates full_name, phone_number, preferred_date_slot, main_concern anywhere in nested JSON.
- */
 function extractOmnidimData(obj: any): { name?: string; phone?: string; slot?: string; concern?: string } {
   if (!obj || typeof obj !== 'object') return {};
 
@@ -29,7 +25,6 @@ function extractOmnidimData(obj: any): { name?: string; phone?: string; slot?: s
   let slot = obj.preferred_date_slot || obj.date_slot || obj.slot;
   let concern = obj.main_concern || obj.concern || obj.notes;
 
-  // Search nested objects
   for (const key of Object.keys(obj)) {
     const val = obj[key];
     if (val && typeof val === 'object' && !Array.isArray(val)) {
@@ -41,7 +36,6 @@ function extractOmnidimData(obj: any): { name?: string; phone?: string; slot?: s
     }
   }
 
-  // Fallback to top-level name/phone/time/date if still missing
   if (!name && typeof obj.name === 'string' && obj.name !== 'Voice AI Patient') name = obj.name;
   if (!phone && (typeof obj.phone === 'string' || typeof obj.number === 'string')) phone = obj.phone || obj.number;
   if (!slot && (typeof obj.time === 'string' || typeof obj.date === 'string')) slot = obj.time || obj.date;
@@ -60,32 +54,20 @@ function parseDateAndTime(slotStr: string, defaultDate: string) {
   const lower = slotStr.toLowerCase();
   const currentYear = new Date().getFullYear();
 
-  // 1. Handle relative dates
   if (lower.includes('tomorrow')) {
     const tmrw = new Date(Date.now() + 86400000);
     targetDate = tmrw.toISOString().split('T')[0];
   } else if (lower.includes('today')) {
     targetDate = new Date().toISOString().split('T')[0];
   } else {
-    // 2. Check for explicit YYYY-MM-DD
     const matchISO = slotStr.match(/\d{4}-\d{2}-\d{2}/);
     if (matchISO) {
       targetDate = matchISO[0];
     } else {
-      // 3. Check for month names (e.g. "first of September", "September 1", "1st Sept")
       const monthMap: Record<string, number> = {
-        january: 0, jan: 0,
-        february: 1, feb: 1,
-        march: 2, mar: 2,
-        april: 3, apr: 3,
-        may: 4,
-        june: 5, jun: 5,
-        july: 6, jul: 6,
-        august: 7, aug: 7,
-        september: 8, sept: 8, sep: 8,
-        october: 9, oct: 9,
-        november: 10, nov: 10,
-        december: 11, dec: 11
+        january: 0, jan: 0, february: 1, feb: 1, march: 2, mar: 2, april: 3, apr: 3,
+        may: 4, june: 5, jun: 5, july: 6, jul: 6, august: 7, aug: 7,
+        september: 8, sept: 8, sep: 8, october: 9, oct: 9, november: 10, nov: 10, december: 11, dec: 11
       };
 
       let monthIndex = -1;
@@ -115,7 +97,6 @@ function parseDateAndTime(slotStr: string, defaultDate: string) {
     }
   }
 
-  // 4. Extract time & convert to 24-hour SQL TIME format HH:MM:SS
   const matchTime = slotStr.match(/\b(1[0-2]|0?[1-9])(?::([0-5][0-9]))?\s*(am|pm)?\b/i);
   if (matchTime) {
     let hour = parseInt(matchTime[1], 10);
@@ -148,6 +129,18 @@ export async function POST(req: Request) {
 
     console.log('[Omnidim AI Booking API] Received payload:', JSON.stringify(payload));
 
+    // Log raw JSON to database for exact payload inspection
+    try {
+      await supabaseAdmin.from('whatsapp_messages').insert([{
+        sender_number: 'OMNIDIM_PAYLOAD_LOG',
+        content: JSON.stringify(payload).slice(0, 4000),
+        type: 'incoming',
+        status: 'logged'
+      }]);
+    } catch (logErr) {
+      console.error('Payload log error:', logErr);
+    }
+
     // Extract variables using deep recursive extractor
     const extracted = extractOmnidimData(payload);
 
@@ -161,7 +154,7 @@ export async function POST(req: Request) {
       ? extracted.concern 
       : 'Voice AI Appointment Inquiry';
 
-    // Handle empty Omnidim test ping request gracefully
+    // Handle empty test ping
     if (Object.keys(payload).length === 0) {
       return NextResponse.json({
         status: 'success',
@@ -170,10 +163,9 @@ export async function POST(req: Request) {
       }, { headers: corsHeaders });
     }
 
-    // Clean phone number or assign clean fallback
+    // Clean phone number or assign fallback
     let cleanPhone = normalizePhone(rawPhone);
     if (!cleanPhone || cleanPhone.length < 10) {
-      // Use fallback phone if caller phone is missing or unextracted
       cleanPhone = '9558855508';
     }
 
