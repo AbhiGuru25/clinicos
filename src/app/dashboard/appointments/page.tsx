@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabase';
+import Link from 'next/link';
 import { 
   Calendar, 
   Filter, 
@@ -17,7 +18,8 @@ import {
   AlertCircle,
   FileText,
   ChevronRight,
-  UserPlus
+  UserPlus,
+  ExternalLink
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -63,7 +65,9 @@ export default function AppointmentsPage() {
 
   // Appointment Form
   const [appointmentDate, setAppointmentDate] = useState('');
-  const [appointmentTime, setAppointmentTime] = useState('10:00 AM');
+  const [slotHour, setSlotHour] = useState('10');
+  const [slotMinute, setSlotMinute] = useState('00');
+  const [ampm, setAmpm] = useState('AM');
   const [notes, setNotes] = useState('');
 
   // Filters
@@ -143,10 +147,24 @@ export default function AppointmentsPage() {
     // Default walk-in appointment date/time
     const now = new Date();
     setAppointmentDate(todayStr);
-    setAppointmentTime(`${String(now.getHours()).padStart(2, '0')}:00`);
+    const hrs = now.getHours();
+    const formattedHrs = hrs % 12 || 12;
+    setSlotHour(String(formattedHrs).padStart(2, '0'));
+    setSlotMinute('00');
+    setAmpm(hrs >= 12 ? 'PM' : 'AM');
+
+    // Realtime channel for zero-refresh live updates
+    const channel = supabase
+      .channel('realtime-appointments-page')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => fetchAppointments())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, () => fetchAppointments())
+      .subscribe();
 
     const timeout = setTimeout(() => setLoading(false), 3000);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -155,12 +173,19 @@ export default function AppointmentsPage() {
         setSearchResults([]);
         return;
       }
-      const { data } = await supabase
-        .from('patients')
-        .select('*')
-        .ilike('name', `%${patientSearch}%`)
-        .limit(5);
-      setSearchResults(data || []);
+      try {
+        const res = await fetch('/api/patients');
+        const data = await res.json();
+        if (data.success && data.patients) {
+          const filtered = data.patients.filter((p: any) => 
+            (p.name || '').toLowerCase().includes(patientSearch.toLowerCase()) ||
+            (p.phone || '').includes(patientSearch)
+          ).slice(0, 5);
+          setSearchResults(filtered);
+        }
+      } catch (err) {
+        console.error('Search error:', err);
+      }
     };
     const timer = setTimeout(searchPatients, 300);
     return () => clearTimeout(timer);
@@ -168,14 +193,11 @@ export default function AppointmentsPage() {
 
   async function fetchAppointments() {
     try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select('*, patients(name, phone)')
-        .order('appointment_date', { ascending: true })
-        .order('appointment_time', { ascending: true });
-
-      if (error) throw error;
-      setAppointments(data || []);
+      const res = await fetch('/api/appointments');
+      const data = await res.json();
+      if (data.success) {
+        setAppointments(data.appointments || []);
+      }
     } catch (err) {
       console.error('Error fetching appointments:', err);
     } finally {
@@ -186,76 +208,61 @@ export default function AppointmentsPage() {
   const handleBook = async (e: React.FormEvent) => {
     e.preventDefault();
     setBooking(true);
-    let patientId = selectedPatient?.id;
-    const pName = isNewPatient ? newPatientName : (selectedPatient?.name || 'Walk-In Patient');
-    const pPhone = isNewPatient ? newPatientPhone : (selectedPatient?.phone || '');
 
-    if (isNewPatient && newPatientPhone) {
-      try {
-        // 1. Check if patient with this phone already exists in patients table
-        const { data: existingP } = await supabase
-          .from('patients')
-          .select('id')
-          .eq('phone', newPatientPhone)
-          .maybeSingle();
+    const finalAppointmentTime = `${String(slotHour).padStart(2, '0')}:${slotMinute} ${ampm}`;
 
-        if (existingP?.id) {
-          patientId = existingP.id;
-        } else {
-          // 2. Create new patient record
-          const { data: newP, error: pErr } = await supabase
-            .from('patients')
-            .insert([{ clinic_id: clinicId, name: newPatientName, phone: newPatientPhone }])
-            .select()
-            .single();
+    try {
+      const res = await fetch('/api/appointments/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clinic_id: clinicId,
+          patient_id: selectedPatient?.id,
+          is_new_patient: isNewPatient,
+          patient_name: newPatientName,
+          patient_phone: newPatientPhone,
+          appointment_date: appointmentDate,
+          appointment_time: finalAppointmentTime,
+          notes: notes
+        })
+      });
 
-          if (pErr) {
-            console.error('Patient insert warning:', pErr);
-          } else if (newP) {
-            patientId = newP.id;
-          }
-        }
-      } catch (err) {
-        console.error('Patient handling error:', err);
+      const data = await res.json();
+
+      if (!data.success) {
+        alert(data.error || 'Failed to book appointment.');
+      } else {
+        setIsModalOpen(false);
+        setNewPatientName('');
+        setNewPatientPhone('');
+        setSelectedPatient(null);
+        setPatientSearch('');
+        setNotes('');
+        setSlotHour('10');
+        setSlotMinute('00');
+        setAmpm('AM');
+        fetchAppointments();
       }
+    } catch (err: any) {
+      alert(`Booking Error: ${err.message}`);
+    } finally {
+      setBooking(false);
     }
-
-    // 3. Insert Appointment with fallback fields
-    const { error } = await supabase.from('appointments').insert([{ 
-      clinic_id: clinicId, 
-      patient_id: patientId || null, 
-      patient_name: pName,
-      phone_number: pPhone,
-      appointment_date: appointmentDate, 
-      appointment_time: appointmentTime, 
-      status: 'confirmed', 
-      notes: notes 
-    }]);
-
-    if (error) {
-      alert(`Booking Error: ${error.message}`);
-    } else { 
-      setIsModalOpen(false); 
-      setNewPatientName('');
-      setNewPatientPhone('');
-      setSelectedPatient(null);
-      setPatientSearch('');
-      setNotes('');
-      setAppointmentTime('10:00 AM');
-      fetchAppointments(); 
-    }
-    setBooking(false);
   };
 
   const handleUpdateStatus = async (appointmentId: string, newStatus: string) => {
     try {
-      const { error } = await supabase
-        .from('appointments')
-        .update({ status: newStatus })
-        .eq('id', appointmentId);
-
-      if (error) throw error;
-      fetchAppointments();
+      const res = await fetch('/api/appointments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: appointmentId, status: newStatus })
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchAppointments();
+      } else {
+        alert(data.error || 'Failed to update status');
+      }
     } catch (err: any) {
       alert(err.message || 'Failed to update status');
     }
@@ -269,32 +276,41 @@ export default function AppointmentsPage() {
     const gst = (fee * Number(gstRate)) / 100;
     const total = fee + gst;
 
-    // 1. Update Appointment Status
-    const { error: aErr } = await supabase
-      .from('appointments')
-      .update({ status: 'completed' })
-      .eq('id', selectedAppointment.id);
+    try {
+      // 1. Update Appointment Status to completed via server API (bypasses RLS)
+      await fetch('/api/appointments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedAppointment.id, status: 'completed' })
+      });
 
-    if (aErr) { alert(aErr.message); setBooking(false); return; }
+      // 2. Generate Invoice Record via server API (bypasses RLS)
+      const res = await fetch('/api/billing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clinic_id: clinicId,
+          appointment_id: selectedAppointment.id,
+          amount: fee,
+          gst_amount: gst,
+          total_amount: total
+        })
+      });
 
-    // 2. Generate Invoice Record
-    const { error: iErr } = await supabase.from('invoices').insert([
-      {
-        clinic_id: clinicId,
-        appointment_id: selectedAppointment.id,
-        amount: fee,
-        gst_amount: gst,
-        total: total,
+      const data = await res.json();
+
+      if (!data.success) {
+        alert(`Billing Error: ${data.error}`);
+      } else {
+        setIsBillingModalOpen(false);
+        fetchAppointments();
+        alert("✅ Visit Completed & Invoice Generated!");
       }
-    ]);
-
-    if (iErr) alert(iErr.message);
-    else {
-      setIsBillingModalOpen(false);
-      fetchAppointments();
-      alert("✅ Visit Completed & Invoice Generated!");
+    } catch (err: any) {
+      alert(`Billing Error: ${err.message}`);
+    } finally {
+      setBooking(false);
     }
-    setBooking(false);
   };
 
   const handleSendReminder = async (appointment: any) => {
@@ -307,28 +323,7 @@ export default function AppointmentsPage() {
     const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
     const patientName = appointment.patients?.name || 'Patient';
     const msg = `Hi ${patientName}! 🙏\n\nThis is a reminder for your appointment at *KK Neuro Vision Therapy Institute*.\n\n📅 Date: ${formatDate(appointment.appointment_date)}\n⏰ Time: ${formatTime(appointment.appointment_time)}\n📍 Location: KK Neuro Vision Therapy Institute, Ahmedabad.\n\nSee you soon!`;
-
-    try {
-      const res = await fetch('http://localhost:8081/message/sendText/ClinicBot1', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': 'yaot6e7yab8rlcxl95uw'
-        },
-        body: JSON.stringify({
-          number: formattedPhone,
-          text: msg,
-          textMessage: { text: msg }
-        })
-      });
-      if (res.ok) {
-        alert(`✅ WhatsApp reminder sent to ${patientName} (${formattedPhone})!`);
-      } else {
-        window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-      }
-    } catch {
-      window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-    }
+    window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, '_blank');
   };
 
   return (
@@ -492,7 +487,18 @@ export default function AppointmentsPage() {
                     {/* Patient Name & Contact */}
                     <div>
                       <div className="flex items-center gap-2">
-                        <h3 className="font-extrabold text-base text-slate-900">{pName}</h3>
+                        {a.patient_id || a.patients?.id ? (
+                          <Link 
+                            href={`/dashboard/patients/${a.patient_id || a.patients?.id}`}
+                            className="font-extrabold text-base text-slate-900 hover:text-blue-600 transition-colors flex items-center gap-1.5 group"
+                            title="View Patient Medical File"
+                          >
+                            <span>{pName}</span>
+                            <ExternalLink size={13} className="text-slate-400 group-hover:text-blue-600 transition-colors" />
+                          </Link>
+                        ) : (
+                          <h3 className="font-extrabold text-base text-slate-900">{pName}</h3>
+                        )}
                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider ${
                           isCompleted ? 'bg-purple-100 text-purple-700' : isConfirmed ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
                         }`}>
@@ -663,24 +669,57 @@ export default function AppointmentsPage() {
                     )}
                   </div>
 
-                  {/* Visit Date & Time Slot */}
-                  <div className="grid grid-cols-2 gap-3">
+                  {/* Visit Date & Time (Hour : Min : AM/PM) */}
+                  <div className="space-y-3">
                     <div>
                       <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Visit Date</label>
                       <input required type="date" value={appointmentDate} onChange={e => setAppointmentDate(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
                     </div>
+
                     <div>
-                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Time Slot (12-Hr AM/PM)</label>
-                      <select 
-                        required 
-                        value={appointmentTime} 
-                        onChange={e => setAppointmentTime(e.target.value)} 
-                        className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900 cursor-pointer"
-                      >
-                        {TIME_SLOTS.map(slot => (
-                          <option key={slot} value={slot}>{slot}</option>
-                        ))}
-                      </select>
+                      <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Time Slot (Hour : Minute : AM/PM)</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {/* Hour 1 to 12 */}
+                        <div>
+                          <select 
+                            required 
+                            value={slotHour} 
+                            onChange={e => setSlotHour(e.target.value)} 
+                            className="w-full px-3 py-2.5 border border-slate-200 rounded-xl font-extrabold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900 cursor-pointer"
+                          >
+                            {['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'].map(h => (
+                              <option key={h} value={h}>{h} Hr</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Minute 00 to 45 */}
+                        <div>
+                          <select 
+                            required 
+                            value={slotMinute} 
+                            onChange={e => setSlotMinute(e.target.value)} 
+                            className="w-full px-3 py-2.5 border border-slate-200 rounded-xl font-extrabold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900 cursor-pointer"
+                          >
+                            {['00', '15', '30', '45'].map(m => (
+                              <option key={m} value={m}>{m} Min</option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* AM / PM Box */}
+                        <div>
+                          <select 
+                            required 
+                            value={ampm} 
+                            onChange={e => setAmpm(e.target.value)} 
+                            className="w-full px-3 py-2.5 border border-blue-200 rounded-xl font-black text-sm bg-blue-50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-blue-700 cursor-pointer shadow-sm"
+                          >
+                            <option value="AM">AM</option>
+                            <option value="PM">PM</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

@@ -50,19 +50,27 @@ export default function PatientsPage() {
     };
     init();
 
+    // Live Realtime listener for zero-refresh updates
+    const channel = supabase
+      .channel('realtime-patients-page')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, () => fetchPatients())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => fetchPatients())
+      .subscribe();
+
     const timeout = setTimeout(() => setLoading(false), 3000);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   async function fetchPatients() {
     try {
-      const { data, error } = await supabase
-        .from('patients')
-        .select('*, appointments(id)')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setPatients(data || []);
+      const res = await fetch('/api/patients');
+      const data = await res.json();
+      if (data.success) {
+        setPatients(data.patients || []);
+      }
     } catch (err) {
       console.error('Error fetching patients:', err);
     } finally {
@@ -74,41 +82,32 @@ export default function PatientsPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      // 1. Check if patient phone already exists
-      const { data: existing } = await supabase
-        .from('patients')
-        .select('id')
-        .eq('phone', phone)
-        .maybeSingle();
-
-      if (existing?.id) {
-        alert('ℹ️ A patient with this phone number already exists!');
-        setIsModalOpen(false);
-        setSaving(false);
-        return;
-      }
-
-      // 2. Insert Patient
-      const { error } = await supabase
-        .from('patients')
-        .insert([{ 
-          clinic_id: clinicId, 
-          name, 
-          phone, 
+      const res = await fetch('/api/patients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clinic_id: clinicId,
+          name,
+          phone,
           gender,
-          age: age ? Number(age) : null,
-          medical_notes: notes 
-        }]);
+          age,
+          medical_notes: notes
+        })
+      });
 
-      if (error) throw error;
+      const data = await res.json();
 
-      alert('✅ New Patient Registered Successfully!');
-      setIsModalOpen(false);
-      setName('');
-      setPhone('');
-      setAge('');
-      setNotes('');
-      fetchPatients();
+      if (!data.success) {
+        alert(`Registration Error: ${data.error}`);
+      } else {
+        alert('✅ New Patient Registered Successfully!');
+        setIsModalOpen(false);
+        setName('');
+        setPhone('');
+        setAge('');
+        setNotes('');
+        fetchPatients();
+      }
     } catch (err: any) {
       alert(`Registration Error: ${err.message}`);
     } finally {
@@ -301,7 +300,14 @@ export default function PatientsPage() {
                         {(p.name || 'P').charAt(0).toUpperCase()}
                       </div>
                       <div>
-                        <p className="font-extrabold text-slate-900 text-sm">{p.name || 'Unnamed Patient'}</p>
+                        <Link 
+                          href={`/dashboard/patients/${p.id}`} 
+                          className="font-extrabold text-slate-900 text-sm hover:text-blue-600 transition-colors flex items-center gap-1.5 group/link"
+                          title="View Full Medical File"
+                        >
+                          <span>{p.name || 'Unnamed Patient'}</span>
+                          <ExternalLink size={12} className="text-slate-400 group-hover/link:text-blue-600 transition-colors" />
+                        </Link>
                         <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">ID: {p.id.slice(0, 8)}</p>
                       </div>
                     </div>
@@ -331,25 +337,28 @@ export default function PatientsPage() {
                       )}
                     </div>
 
-                    {/* Visits Badge */}
-                    <div className="md:col-span-2 mt-2 md:mt-0 flex items-center md:justify-center">
-                      <div className="inline-flex items-center gap-1 px-3 py-1 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 font-extrabold text-xs">
+                    {/* Total Visits Pill */}
+                    <div className="md:col-span-2 mt-2 md:mt-0 text-center">
+                      <Link 
+                        href={`/dashboard/patients/${p.id}`}
+                        className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-extrabold hover:bg-blue-100 transition-all"
+                      >
                         <Activity size={12} />
                         <span>{p.appointments?.length || 0} Visit(s)</span>
-                      </div>
+                      </Link>
                     </div>
 
-                    {/* Date */}
+                    {/* Registered Date */}
                     <div className="md:col-span-2 mt-2 md:mt-0 text-xs font-semibold text-slate-500 flex items-center gap-1.5">
                       <Calendar size={13} className="text-slate-400" />
                       <span>{p.created_at ? new Date(p.created_at).toLocaleDateString('en-IN', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'}</span>
                     </div>
 
-                    {/* View Records Link */}
-                    <div className="md:col-span-1 mt-3 md:mt-0 flex md:justify-end">
+                    {/* Records & Actions */}
+                    <div className="md:col-span-1 mt-3 md:mt-0 flex items-center justify-end gap-2">
                       <Link 
-                        href={`/dashboard/patients/${p.id}`}
-                        className="w-full md:w-auto inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-xl font-extrabold text-xs text-blue-600 bg-blue-50/70 border border-blue-100 hover:bg-blue-600 hover:text-white transition-all shadow-sm"
+                        href={`/dashboard/patients/${p.id}`} 
+                        className="text-xs font-extrabold px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-blue-600 hover:text-white transition-all flex items-center gap-1"
                       >
                         <span>File</span>
                         <ExternalLink size={12} />

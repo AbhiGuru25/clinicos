@@ -1,10 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
+import { findOrCreatePatient, normalizePhone } from '@/lib/phone';
 
-// Initialize Supabase with Admin Key to bypass RLS for system operations
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cqxvcdrverdwhxccyluz.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNxeHZjZHJ2ZXJkd2h4Y2N5bHV6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NzU2Nzg0MywiZXhwIjoyMDkzMTQzODQzfQ.J4YGOOEPLY7reYhS5OLlY7K-Vv8v_w1lrGNhFp0tMUk'
 );
 
 export async function POST(req: Request) {
@@ -12,9 +12,6 @@ export async function POST(req: Request) {
     const payload = await req.json();
     console.log('WhatsApp Webhook Payload:', payload);
 
-    // Evolution API structure usually looks like this:
-    // { instance: 'ClinicOS', event: 'messages.upsert', data: { message: { ... } } }
-    
     const { instance, data } = payload;
     
     if (!instance || !data) {
@@ -37,39 +34,26 @@ export async function POST(req: Request) {
     if (!message) return NextResponse.json({ status: 'ok' });
 
     const remoteJid = message.key.remoteJid;
-    const senderNumber = remoteJid.split('@')[0];
+    const rawSenderNumber = remoteJid.split('@')[0];
+    const cleanSenderNumber = normalizePhone(rawSenderNumber);
     const textContent = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
 
     if (!textContent) return NextResponse.json({ status: 'ok' });
 
-    // 2. Find or create patient
-    let { data: patient } = await supabaseAdmin
-      .from('patients')
-      .select('id')
-      .eq('phone', senderNumber)
-      .eq('clinic_id', clinic.id)
-      .single();
-
-    if (!patient) {
-      const { data: newPatient } = await supabaseAdmin
-        .from('patients')
-        .insert({
-          name: 'New WhatsApp Patient',
-          phone: senderNumber,
-          clinic_id: clinic.id
-        })
-        .select()
-        .single();
-      patient = newPatient;
-    }
+    // 2. Find or create patient with deduplicated phone lookup
+    const patient = await findOrCreatePatient(supabaseAdmin, {
+      phone: cleanSenderNumber,
+      name: 'New WhatsApp Patient',
+      clinicId: clinic.id
+    });
 
     // 3. Store the message
-    const { data: newMessage, error: msgError } = await supabaseAdmin
+    const { data: newMessage } = await supabaseAdmin
       .from('whatsapp_messages')
       .insert({
         clinic_id: clinic.id,
         patient_id: patient?.id,
-        sender_number: senderNumber,
+        sender_number: cleanSenderNumber,
         content: textContent,
         type: 'incoming',
         status: 'received'
@@ -77,7 +61,7 @@ export async function POST(req: Request) {
       .select()
       .single();
 
-    // 4. Trigger n8n Master Workflow (Async - don't wait for it to respond to sender)
+    // 4. Trigger n8n Master Workflow (Async)
     if (newMessage && process.env.N8N_WEBHOOK_URL) {
       fetch(process.env.N8N_WEBHOOK_URL, {
         method: 'POST',

@@ -47,11 +47,13 @@ export default function Dashboard() {
     tick();
     const interval = setInterval(tick, 60000);
 
-    // Realtime changes
+    // Realtime changes for live combined updates
     const channel = supabase
-      .channel('dashboard-realtime')
+      .channel('dashboard-realtime-all')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, () => fetchDashboardData())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => fetchDashboardData())
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'whatsapp_messages' }, () => fetchMessages())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' }, () => fetchDashboardData())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'whatsapp_messages' }, () => fetchDashboardData())
       .subscribe();
 
     return () => {
@@ -63,32 +65,15 @@ export default function Dashboard() {
 
   async function fetchDashboardData() {
     try {
-      // 1. Fetch Doctor Name
-      const { data: clinic } = await supabase.from('clinics').select('doctor_name').limit(1).single();
-      if (clinic?.doctor_name && !clinic.doctor_name.toLowerCase().includes('name2')) {
-        setDoctorName(clinic.doctor_name);
+      const res = await fetch('/api/stats');
+      const data = await res.json();
+      if (data.success) {
+        if (data.doctorName) setDoctorName(data.doctorName);
+        setPatients(new Array(data.totalPatients || 0).fill(0));
+        setAppointments(data.allAppointments || []);
+        setTotalRevenue(data.totalRevenue || 0);
+        setMessages(data.messages || []);
       }
-
-      // 2. Fetch Patients Count
-      const { data: pData } = await supabase.from('patients').select('id');
-      setPatients(pData || []);
-
-      // 3. Fetch Today's Appointments
-      const { data: aData } = await supabase
-        .from('appointments')
-        .select('*, patients(name, phone)')
-        .order('appointment_time', { ascending: true });
-      setAppointments(aData || []);
-
-      // 4. Fetch Total Revenue
-      const { data: invoices } = await supabase.from('invoices').select('total');
-      if (invoices) {
-        const total = invoices.reduce((sum: number, inv: any) => sum + (Number(inv.total) || 0), 0);
-        setTotalRevenue(total);
-      }
-
-      // 5. Fetch Messages
-      fetchMessages();
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
     } finally {

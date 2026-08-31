@@ -14,6 +14,7 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
   const { id } = use(params);
   const [patient, setPatient] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
+  const [invoices, setInvoices] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Prescription Modal State
@@ -32,26 +33,13 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
 
   async function fetchPatientDetails() {
     try {
-      // Fetch Patient
-      const { data: pData, error: pError } = await supabase
-        .from('patients')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (pError) throw pError;
-      setPatient(pData);
-
-      // Fetch Appointments
-      const { data: aData, error: aError } = await supabase
-        .from('appointments')
-        .select('*')
-        .eq('patient_id', id)
-        .order('appointment_date', { ascending: false });
-      
-      if (aError) throw aError;
-      setAppointments(aData || []);
-
+      const res = await fetch(`/api/patients/${id}`);
+      const data = await res.json();
+      if (data.success) {
+        setPatient(data.patient);
+        setAppointments(data.appointments || []);
+        setInvoices(data.invoices || []);
+      }
     } catch (err) {
       console.error('Error fetching patient details:', err);
     } finally {

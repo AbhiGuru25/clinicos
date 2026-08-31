@@ -54,8 +54,19 @@ export default function BillingPage() {
     };
     init();
 
+    // Realtime subscription for live billing updates without refresh
+    const channel = supabase
+      .channel('realtime-billing-page')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'invoices' }, () => fetchInvoices())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' }, () => fetchInvoices())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'patients' }, () => fetchInvoices())
+      .subscribe();
+
     const timeout = setTimeout(() => setLoading(false), 3000);
-    return () => clearTimeout(timeout);
+    return () => {
+      clearTimeout(timeout);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   useEffect(() => {
@@ -64,12 +75,19 @@ export default function BillingPage() {
         setSearchResults([]);
         return;
       }
-      const { data } = await supabase
-        .from('patients')
-        .select('*')
-        .ilike('name', `%${patientSearch}%`)
-        .limit(5);
-      setSearchResults(data || []);
+      try {
+        const res = await fetch('/api/patients');
+        const data = await res.json();
+        if (data.success && data.patients) {
+          const filtered = data.patients.filter((p: any) =>
+            (p.name || '').toLowerCase().includes(patientSearch.toLowerCase()) ||
+            (p.phone || '').includes(patientSearch)
+          ).slice(0, 5);
+          setSearchResults(filtered);
+        }
+      } catch (err) {
+        console.error('Search error:', err);
+      }
     };
     const timer = setTimeout(searchPatients, 300);
     return () => clearTimeout(timer);
@@ -77,13 +95,11 @@ export default function BillingPage() {
 
   async function fetchInvoices() {
     try {
-      const { data, error } = await supabase
-        .from('invoices')
-        .select('*, appointments(appointment_date, patients(name, phone))')
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setInvoices(data || []);
+      const res = await fetch('/api/billing');
+      const data = await res.json();
+      if (data.success) {
+        setInvoices(data.invoices || []);
+      }
     } catch (err) {
       console.error('Error fetching invoices:', err);
     } finally {
@@ -99,45 +115,37 @@ export default function BillingPage() {
     }
     setCreating(true);
     try {
-      // 1. Create walk-in completed appointment
-      const todayStr = new Date().toISOString().split('T')[0];
-      const nowStr = `${String(new Date().getHours()).padStart(2, '0')}:00`;
-      
-      const { data: apt, error: aErr } = await supabase.from('appointments').insert([{
-        clinic_id: clinicId,
-        patient_id: selectedPatient.id,
-        patient_name: selectedPatient.name,
-        phone_number: selectedPatient.phone,
-        appointment_date: todayStr,
-        appointment_time: nowStr,
-        status: 'completed',
-        notes: notes
-      }]).select().single();
-
-      if (aErr) throw aErr;
-
-      // 2. Generate Invoice Record
       const feeNum = Number(fee);
       const gstAmt = (feeNum * Number(gstRate)) / 100;
       const totalAmt = feeNum + gstAmt;
 
-      const { error: iErr } = await supabase.from('invoices').insert([{
-        clinic_id: clinicId,
-        appointment_id: apt.id,
-        amount: feeNum,
-        gst_amount: gstAmt,
-        total: totalAmt
-      }]);
+      const res = await fetch('/api/billing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          clinic_id: clinicId,
+          patient_id: selectedPatient.id,
+          amount: feeNum,
+          consultation_fee: feeNum,
+          gst_rate: Number(gstRate),
+          total_amount: totalAmt,
+          status: 'paid'
+        })
+      });
 
-      if (iErr) throw iErr;
+      const data = await res.json();
 
-      alert('✅ Invoice Generated Successfully!');
-      setIsModalOpen(false);
-      setSelectedPatient(null);
-      setPatientSearch('');
-      fetchInvoices();
+      if (!data.success) {
+        alert(data.error || 'Failed to create invoice.');
+      } else {
+        alert('✅ Invoice Generated Successfully!');
+        setIsModalOpen(false);
+        setPatientSearch('');
+        setSelectedPatient(null);
+        fetchInvoices();
+      }
     } catch (err: any) {
-      alert(`Invoice Creation Error: ${err.message}`);
+      alert(`Invoice Error: ${err.message}`);
     } finally {
       setCreating(false);
     }
