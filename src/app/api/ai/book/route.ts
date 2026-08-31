@@ -112,18 +112,29 @@ export async function POST(req: Request) {
       payload = {};
     }
 
-    console.log('[Omnidim AI Booking API] Received payload:', payload);
+    console.log('[Omnidim AI Booking API] Received payload:', JSON.stringify(payload));
 
-    // Support flat body OR Omnidim extracted_variables OR post-call payload
-    const vars = payload.extracted_variables || payload.variables || payload;
+    // Support flat body OR Omnidim extracted_variables OR data.extracted_variables
+    const vars = payload.extracted_variables || 
+                 payload.data?.extracted_variables || 
+                 payload.call?.extracted_variables || 
+                 payload.variables || 
+                 payload;
 
     const patientName = vars.full_name || vars.patient_name || vars.name || 'Voice AI Patient';
-    const rawPhone = vars.phone_number || vars.phone || vars.caller_phone || payload.caller_number || '';
+    let rawPhone = vars.phone_number || vars.phone || vars.caller_phone || payload.caller_number || payload.from || payload.customer_phone || '';
     const rawSlot = vars.preferred_date_slot || vars.date_slot || vars.time || vars.date || '';
     const mainConcern = vars.main_concern || vars.notes || 'Voice AI Appointment Inquiry';
 
-    // Handle empty ping gracefully
-    if (!rawPhone || Object.keys(payload).length === 0) {
+    // Handle Web Calls where phone number is "Not provided", "NA", "None", or empty
+    const cleanPhoneCheck = normalizePhone(rawPhone);
+    if (!cleanPhoneCheck) {
+      console.warn(`[Omnidim AI Booking API] Unrecognized or missing phone ("${rawPhone}"). Using default fallback phone.`);
+      rawPhone = '9558855508'; // Default clinic / test caller phone
+    }
+
+    // Handle empty Omnidim test ping request gracefully
+    if (Object.keys(payload).length === 0) {
       return NextResponse.json({
         status: 'success',
         message: 'Omnidim API Connection Verified Successfully! Endpoint is online.',
