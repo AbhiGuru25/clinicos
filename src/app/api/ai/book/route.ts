@@ -17,14 +17,23 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+/**
+ * Prioritized Extractor for Omnidim JSON Payloads.
+ * ALWAYS prioritizes patient's spoken phone number (extracted_variables.phone_number)
+ * OVER telecom SIP line caller ID (customer.number / from).
+ */
 function extractOmnidimData(obj: any): { name?: string; phone?: string; slot?: string; concern?: string } {
   if (!obj || typeof obj !== 'object') return {};
 
-  let name = obj.full_name || obj.patient_name || obj.caller_name || obj.customer?.name;
-  let phone = obj.phone_number || obj.caller_phone || obj.customer_phone || obj.customer?.number || obj.from;
-  let slot = obj.preferred_date_slot || obj.date_slot || obj.slot;
-  let concern = obj.main_concern || obj.concern || obj.notes;
+  // 1. Check extracted_variables first (High Priority)
+  const vars = obj.extracted_variables || obj.data?.extracted_variables || obj.call?.extracted_variables || obj.variables;
+  
+  let name = vars?.full_name || vars?.patient_name || vars?.caller_name || obj.full_name || obj.patient_name || obj.customer?.name;
+  let phone = vars?.phone_number || vars?.phone || vars?.caller_phone || vars?.mobile || obj.phone_number || obj.caller_phone;
+  let slot = vars?.preferred_date_slot || vars?.date_slot || vars?.slot || obj.preferred_date_slot;
+  let concern = vars?.main_concern || vars?.concern || vars?.notes || obj.main_concern;
 
+  // 2. Search recursively if any field is still missing
   for (const key of Object.keys(obj)) {
     const val = obj[key];
     if (val && typeof val === 'object' && !Array.isArray(val)) {
@@ -36,8 +45,12 @@ function extractOmnidimData(obj: any): { name?: string; phone?: string; slot?: s
     }
   }
 
+  // 3. Fallback to telecom caller ID if spoken phone was not provided
+  if (!phone) {
+    phone = obj.customer_phone || obj.customer?.number || obj.from || obj.phone || obj.number;
+  }
+
   if (!name && typeof obj.name === 'string' && obj.name !== 'Voice AI Patient') name = obj.name;
-  if (!phone && (typeof obj.phone === 'string' || typeof obj.number === 'string')) phone = obj.phone || obj.number;
   if (!slot && (typeof obj.time === 'string' || typeof obj.date === 'string')) slot = obj.time || obj.date;
 
   return { name, phone, slot, concern };
@@ -86,6 +99,11 @@ function parseDateAndTime(slotStr: string, defaultDate: string) {
         else if (lower.includes('third') || lower.includes('3rd') || lower.includes('three')) dayNumber = 3;
         else if (lower.includes('fourth') || lower.includes('4th')) dayNumber = 4;
         else if (lower.includes('fifth') || lower.includes('5th')) dayNumber = 5;
+        else if (lower.includes('sixth') || lower.includes('6th')) dayNumber = 6;
+        else if (lower.includes('seventh') || lower.includes('7th')) dayNumber = 7;
+        else if (lower.includes('eighth') || lower.includes('8th')) dayNumber = 8;
+        else if (lower.includes('ninth') || lower.includes('9th')) dayNumber = 9;
+        else if (lower.includes('tenth') || lower.includes('10th')) dayNumber = 10;
         else {
           const dayMatch = lower.match(/\b([1-9]|[12][0-9]|3[01])(st|nd|rd|th)?\b/);
           if (dayMatch) dayNumber = parseInt(dayMatch[1], 10);
@@ -129,19 +147,7 @@ export async function POST(req: Request) {
 
     console.log('[Omnidim AI Booking API] Received payload:', JSON.stringify(payload));
 
-    // Log raw JSON to database for exact payload inspection
-    try {
-      await supabaseAdmin.from('whatsapp_messages').insert([{
-        sender_number: 'OMNIDIM_PAYLOAD_LOG',
-        content: JSON.stringify(payload).slice(0, 4000),
-        type: 'incoming',
-        status: 'logged'
-      }]);
-    } catch (logErr) {
-      console.error('Payload log error:', logErr);
-    }
-
-    // Extract variables using deep recursive extractor
+    // Extract variables with Spoken Patient Mobile Number prioritized over Telecom Caller ID
     const extracted = extractOmnidimData(payload);
 
     const patientName = extracted.name && extracted.name !== 'NA' && extracted.name !== 'Not provided' 
