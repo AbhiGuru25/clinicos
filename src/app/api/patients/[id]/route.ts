@@ -37,15 +37,17 @@ export async function GET(
     // 3. Fetch Patient's Invoices
     const { data: invoices } = await supabaseAdmin
       .from('invoices')
-      .select('*, appointments(appointment_date, notes)')
+      .select('*, appointments!inner(appointment_date, notes, patient_id)')
       .eq('appointments.patient_id', id)
       .order('created_at', { ascending: false });
+
+    const patientInvoices = (invoices || []).filter(inv => inv.appointments?.patient_id === id);
 
     return NextResponse.json({
       success: true,
       patient,
       appointments: appointments || [],
-      invoices: invoices || []
+      invoices: patientInvoices
     });
   } catch (err: any) {
     console.error('API Patient ID Error:', err);
