@@ -52,3 +52,35 @@ export async function GET(
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
   }
 }
+
+export async function PUT(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const body = await req.json();
+    const { name, phone, history } = body;
+
+    const updatePayload: any = {};
+    if (name) updatePayload.name = name.trim();
+    if (phone) updatePayload.phone = phone.trim();
+    if (history !== undefined) updatePayload.history = history;
+
+    const { data: updatedPatient, error } = await supabaseAdmin
+      .from('patients')
+      .update(updatePayload)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json({ success: false, error: error.message }, { status: 400 });
+    }
+
+    return NextResponse.json({ success: true, patient: updatedPatient });
+  } catch (err: any) {
+    console.error('API Edit Patient Error:', err);
+    return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
