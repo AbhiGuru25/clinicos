@@ -156,16 +156,18 @@ export async function POST(req: Request) {
       }
     }
 
-    const message = data.message;
+    const message = data.message || data;
     if (!message) return NextResponse.json({ status: 'ok' });
 
     // Ignore messages sent by bot itself
-    if (message.key.fromMe) return NextResponse.json({ status: 'ok' });
+    if (message.key?.fromMe) return NextResponse.json({ status: 'ok' });
 
-    const remoteJid = message.key.remoteJid;
+    const remoteJid = message.key?.remoteJid || data.key?.remoteJid || '';
+    if (!remoteJid) return NextResponse.json({ status: 'ok' });
+
     const rawSenderNumber = remoteJid.split('@')[0];
     const cleanSenderNumber = normalizePhone(rawSenderNumber);
-    const textContent = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
+    const textContent = message.message?.conversation || message.message?.extendedTextMessage?.text || message.conversation || '';
 
     if (!textContent) return NextResponse.json({ status: 'ok' });
 
