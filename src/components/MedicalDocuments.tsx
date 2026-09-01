@@ -1,6 +1,6 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
-import { FileText, Upload, Trash2, ExternalLink, Loader2, AlertCircle, CheckCircle2, File, Image, FileSpreadsheet, Eye } from 'lucide-react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { FileText, Upload, Trash2, ExternalLink, Loader2, AlertCircle, CheckCircle2, File, Image, FileSpreadsheet, Eye, Camera, RefreshCw, X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export type PatientDocument = {
@@ -19,7 +19,7 @@ type Props = {
 
 function getFileIcon(type: string | null) {
   if (!type) return { icon: File, label: 'File', color: 'text-slate-500', bg: 'bg-slate-50' };
-  if (type.startsWith('image/')) return { icon: Image, label: 'Eye Scan', color: 'text-blue-600', bg: 'bg-blue-50' };
+  if (type.startsWith('image/')) return { icon: Image, label: 'Eye Scan / Photo', color: 'text-blue-600', bg: 'bg-blue-50' };
   if (type === 'application/pdf') return { icon: FileText, label: 'PDF Report', color: 'text-red-600', bg: 'bg-red-50' };
   if (type.includes('spreadsheet') || type.includes('excel') || type.includes('csv'))
     return { icon: FileSpreadsheet, label: 'Data Record', color: 'text-emerald-600', bg: 'bg-emerald-50' };
@@ -40,6 +40,14 @@ export default function MedicalDocuments({ patientId }: Props) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [dragOver, setDragOver] = useState(false);
+
+  // Camera Modal State
+  const [isCameraOpen, setIsCameraOpen] = useState(false);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [cameraError, setCameraError] = useState<string | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({ type, message });
@@ -64,6 +72,78 @@ export default function MedicalDocuments({ patientId }: Props) {
   useEffect(() => {
     fetchDocs();
   }, [fetchDocs]);
+
+  // Clean up camera stream when modal closes
+  useEffect(() => {
+    return () => {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [cameraStream]);
+
+  const startCamera = async () => {
+    setIsCameraOpen(true);
+    setCapturedImage(null);
+    setCameraError(null);
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
+      });
+      setCameraStream(stream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err: any) {
+      console.error('Camera access error:', err);
+      setCameraError('Camera access denied or unavailable. Please allow camera permissions.');
+    }
+  };
+
+  const stopCamera = () => {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      setCameraStream(null);
+    }
+    setIsCameraOpen(false);
+    setCapturedImage(null);
+  };
+
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth || 1280;
+    canvas.height = video.videoHeight || 720;
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+      setCapturedImage(dataUrl);
+    }
+  };
+
+  const saveCapturedPhoto = async () => {
+    if (!capturedImage) return;
+
+    setUploading(true);
+    try {
+      // Convert base64 dataUrl to blob/file
+      const res = await fetch(capturedImage);
+      const blob = await res.blob();
+      const filename = `EyeScan_${new Date().toISOString().replace(/[:.]/g, '-')}.jpg`;
+      const file = new (window as any).File([blob], filename, { type: 'image/jpeg' });
+
+      await handleUpload(file);
+      stopCamera();
+    } catch (err: any) {
+      showToast('error', `Failed to save photo: ${err.message}`);
+      setUploading(false);
+    }
+  };
 
   const handleUpload = async (file: File) => {
     if (file.size > 15 * 1024 * 1024) {
@@ -150,7 +230,7 @@ export default function MedicalDocuments({ patientId }: Props) {
         )}
       </AnimatePresence>
 
-      {/* Drag & Drop Upload Zone */}
+      {/* Drag & Drop Upload Zone + Camera Actions */}
       <div
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
@@ -173,23 +253,114 @@ export default function MedicalDocuments({ patientId }: Props) {
           </div>
           <div>
             <p className="text-sm font-extrabold text-slate-800">
-              {uploading ? 'Uploading eye scan / document...' : 'Upload Eye Scans, OCT, & Medical Files'}
+              {uploading ? 'Uploading eye scan / photo document...' : 'Upload Eye Scans, OCT, & Medical Files'}
             </p>
             <p className="text-xs font-semibold text-slate-400 mt-0.5">
-              Drag & drop files here or browse (PDF, PNG, JPG, DICOM up to 15 MB)
+              Drag & drop files here or capture photos directly with your camera (PDF, PNG, JPG up to 15 MB)
             </p>
           </div>
-          <label
-            htmlFor="file-upload-input"
-            className={`mt-2 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer shadow-sm ${
-              uploading ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'
-            }`}
-          >
-            <Upload size={14} />
-            <span>Select File from Computer</span>
-          </label>
+
+          {/* Dual Action Buttons: File Computer + Live Camera Capture */}
+          <div className="mt-3 flex flex-wrap items-center justify-center gap-3">
+            <label
+              htmlFor="file-upload-input"
+              className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all cursor-pointer shadow-sm ${
+                uploading ? 'bg-slate-200 text-slate-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700 active:scale-95'
+              }`}
+            >
+              <Upload size={15} />
+              <span>Select File from Computer</span>
+            </label>
+
+            <button
+              type="button"
+              onClick={startCamera}
+              disabled={uploading}
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-extrabold bg-emerald-600 text-white hover:bg-emerald-700 active:scale-95 transition-all shadow-sm shadow-emerald-500/20 disabled:opacity-50"
+            >
+              <Camera size={15} />
+              <span>📷 Capture Photo with Camera</span>
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Hidden Canvas for Camera Frame Capture */}
+      <canvas ref={canvasRef} className="hidden" />
+
+      {/* Live Camera Viewport Modal */}
+      {isCameraOpen && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+          <div onClick={stopCamera} className="fixed inset-0 bg-slate-950/85 backdrop-blur-md" />
+
+          <div className="relative w-full max-w-xl bg-slate-900 rounded-3xl border border-slate-800 shadow-2xl overflow-hidden z-10 my-auto flex flex-col">
+            {/* Header */}
+            <div className="p-4 md:p-5 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold">
+                  <Camera size={18} />
+                </div>
+                <div>
+                  <h3 className="text-base font-extrabold text-white">Capture Medical Photo / Eye Scan</h3>
+                  <p className="text-[11px] text-slate-400">Position the physical scan or eye image in frame</p>
+                </div>
+              </div>
+              <button onClick={stopCamera} className="p-2 text-slate-400 hover:text-white rounded-xl"><X size={18} /></button>
+            </div>
+
+            {/* Camera Viewport or Captured Preview */}
+            <div className="relative aspect-video bg-black flex items-center justify-center overflow-hidden">
+              {cameraError ? (
+                <div className="p-6 text-center text-rose-400 text-xs font-bold">
+                  <AlertCircle size={28} className="mx-auto mb-2 text-rose-500" />
+                  {cameraError}
+                </div>
+              ) : capturedImage ? (
+                <img src={capturedImage} alt="Captured scan preview" className="w-full h-full object-contain" />
+              ) : (
+                <video ref={videoRef} autoPlay playsInline className="w-full h-full object-cover" />
+              )}
+            </div>
+
+            {/* Controls */}
+            <div className="p-4 md:p-5 border-t border-slate-800 bg-slate-950 flex items-center justify-between">
+              <button onClick={stopCamera} className="px-4 py-2 rounded-xl text-xs font-bold text-slate-400 hover:bg-slate-800">
+                Cancel
+              </button>
+
+              <div className="flex items-center gap-2">
+                {capturedImage ? (
+                  <>
+                    <button
+                      onClick={() => setCapturedImage(null)}
+                      className="px-4 py-2.5 rounded-xl text-xs font-extrabold bg-slate-800 text-slate-300 hover:bg-slate-700 flex items-center gap-1.5"
+                    >
+                      <RefreshCw size={14} /> Retake
+                    </button>
+                    <button
+                      onClick={saveCapturedPhoto}
+                      disabled={uploading}
+                      className="px-5 py-2.5 rounded-xl text-xs font-extrabold bg-emerald-600 text-white hover:bg-emerald-500 flex items-center gap-1.5 shadow-md shadow-emerald-500/30 disabled:opacity-50"
+                    >
+                      {uploading ? <Loader2 size={14} className="animate-spin" /> : <Check size={14} />}
+                      <span>Save to Patient File</span>
+                    </button>
+                  </>
+                ) : (
+                  <button
+                    onClick={capturePhoto}
+                    disabled={!!cameraError}
+                    className="px-6 py-2.5 rounded-xl text-xs font-black bg-emerald-500 text-slate-950 hover:bg-emerald-400 flex items-center gap-2 shadow-lg shadow-emerald-500/25 disabled:opacity-50"
+                  >
+                    <Camera size={16} />
+                    <span>📸 Take Photo</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Documents List */}
       {loading ? (
@@ -202,7 +373,7 @@ export default function MedicalDocuments({ patientId }: Props) {
           <FileText size={28} className="text-slate-300 mx-auto mb-2" />
           <p className="text-xs font-extrabold text-slate-700">No Medical Documents Attached</p>
           <p className="text-[11px] font-semibold text-slate-400 mt-0.5">
-            Upload eye scan reports, OCT images, or vision therapy files above.
+            Upload eye scan reports, OCT images, or capture photos with your camera above.
           </p>
         </div>
       ) : (
