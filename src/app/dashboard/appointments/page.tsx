@@ -319,11 +319,36 @@ export default function AppointmentsPage() {
       alert("No phone number found for this patient.");
       return;
     }
-    const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
-    const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
     const patientName = appointment.patients?.name || 'Patient';
     const msg = `Hi ${patientName}! 🙏\n\nThis is a reminder for your appointment at *KK Neuro Vision Therapy Institute*.\n\n📅 Date: ${formatDate(appointment.appointment_date)}\n⏰ Time: ${formatTime(appointment.appointment_time)}\n📍 Location: KK Neuro Vision Therapy Institute, Ahmedabad.\n\nSee you soon!`;
-    window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+
+    try {
+      const res = await fetch('/api/whatsapp/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: rawPhone,
+          message: msg,
+          patient_id: appointment.patient_id || appointment.patients?.id,
+          clinic_id: clinicId
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (data.deliveredViaApi) {
+          alert(`✅ WhatsApp Reminder Sent Live via ClinicBot1 to ${patientName}!`);
+        } else {
+          // Open WhatsApp Web with pre-filled text
+          window.open(data.waWebUrl, '_blank');
+        }
+      } else {
+        alert(data.error || 'Failed to send WhatsApp message.');
+      }
+    } catch (err: any) {
+      const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+      const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+      window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+    }
   };
 
   return (
