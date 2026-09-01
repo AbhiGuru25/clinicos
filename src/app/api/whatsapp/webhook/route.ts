@@ -128,28 +128,23 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
 
-    // 1. Identify the clinic by instance name (or fallback to primary clinic)
-    let clinic: any = null;
+    // 1. Identify clinic if available
+    let clinicId: string | undefined = undefined;
     const { data: foundClinic } = await supabaseAdmin
       .from('clinics')
       .select('id')
       .eq('evolution_instance', instance)
       .single();
 
-    clinic = foundClinic;
-
-    if (!clinic) {
+    if (foundClinic) {
+      clinicId = foundClinic.id;
+    } else {
       const { data: firstClinic } = await supabaseAdmin
         .from('clinics')
         .select('id')
         .limit(1)
         .single();
-      clinic = firstClinic;
-    }
-
-    if (!clinic) {
-      console.error('No clinic found in database');
-      return NextResponse.json({ error: 'Clinic not found' }, { status: 404 });
+      if (firstClinic) clinicId = firstClinic.id;
     }
 
     const message = data.message;
@@ -169,7 +164,7 @@ export async function POST(req: Request) {
     const patient = await findOrCreatePatient(supabaseAdmin, {
       phone: cleanSenderNumber,
       name: 'Valued Patient',
-      clinicId: clinic.id
+      clinicId: clinicId
     });
 
     const patientName = patient?.name && patient.name !== 'New WhatsApp Patient' ? patient.name : 'Valued Patient';
@@ -178,7 +173,7 @@ export async function POST(req: Request) {
     const { data: newMessage } = await supabaseAdmin
       .from('whatsapp_messages')
       .insert({
-        clinic_id: clinic.id,
+        clinic_id: clinicId,
         patient_id: patient?.id,
         sender_number: cleanSenderNumber,
         content: textContent,
@@ -193,7 +188,7 @@ export async function POST(req: Request) {
       cleanPhone: cleanSenderNumber,
       patientName: patientName,
       userMessage: textContent,
-      clinicId: clinic.id
+      clinicId: clinicId || ''
     }).catch(err => console.error('Multi-Message Bot Error:', err));
 
     // 5. Trigger n8n Master Workflow if configured
@@ -204,7 +199,7 @@ export async function POST(req: Request) {
         body: JSON.stringify({
           message: newMessage,
           patient: patient,
-          clinic: clinic
+          clinicId: clinicId
         })
       }).catch(err => console.error('n8n Trigger Error:', err));
     }
