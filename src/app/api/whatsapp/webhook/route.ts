@@ -178,21 +178,27 @@ export async function POST(req: Request) {
 
     const patientName = patient?.name && patient.name !== 'New WhatsApp Patient' ? patient.name : 'Valued Patient';
 
-    // 3. Store the incoming message in database
-    const msgPayload: any = {
-      patient_id: patient?.id,
-      sender_number: cleanSenderNumber,
-      content: textContent,
-      type: 'incoming',
-      status: 'received'
-    };
-    if (clinicId) msgPayload.clinic_id = clinicId;
+    // 3. Store incoming message silently in database
+    let newMessage: any = null;
+    try {
+      const msgPayload: any = {
+        patient_id: patient?.id,
+        sender_number: cleanSenderNumber,
+        content: textContent,
+        type: 'incoming',
+        status: 'received'
+      };
+      if (clinicId) msgPayload.clinic_id = clinicId;
 
-    const { data: newMessage } = await supabaseAdmin
-      .from('whatsapp_messages')
-      .insert([msgPayload])
-      .select()
-      .single();
+      const { data } = await supabaseAdmin
+        .from('whatsapp_messages')
+        .insert([msgPayload])
+        .select()
+        .single();
+      newMessage = data;
+    } catch (dbErr) {
+      console.error('Database message log error (non-blocking):', dbErr);
+    }
 
     // 4. Trigger Next-Level Multi-Message Auto-Reply Engine
     handleMultiMessageAutoReply({
