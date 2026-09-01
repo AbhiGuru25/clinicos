@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, use } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, Phone, Activity, Clock, Edit, FileText, Plus, X, Download, Send, MessageSquare, CheckCircle2, User } from 'lucide-react';
@@ -12,6 +13,7 @@ import { uploadPatientDocument } from '@/lib/patientDocuments';
 export default function PatientDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const { id } = use(params);
+  const [mounted, setMounted] = useState(false);
   const [patient, setPatient] = useState<any>(null);
   const [appointments, setAppointments] = useState<any[]>([]);
   const [invoices, setInvoices] = useState<any[]>([]);
@@ -33,6 +35,7 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
   const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
+    setMounted(true);
     if (id) {
       fetchPatientDetails();
     }
@@ -352,129 +355,142 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
         <MedicalDocuments patientId={id} key={refreshKey} />
       </div>
 
-      {/* ─── Edit Patient Profile Modal ─── */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 overflow-y-auto">
-          <div onClick={() => setIsEditModalOpen(false)} className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm" />
-          
-          <div className="relative w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden z-10 p-6 md:p-7 space-y-5">
-            <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
-                  <User size={20} />
+      {/* ─── Edit Patient Profile Modal (React Portal) ─── */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {isEditModalOpen && (
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsEditModalOpen(false)} className="fixed inset-0 bg-slate-950/80 backdrop-blur-md" />
+              
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 15 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 15 }} className="relative w-full max-w-md bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden z-10 my-auto flex flex-col max-h-[85vh]">
+                {/* Header */}
+                <div className="p-5 md:p-6 border-b border-slate-100 bg-gradient-to-r from-blue-50/80 to-white flex justify-between items-center shrink-0">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center font-bold shadow-md shadow-blue-500/20">
+                      <User size={20} />
+                    </div>
+                    <div>
+                      <h2 className="text-lg font-extrabold text-slate-900">Edit Patient Profile</h2>
+                      <p className="text-xs font-medium text-slate-500">Update medical record details</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setIsEditModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 rounded-xl"><X size={18} /></button>
                 </div>
-                <div>
-                  <h2 className="text-lg font-extrabold text-slate-900">Edit Patient Profile</h2>
-                  <p className="text-xs text-slate-500">Update medical record details</p>
-                </div>
-              </div>
-              <button onClick={() => setIsEditModalOpen(false)} className="p-2 text-slate-400 hover:text-slate-600 rounded-xl"><X size={18} /></button>
+
+                {/* Form Content - Scrollable */}
+                <form onSubmit={handleSaveProfile} className="p-5 md:p-6 space-y-4 overflow-y-auto flex-1">
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Patient Full Name</label>
+                    <input 
+                      type="text" 
+                      required 
+                      value={editName} 
+                      onChange={e => setEditName(e.target.value)} 
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-semibold text-sm outline-none bg-slate-50/50 focus:bg-white focus:border-blue-500 text-slate-900" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Mobile Phone Number</label>
+                    <input 
+                      type="tel" 
+                      required 
+                      value={editPhone} 
+                      onChange={e => setEditPhone(e.target.value)} 
+                      className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-semibold text-sm outline-none bg-slate-50/50 focus:bg-white focus:border-blue-500 text-slate-900" 
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Medical History & Clinical Notes</label>
+                    <textarea 
+                      rows={3} 
+                      value={editHistory} 
+                      onChange={e => setEditHistory(e.target.value)} 
+                      placeholder="e.g. Amblyopia evaluation, vision therapy progress..." 
+                      className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium text-xs outline-none bg-slate-50/50 focus:bg-white focus:border-blue-500 text-slate-900 resize-none" 
+                    />
+                  </div>
+
+                  {/* Buttons */}
+                  <div className="pt-3 flex items-center gap-3">
+                    <button type="button" onClick={() => setIsEditModalOpen(false)} className="w-1/2 py-2.5 rounded-xl font-bold text-xs bg-slate-100 text-slate-600 hover:bg-slate-200">Cancel</button>
+                    <button type="submit" disabled={savingProfile} className="w-1/2 btn-primary text-xs py-2.5 font-extrabold shadow-md shadow-blue-500/20">{savingProfile ? 'Saving...' : 'Save Profile'}</button>
+                  </div>
+                </form>
+              </motion.div>
             </div>
-
-            <form onSubmit={handleSaveProfile} className="space-y-4">
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Patient Full Name</label>
-                <input 
-                  type="text" 
-                  required 
-                  value={editName} 
-                  onChange={e => setEditName(e.target.value)} 
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-semibold text-sm outline-none bg-slate-50/50 focus:bg-white focus:border-blue-500 text-slate-900" 
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Mobile Phone Number</label>
-                <input 
-                  type="tel" 
-                  required 
-                  value={editPhone} 
-                  onChange={e => setEditPhone(e.target.value)} 
-                  className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-semibold text-sm outline-none bg-slate-50/50 focus:bg-white focus:border-blue-500 text-slate-900" 
-                />
-              </div>
-
-              <div>
-                <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Medical History & Clinical Notes</label>
-                <textarea 
-                  rows={3} 
-                  value={editHistory} 
-                  onChange={e => setEditHistory(e.target.value)} 
-                  placeholder="e.g. Amblyopia evaluation, vision therapy progress..." 
-                  className="w-full px-4 py-3 border border-slate-200 rounded-xl font-medium text-xs outline-none bg-slate-50/50 focus:bg-white focus:border-blue-500 text-slate-900 resize-none" 
-                />
-              </div>
-
-              <div className="pt-2 flex items-center gap-3">
-                <button type="button" onClick={() => setIsEditModalOpen(false)} className="w-1/2 py-2.5 rounded-xl font-bold text-xs bg-slate-100 text-slate-600 hover:bg-slate-200">Cancel</button>
-                <button type="submit" disabled={savingProfile} className="w-1/2 btn-primary text-xs py-2.5 font-extrabold">{savingProfile ? 'Saving...' : 'Save Profile'}</button>
-              </div>
-            </form>
-          </div>
-        </div>
+          )}
+        </AnimatePresence>,
+        document.body
       )}
 
-      {/* ─── New Prescription Modal ─── */}
-      <AnimatePresence>
-        {isPrescriptionModalOpen && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.95, opacity: 0 }} className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-              <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-                <div>
-                  <h2 className="text-xl font-extrabold text-slate-900">New Prescription (+Rx)</h2>
-                  <p className="text-sm font-medium text-slate-500">Patient: {patient?.name}</p>
-                </div>
-                <button onClick={() => setIsPrescriptionModalOpen(false)} className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors">
-                  <X size={18} />
-                </button>
-              </div>
+      {/* ─── New Prescription Modal (React Portal) ─── */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {isPrescriptionModalOpen && (
+            <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 md:p-6 overflow-y-auto">
+              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsPrescriptionModalOpen(false)} className="fixed inset-0 bg-slate-950/80 backdrop-blur-md" />
               
-              <div className="p-6 overflow-y-auto flex-1 space-y-6">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Add Medication</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-3">
-                    <input type="text" placeholder="Medicine Name" className="col-span-2 md:col-span-1 p-3 rounded-xl border border-slate-200 text-sm font-medium focus:border-purple-500 outline-none text-slate-900" value={newMedicine.name} onChange={e => setNewMedicine({...newMedicine, name: e.target.value})} />
-                    <input type="text" placeholder="Dosage (e.g. 500mg)" className="p-3 rounded-xl border border-slate-200 text-sm font-medium focus:border-purple-500 outline-none text-slate-900" value={newMedicine.dosage} onChange={e => setNewMedicine({...newMedicine, dosage: e.target.value})} />
-                    <input type="text" placeholder="Freq (e.g. 1-0-1)" className="p-3 rounded-xl border border-slate-200 text-sm font-medium focus:border-purple-500 outline-none text-slate-900" value={newMedicine.frequency} onChange={e => setNewMedicine({...newMedicine, frequency: e.target.value})} />
-                    <input type="text" placeholder="Duration (5 Days)" className="p-3 rounded-xl border border-slate-200 text-sm font-medium focus:border-purple-500 outline-none text-slate-900" value={newMedicine.duration} onChange={e => setNewMedicine({...newMedicine, duration: e.target.value})} />
+              <motion.div initial={{ opacity: 0, scale: 0.95, y: 15 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 15 }} className="relative w-full max-w-2xl bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden z-10 my-auto flex flex-col max-h-[85vh]">
+                <div className="p-5 md:p-6 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-purple-50/80 to-white shrink-0">
+                  <div>
+                    <h2 className="text-lg font-extrabold text-slate-900">New Prescription (+Rx)</h2>
+                    <p className="text-xs font-semibold text-slate-500">Patient: {patient?.name}</p>
                   </div>
-                  <button onClick={handleAddMedicine} className="w-full py-2.5 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl text-xs font-bold transition-colors border border-purple-100">+ Add to Prescription</button>
+                  <button onClick={() => setIsPrescriptionModalOpen(false)} className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors">
+                    <X size={18} />
+                  </button>
                 </div>
-
-                {medicines.length > 0 && (
-                  <div className="border border-slate-200 rounded-xl overflow-hidden">
-                    <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 grid grid-cols-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">
-                      <span>Medicine</span><span>Dosage</span><span>Frequency</span><span>Duration</span>
+                
+                <div className="p-5 md:p-6 overflow-y-auto flex-1 space-y-5">
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Add Medication</label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 mb-2.5">
+                      <input type="text" placeholder="Medicine Name" className="col-span-2 md:col-span-1 p-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:border-purple-500 outline-none text-slate-900" value={newMedicine.name} onChange={e => setNewMedicine({...newMedicine, name: e.target.value})} />
+                      <input type="text" placeholder="Dosage (500mg)" className="p-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:border-purple-500 outline-none text-slate-900" value={newMedicine.dosage} onChange={e => setNewMedicine({...newMedicine, dosage: e.target.value})} />
+                      <input type="text" placeholder="Freq (1-0-1)" className="p-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:border-purple-500 outline-none text-slate-900" value={newMedicine.frequency} onChange={e => setNewMedicine({...newMedicine, frequency: e.target.value})} />
+                      <input type="text" placeholder="Duration (5 Days)" className="p-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:border-purple-500 outline-none text-slate-900" value={newMedicine.duration} onChange={e => setNewMedicine({...newMedicine, duration: e.target.value})} />
                     </div>
-                    {medicines.map((m, i) => (
-                      <div key={i} className="px-4 py-3 border-b last:border-b-0 border-slate-100 grid grid-cols-4 text-xs font-bold text-slate-900">
-                        <span>{m.name}</span><span>{m.dosage}</span><span>{m.frequency}</span><span>{m.duration}</span>
-                      </div>
-                    ))}
+                    <button onClick={handleAddMedicine} className="w-full py-2 bg-purple-50 hover:bg-purple-100 text-purple-700 rounded-xl text-xs font-bold transition-colors border border-purple-100">+ Add to Prescription</button>
                   </div>
-                )}
 
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Doctor Advice & Notes</label>
-                  <textarea rows={3} className="w-full p-4 rounded-xl border border-slate-200 text-sm font-medium focus:border-purple-500 outline-none resize-none text-slate-900" placeholder="e.g. Vision therapy exercises 20 mins daily..." value={prescriptionNotes} onChange={e => setPrescriptionNotes(e.target.value)}></textarea>
-                </div>
-              </div>
+                  {medicines.length > 0 && (
+                    <div className="border border-slate-200 rounded-xl overflow-hidden">
+                      <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 grid grid-cols-4 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                        <span>Medicine</span><span>Dosage</span><span>Frequency</span><span>Duration</span>
+                      </div>
+                      {medicines.map((m, i) => (
+                        <div key={i} className="px-4 py-2.5 border-b last:border-b-0 border-slate-100 grid grid-cols-4 text-xs font-bold text-slate-900">
+                          <span>{m.name}</span><span>{m.dosage}</span><span>{m.frequency}</span><span>{m.duration}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
 
-              <div className="p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between">
-                <button onClick={() => setIsPrescriptionModalOpen(false)} className="px-5 py-2.5 rounded-xl font-bold text-xs text-slate-500 hover:bg-slate-200 transition-colors">Cancel</button>
-                <div className="flex gap-2.5">
-                  <button onClick={generatePrescriptionPDF} className="px-5 py-2.5 rounded-xl font-bold text-xs bg-slate-900 text-white hover:bg-slate-800 transition-colors flex items-center gap-2">
-                    <Download size={15} /> Save PDF
-                  </button>
-                  <button onClick={sendPrescriptionWhatsApp} className="px-5 py-2.5 rounded-xl font-bold text-xs bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-2 shadow-md shadow-emerald-500/20">
-                    <Send size={15} /> Send WhatsApp
-                  </button>
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Doctor Advice & Notes</label>
+                    <textarea rows={3} className="w-full p-3 rounded-xl border border-slate-200 text-xs font-medium focus:border-purple-500 outline-none resize-none text-slate-900" placeholder="e.g. Vision therapy exercises 20 mins daily..." value={prescriptionNotes} onChange={e => setPrescriptionNotes(e.target.value)}></textarea>
+                  </div>
                 </div>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+                <div className="p-5 md:p-6 border-t border-slate-100 bg-slate-50 flex items-center justify-between shrink-0">
+                  <button onClick={() => setIsPrescriptionModalOpen(false)} className="px-4 py-2 rounded-xl font-bold text-xs text-slate-500 hover:bg-slate-200 transition-colors">Cancel</button>
+                  <div className="flex gap-2">
+                    <button onClick={generatePrescriptionPDF} className="px-4 py-2.5 rounded-xl font-bold text-xs bg-slate-900 text-white hover:bg-slate-800 transition-colors flex items-center gap-1.5 shadow-md">
+                      <Download size={14} /> Save PDF
+                    </button>
+                    <button onClick={sendPrescriptionWhatsApp} className="px-4 py-2.5 rounded-xl font-bold text-xs bg-emerald-600 text-white hover:bg-emerald-700 transition-colors flex items-center gap-1.5 shadow-md shadow-emerald-500/20">
+                      <Send size={14} /> Send WhatsApp
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
