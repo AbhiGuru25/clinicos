@@ -128,15 +128,27 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
 
-    // 1. Identify the clinic by instance name
-    const { data: clinic, error: clinicError } = await supabaseAdmin
+    // 1. Identify the clinic by instance name (or fallback to primary clinic)
+    let clinic: any = null;
+    const { data: foundClinic } = await supabaseAdmin
       .from('clinics')
       .select('id')
       .eq('evolution_instance', instance)
       .single();
 
-    if (clinicError || !clinic) {
-      console.error('Clinic not found for instance:', instance);
+    clinic = foundClinic;
+
+    if (!clinic) {
+      const { data: firstClinic } = await supabaseAdmin
+        .from('clinics')
+        .select('id')
+        .limit(1)
+        .single();
+      clinic = firstClinic;
+    }
+
+    if (!clinic) {
+      console.error('No clinic found in database');
       return NextResponse.json({ error: 'Clinic not found' }, { status: 404 });
     }
 
