@@ -128,7 +128,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
     }
 
-    // 1. Identify clinic if available
+    // 1. Identify clinic if available (or auto-create default clinic)
     let clinicId: string | undefined = undefined;
     const { data: foundClinic } = await supabaseAdmin
       .from('clinics')
@@ -144,7 +144,16 @@ export async function POST(req: Request) {
         .select('id')
         .limit(1)
         .single();
-      if (firstClinic) clinicId = firstClinic.id;
+      if (firstClinic) {
+        clinicId = firstClinic.id;
+      } else {
+        const { data: newClinic } = await supabaseAdmin
+          .from('clinics')
+          .insert([{ name: 'KK Neuro Vision Therapy Institute', evolution_instance: instance }])
+          .select('id')
+          .single();
+        if (newClinic) clinicId = newClinic.id;
+      }
     }
 
     const message = data.message;
@@ -170,16 +179,18 @@ export async function POST(req: Request) {
     const patientName = patient?.name && patient.name !== 'New WhatsApp Patient' ? patient.name : 'Valued Patient';
 
     // 3. Store the incoming message in database
+    const msgPayload: any = {
+      patient_id: patient?.id,
+      sender_number: cleanSenderNumber,
+      content: textContent,
+      type: 'incoming',
+      status: 'received'
+    };
+    if (clinicId) msgPayload.clinic_id = clinicId;
+
     const { data: newMessage } = await supabaseAdmin
       .from('whatsapp_messages')
-      .insert({
-        clinic_id: clinicId,
-        patient_id: patient?.id,
-        sender_number: cleanSenderNumber,
-        content: textContent,
-        type: 'incoming',
-        status: 'received'
-      })
+      .insert([msgPayload])
       .select()
       .single();
 
