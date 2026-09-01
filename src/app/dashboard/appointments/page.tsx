@@ -319,8 +319,11 @@ export default function AppointmentsPage() {
       alert("No phone number found for this patient.");
       return;
     }
-    const patientName = appointment.patients?.name || 'Patient';
-    const msg = `Hi ${patientName}! 🙏\n\nThis is a reminder for your appointment at *KK Neuro Vision Therapy Institute*.\n\n📅 Date: ${formatDate(appointment.appointment_date)}\n⏰ Time: ${formatTime(appointment.appointment_time)}\n📍 Location: KK Neuro Vision Therapy Institute, Ahmedabad.\n\nSee you soon!`;
+    const patientName = (appointment.patients?.name || appointment.patient_name || 'Valued Patient').trim();
+    const formattedDate = formatDate(appointment.appointment_date);
+    const formattedTime = formatTime(appointment.appointment_time);
+
+    const msg = `Hi *${patientName}*! 👋\n\nThis is a reminder for your appointment at *KK Neuro Vision Therapy Institute*.\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${formattedTime}\n📍 *Location:* KK Neuro Vision Therapy Institute, Ahmedabad.\n\nSee you soon!`;
 
     try {
       const res = await fetch('/api/whatsapp/send', {
