@@ -225,7 +225,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ status: 'success' });
   } catch (err: any) {
-    console.error('Webhook Error:', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    console.error('Webhook Top-Level Error:', err);
+    return NextResponse.json({ status: 'success', message: err?.message || 'Handled error' });
   }
 }
