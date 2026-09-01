@@ -8,6 +8,14 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI
 
 const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
+function sanitizeNameForPdf(name: string): string {
+  if (!name) return 'Valued Patient';
+  // If string contains non-ASCII (Gujarati/Hindi), convert or fallback cleanly to ASCII
+  const clean = name.replace(/[^\x00-\x7F]/g, '').trim();
+  if (clean.length > 0) return clean;
+  return 'Valued Patient';
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -29,7 +37,8 @@ export async function GET(req: Request) {
     }
 
     const doc = new jsPDF();
-    const patientName = (inv.appointments?.patients?.name || inv.patient_name || 'Valued Patient').trim();
+    const rawPatientName = inv.appointments?.patients?.name || inv.patient_name || 'Valued Patient';
+    const patientName = sanitizeNameForPdf(rawPatientName);
     const patientPhone = inv.appointments?.patients?.phone || inv.phone_number || '';
 
     // Header Branding
