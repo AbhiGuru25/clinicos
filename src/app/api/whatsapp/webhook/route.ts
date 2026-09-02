@@ -217,7 +217,10 @@ export async function POST(req: Request) {
     // Ignore messages sent by bot itself
     if (message.key?.fromMe) return NextResponse.json({ status: 'ok' });
 
-    const remoteJid = message.key?.remoteJid || data.key?.remoteJid || '';
+    let remoteJid = message.key?.remoteJid || data.key?.remoteJid || '';
+    if (remoteJid.includes('@lid')) {
+      remoteJid = message.key?.remoteJidAlt || data.key?.remoteJidAlt || data.sender || remoteJid;
+    }
     if (!remoteJid) return NextResponse.json({ status: 'ok' });
 
     const rawSenderNumber = remoteJid.split('@')[0];
