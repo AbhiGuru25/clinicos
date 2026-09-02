@@ -122,11 +122,8 @@ export async function POST(req: Request) {
     const payload = await req.json();
     console.log('WhatsApp Webhook Payload:', payload);
 
-    const { instance, data } = payload;
-    
-    if (!instance || !data) {
-      return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
-    }
+    const instance = payload.instance || payload.sender || 'ClinicBot1';
+    const data = payload.data || payload;
 
     // 1. Identify clinic if available (or auto-create default clinic)
     let clinicId: string | undefined = undefined;
