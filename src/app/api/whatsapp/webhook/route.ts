@@ -200,12 +200,12 @@ export async function POST(req: Request) {
     }
 
     // 4. Trigger Next-Level Multi-Message Auto-Reply Engine
-    handleMultiMessageAutoReply({
+    await handleMultiMessageAutoReply({
       cleanPhone: cleanSenderNumber,
       patientName: patientName,
       userMessage: textContent,
       clinicId: clinicId || ''
-    }).catch(err => console.error('Multi-Message Bot Error:', err));
+    });
 
     // 5. Trigger n8n Master Workflow if configured
     if (newMessage && process.env.N8N_WEBHOOK_URL) {
