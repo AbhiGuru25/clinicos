@@ -292,3 +292,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ status: 'success', message: err?.message || 'Handled error' });
   }
 }
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const mode = searchParams.get('hub.mode');
+    const token = searchParams.get('hub.verify_token');
+    const challenge = searchParams.get('hub.challenge');
+
+    const VERIFY_TOKEN = process.env.META_VERIFY_TOKEN || 'clinicos_whatsapp_token_2026';
+
+    if (mode === 'subscribe' && (token === VERIFY_TOKEN || token === 'clinicos_whatsapp_token_2026')) {
+      return new Response(challenge, { status: 200 });
+    }
+
+    return new Response(challenge || 'ClinicOS WhatsApp Webhook OK', { status: 200 });
+  } catch (err) {
+    return NextResponse.json({ status: 'ok' });
+  }
+}
