@@ -50,10 +50,10 @@ export default function SettingsPage() {
       if (error) throw error;
       if (data) {
         setClinic(data);
-        setClinicName(data.name || 'KK Neuro Vision Therapy Institute');
-        setDoctorName(data.doctor_name || 'Dr. Vikash');
-        setAddress(data.address || 'Healthcare Hub, Near Circle, Ahmedabad, Gujarat');
-        setPhone(data.whatsapp_number || '9558855508');
+        setClinicName(data.name && !data.name.toLowerCase().includes('test2') ? data.name : 'KK Neuro Vision Therapy Institute');
+        setDoctorName(data.doctor_name && !data.doctor_name.toLowerCase().includes('name2') ? data.doctor_name : 'Dr. Vikash');
+        setAddress(data.address || 'Healthcare Hub, Near Circle, SG Highway, Ahmedabad, Gujarat');
+        setPhone(data.whatsapp_number || '6352449698');
         setEvolutionUrl(data.evolution_url || 'http://localhost:8081');
         setEvolutionKey(data.evolution_apikey || 'yaot6e7yab8rlcxl95uw');
         setInstanceName(data.evolution_instance || 'ClinicBot1');
@@ -62,8 +62,8 @@ export default function SettingsPage() {
       } else {
         setClinicName('KK Neuro Vision Therapy Institute');
         setDoctorName('Dr. Vikash');
-        setAddress('Healthcare Hub, Near Circle, Ahmedabad, Gujarat');
-        setPhone('9558855508');
+        setAddress('Healthcare Hub, Near Circle, SG Highway, Ahmedabad, Gujarat');
+        setPhone('6352449698');
         setEvolutionUrl('http://localhost:8081');
         setEvolutionKey('yaot6e7yab8rlcxl95uw');
         setInstanceName('ClinicBot1');

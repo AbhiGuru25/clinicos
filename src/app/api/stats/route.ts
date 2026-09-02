@@ -12,7 +12,7 @@ export async function GET() {
 
     // 1. Doctor Name
     const { data: clinic } = await supabaseAdmin.from('clinics').select('doctor_name').limit(1).single();
-    const doctorName = (clinic?.doctor_name && !clinic.doctor_name.toLowerCase().includes('name2')) 
+    const doctorName = (clinic?.doctor_name && clinic.doctor_name.trim() !== '' && !clinic.doctor_name.toLowerCase().includes('name2')) 
       ? clinic.doctor_name 
       : 'Dr. Vikash';
 
