@@ -55,7 +55,10 @@ export async function sendWhatsAppMessage({
       },
       body: JSON.stringify({
         number: intlPhone,
-        text: message
+        text: message,
+        textMessage: {
+          text: message
+        }
       })
     });
 
