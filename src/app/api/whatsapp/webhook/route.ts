@@ -23,6 +23,64 @@ async function handleMultiMessageAutoReply({
 }) {
   const msgLower = userMessage.toLowerCase().trim();
 
+  // 0. Auto Appointment Booking parsing if patient replies with name/time (e.g., "Rahul, Tomorrow 10 AM" or "4 PM")
+  const hasTimeKeyword = msgLower.includes('am') || msgLower.includes('pm') || msgLower.includes('tomorrow') || msgLower.includes('today') || msgLower.includes(':');
+  if (hasTimeKeyword && !msgLower.startsWith('1') && !msgLower.startsWith('2') && !msgLower.startsWith('3')) {
+    const todayStr = new Date().toISOString().split('T')[0];
+    const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+    const targetDate = msgLower.includes('tomorrow') ? tomorrowStr : todayStr;
+    
+    // Extract name if provided as "Name, Time"
+    let extractedName = patientName;
+    if (userMessage.includes(',')) {
+      const parts = userMessage.split(',');
+      if (parts[0].trim().length > 1) {
+        extractedName = parts[0].trim();
+      }
+    }
+
+    // Ensure patient name is updated
+    const patient = await findOrCreatePatient(supabaseAdmin, {
+      phone: cleanPhone,
+      name: extractedName,
+      clinicId,
+      history: `WhatsApp OPD Inquiry & Booking: ${userMessage}`
+    });
+
+    // Create confirmed appointment directly in Supabase
+    const aptPayload: any = {
+      patient_id: patient.id,
+      appointment_date: targetDate,
+      appointment_time: userMessage,
+      status: 'confirmed',
+      notes: `Booked via WhatsApp AI Bot (${userMessage})`
+    };
+    if (clinicId) aptPayload.clinic_id = clinicId;
+
+    await supabaseAdmin.from('appointments').insert([aptPayload]);
+
+    await sendWhatsAppMessage({
+      phone: cleanPhone,
+      message: `🎉 *OPD Appointment Confirmed!*`,
+      clinicId
+    });
+    await delay(1000);
+
+    await sendWhatsAppMessage({
+      phone: cleanPhone,
+      message: `👤 *Patient Name:* ${extractedName}\n📅 *Date:* ${targetDate === tomorrowStr ? 'Tomorrow' : 'Today'}\n⏰ *Time:* ${userMessage}\n📍 *Clinic:* KK Neuro Vision Therapy Institute, SG Highway, Ahmedabad`,
+      clinicId
+    });
+    await delay(1000);
+
+    await sendWhatsAppMessage({
+      phone: cleanPhone,
+      message: `✅ *Your appointment is synced live into ClinicOS Dashboard!* Dr. Vikash & team look forward to seeing you.`,
+      clinicId
+    });
+    return;
+  }
+
   // 1. Menu Selection "1" or "book" or "appointment"
   if (msgLower === '1' || msgLower.includes('book') || msgLower.includes('appointment')) {
     await sendWhatsAppMessage({
