@@ -51,7 +51,9 @@ export async function sendWhatsAppMessage({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': evoKey
+        'apikey': evoKey,
+        'Bypass-Tunnel-Remainder': 'true',
+        'bypass-tunnel-reminder': 'true'
       },
       body: JSON.stringify({
         number: intlPhone,

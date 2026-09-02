@@ -164,7 +164,15 @@ export async function POST(req: Request) {
 
     const rawSenderNumber = remoteJid.split('@')[0];
     const cleanSenderNumber = normalizePhone(rawSenderNumber);
-    const textContent = message.message?.conversation || message.message?.extendedTextMessage?.text || message.conversation || '';
+    const textContent = (
+      message?.conversation || 
+      message?.extendedTextMessage?.text || 
+      message?.text || 
+      data?.conversation || 
+      data?.body || 
+      data?.text || 
+      (typeof message === 'string' ? message : '')
+    ).toString().trim();
 
     if (!textContent) return NextResponse.json({ status: 'ok' });
 
