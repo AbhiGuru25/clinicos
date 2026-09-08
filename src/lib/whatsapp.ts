@@ -44,34 +44,60 @@ export async function sendWhatsAppMessage({
   let sentStatus = 'sent';
   let apiSuccess = false;
 
-  // 2. Attempt Evolution API HTTP request
+  // 2. Attempt Evolution API HTTP request or Meta Cloud API
   try {
-    const endpoint = `${evoUrl.replace(/\/$/, '')}/message/sendText/${evoInstance}`;
-    const res = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': evoKey,
-        'Bypass-Tunnel-Remainder': 'true',
-        'bypass-tunnel-reminder': 'true'
-      },
-      body: JSON.stringify({
-        number: intlPhone,
-        text: message,
-        textMessage: {
-          text: message
-        }
-      })
-    });
+    const metaToken = process.env.META_ACCESS_TOKEN;
+    const metaPhoneId = process.env.META_PHONE_NUMBER_ID || '1369421772910379';
 
-    if (res.ok) {
-      apiSuccess = true;
-      sentStatus = 'delivered';
-    } else {
-      console.warn(`[WhatsApp API Warning] HTTP ${res.status} from ${endpoint}`);
+    if (metaToken && metaPhoneId) {
+      const metaRes = await fetch(`https://graph.facebook.com/v18.0/${metaPhoneId}/messages`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${metaToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          messaging_product: 'whatsapp',
+          recipient_type: 'individual',
+          to: intlPhone,
+          type: 'text',
+          text: { body: message }
+        })
+      });
+      if (metaRes.ok) {
+        apiSuccess = true;
+        sentStatus = 'delivered';
+      }
+    }
+
+    if (!apiSuccess) {
+      const endpoint = `${evoUrl.replace(/\/$/, '')}/message/sendText/${evoInstance}`;
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': evoKey,
+          'Bypass-Tunnel-Remainder': 'true',
+          'bypass-tunnel-reminder': 'true'
+        },
+        body: JSON.stringify({
+          number: intlPhone,
+          text: message,
+          textMessage: {
+            text: message
+          }
+        })
+      });
+
+      if (res.ok) {
+        apiSuccess = true;
+        sentStatus = 'delivered';
+      } else {
+        console.warn(`[WhatsApp API Warning] HTTP ${res.status} from ${endpoint}`);
+      }
     }
   } catch (err) {
-    console.warn('[WhatsApp API Warning] Evolution API unreachable. Falling back to log & web link:', err);
+    console.warn('[WhatsApp API Warning] API unreachable. Falling back to log & web link:', err);
   }
 
   // 3. Log outgoing message in whatsapp_messages table
