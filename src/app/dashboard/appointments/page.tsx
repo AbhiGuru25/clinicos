@@ -359,11 +359,11 @@ export default function AppointmentsPage() {
       {/* ─── Header ─── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">
             Appointments Queue
           </h1>
-          <p className="text-sm font-medium text-slate-500 mt-1">
-            Doctor OPD Consultation Schedule & Patient Queue
+          <p className="text-xs font-medium text-slate-500 mt-0.5">
+            OPD Consultation Schedule & Patient Queue
           </p>
         </div>
         <button 

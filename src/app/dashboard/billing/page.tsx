@@ -348,11 +348,11 @@ export default function BillingPage() {
       {/* ─── Header ─── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">
             Billing & Invoices
           </h1>
-          <p className="text-sm font-medium text-slate-500 mt-1">
-            Automated GST invoices, billing records, and revenue insights.
+          <p className="text-xs font-medium text-slate-500 mt-0.5">
+            GST invoices, billing records & revenue insights
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -410,20 +410,24 @@ export default function BillingPage() {
             <Send size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">WhatsApp Delivery</p>
-            <p className="text-xl font-extrabold text-amber-600">100% Active</p>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Today's Bills</p>
+            <p className="text-xl font-extrabold text-amber-600">
+              {invoices.filter(inv => inv.created_at?.startsWith(new Date().toISOString().split('T')[0])).length}
+            </p>
           </div>
         </div>
+
       </div>
 
       {/* ─── 7-Day Revenue Trend Chart ─── */}
       <div className="clinic-card p-4 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
           <div>
-            <h2 className="text-base font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>
-              Past 7 Days Revenue Trend
+            <h2 className="text-sm font-extrabold tracking-tight text-slate-900">
+              7-Day Revenue Trend
             </h2>
-            <p className="text-xs font-medium text-slate-400">Daily collection performance for KK Neuro Vision Therapy Institute</p>
+            <p className="text-[10px] font-medium text-slate-400">Daily billing performance</p>
+
           </div>
         </div>
 

@@ -14,9 +14,7 @@ import {
   Wifi,
   Shield, 
   Bell,
-  Check,
-  Zap,
-  Sparkles
+  Check
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -43,7 +41,6 @@ export default function SettingsPage() {
   // Meta Cloud API State
   const [metaPhoneId, setMetaPhoneId] = useState('1369421772910379');
   const [metaWabaId, setMetaWabaId] = useState('1418297453489693');
-  const [metaToken, setMetaToken] = useState('');
 
   // Work Hours State
   const [morningTiming, setMorningTiming] = useState('9:00 AM – 1:00 PM');
@@ -56,7 +53,6 @@ export default function SettingsPage() {
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [isConnected, setIsConnected] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
 
   useEffect(() => {
@@ -122,14 +118,14 @@ export default function SettingsPage() {
         evolution_url: evolutionUrl,
         evolution_apikey: evolutionKey,
         evolution_instance: instanceName,
-        base_fee: parseInt(baseFee) || 800,
-        gst_rate: parseInt(gstRate) || 18,
       };
 
       if (clinic?.id) {
-        await supabase.from('clinics').update(payload).eq('id', clinic.id);
+        const { error: err } = await supabase.from('clinics').update(payload).eq('id', clinic.id);
+        if (err) throw err;
       } else {
-        const { data: newC } = await supabase.from('clinics').insert([payload]).select().single();
+        const { data: newC, error: err } = await supabase.from('clinics').insert([payload]).select().single();
+        if (err) throw err;
         if (newC) setClinic(newC);
       }
       
@@ -145,7 +141,7 @@ export default function SettingsPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] space-y-4">
-        <div className="w-10 h-10 border-4 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin" />
+        <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
         <p className="text-sm font-bold text-slate-500">Loading Clinic Profile & Settings...</p>
       </div>
     );
@@ -153,19 +149,20 @@ export default function SettingsPage() {
 
   return (
     <div className="space-y-6 md:space-y-8 max-w-7xl mx-auto pb-24 md:pb-8">
-      {/* Header Banner */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative bg-white/80 dark:bg-slate-900/80 p-5 md:p-6 rounded-2xl md:rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm backdrop-blur-xl">
+      
+      {/* Header Banner - Clean Light Theme */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-6 md:p-8 rounded-2xl md:rounded-3xl border border-slate-200/80 shadow-sm">
         <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+          <div className="flex items-center gap-2 mb-1.5">
+            <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-600 border border-blue-200/60">
               Control Panel v2.0
             </span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h1 className="text-2xl md:text-3xl font-black tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>
             Clinic Settings
           </h1>
-          <p className="text-xs md:text-sm font-medium text-slate-500 dark:text-slate-400">
-            Manage your clinic profile, OPD work hours, and 24/7 WhatsApp AI Bot engine.
+          <p className="text-xs md:text-sm font-medium text-slate-500 mt-1">
+            Configure your clinic profile, OPD work hours, and 24/7 WhatsApp AI Bot engine.
           </p>
         </div>
 
@@ -175,20 +172,20 @@ export default function SettingsPage() {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.9 }}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm shadow-sm bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs md:text-sm shadow-sm bg-emerald-50 text-emerald-700 border border-emerald-200"
             >
-              <CheckCircle2 size={18} />
+              <CheckCircle2 size={18} className="text-emerald-600" />
               Settings Saved Successfully!
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
-      {/* Main Grid: Responsive Tab Switcher & Content */}
+      {/* Main Grid: Clean White Tab Switcher & Content */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Navigation Tabs (Horizontal Scroll on Mobile, Vertical Stack on Desktop) */}
-        <div className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto hide-scrollbar p-2 bg-slate-200/60 dark:bg-slate-900/90 rounded-2xl border border-slate-300/80 dark:border-slate-800 shrink-0 shadow-sm">
+        <div className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto hide-scrollbar p-2 bg-slate-100/80 rounded-2xl border border-slate-200/80 shrink-0">
           {[
             { id: 'profile', name: 'Clinic Profile', icon: MapPin, desc: 'Doctor & Clinic Details' },
             { id: 'whatsapp', name: 'WhatsApp & AI Bot', icon: Wifi, desc: '24/7 Automation Engine' },
@@ -203,21 +200,21 @@ export default function SettingsPage() {
                 onClick={() => setActiveTab(tab.id as any)}
                 className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-xs md:text-sm transition-all whitespace-nowrap text-left touch-target ${
                   isActive 
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 border border-blue-500' 
-                    : 'bg-white dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/80 hover:text-blue-600 dark:hover:text-white border border-slate-200/80 dark:border-slate-700/80'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/20 border border-blue-600' 
+                    : 'bg-white text-slate-800 hover:bg-slate-50 hover:text-blue-600 border border-slate-200/80'
                 }`}
               >
-                <tab.icon size={18} className={isActive ? 'text-white' : 'text-blue-600 dark:text-blue-400'} />
+                <tab.icon size={18} className={isActive ? 'text-white' : 'text-blue-600'} />
                 <div className="flex flex-col min-w-0">
-                  <span className={`font-extrabold leading-tight ${isActive ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>{tab.name}</span>
-                  <span className={`text-[10px] font-semibold hidden lg:inline ${isActive ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>{tab.desc}</span>
+                  <span className={`font-extrabold leading-tight ${isActive ? 'text-white' : 'text-slate-900'}`}>{tab.name}</span>
+                  <span className={`text-[10px] font-semibold hidden lg:inline ${isActive ? 'text-blue-100' : 'text-slate-500'}`}>{tab.desc}</span>
                 </div>
               </button>
             );
           })}
         </div>
 
-        {/* Tab Content Cards */}
+        {/* Tab Content Cards - Clean White Theme */}
         <div className="lg:col-span-9 space-y-6">
           <form onSubmit={handleSave} className="space-y-6">
 
@@ -226,43 +223,43 @@ export default function SettingsPage() {
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-6"
+                className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6"
               >
-                <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-brand-primary/10 text-brand-primary">
+                <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100">
                     <Activity size={20} />
                   </div>
                   <div>
-                    <h2 className="text-lg md:text-xl font-extrabold text-slate-900 dark:text-white">Clinic & Doctor Profile</h2>
-                    <p className="text-xs font-medium text-slate-400">Information displayed on WhatsApp bot replies & PDF invoices.</p>
+                    <h2 className="text-lg md:text-xl font-black text-slate-900">Clinic & Doctor Profile</h2>
+                    <p className="text-xs font-medium text-slate-500">Information displayed on WhatsApp bot replies & PDF invoices.</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Doctor Name</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Doctor Name</label>
                     <input 
                       type="text" 
                       placeholder="e.g. Dr. Vikash"
                       value={doctorName}
                       onChange={(e) => setDoctorName(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none focus:border-brand-primary transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600 transition-all"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Clinic Name</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Clinic Name</label>
                     <input 
                       type="text" 
                       placeholder="e.g. KK Neuro Vision Therapy Institute"
                       value={clinicName}
                       onChange={(e) => setClinicName(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none focus:border-brand-primary transition-all"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600 transition-all"
                     />
                   </div>
 
                   <div className="space-y-1.5 md:col-span-2">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Physical Address (Google Maps Text)</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Physical Address (Google Maps Text)</label>
                     <div className="relative">
                       <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                       <input 
@@ -270,13 +267,13 @@ export default function SettingsPage() {
                         placeholder="e.g. Healthcare Hub, Near Circle, SG Highway, Ahmedabad, Gujarat — 380015"
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none focus:border-brand-primary transition-all"
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600 transition-all"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">WhatsApp Number (For Display)</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">WhatsApp Number (For Display)</label>
                     <div className="relative">
                       <Smartphone className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                       <input 
@@ -284,29 +281,29 @@ export default function SettingsPage() {
                         placeholder="e.g. 6352449698"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
-                        className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none focus:border-brand-primary transition-all"
+                        className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600 transition-all"
                       />
                     </div>
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Base OPD Fee (₹)</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Base OPD Fee (₹)</label>
                       <input 
                         type="number" 
                         placeholder="800"
                         value={baseFee}
                         onChange={(e) => setBaseFee(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none focus:border-brand-primary transition-all"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600 transition-all"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">GST Rate (%)</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">GST Rate (%)</label>
                       <select 
                         value={gstRate}
                         onChange={(e) => setGstRate(e.target.value)}
-                        className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none focus:border-brand-primary transition-all"
+                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600 transition-all"
                       >
                         <option value="0">0% (Exempt)</option>
                         <option value="5">5%</option>
@@ -324,19 +321,19 @@ export default function SettingsPage() {
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-6"
+                className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6"
               >
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-500/10 text-emerald-600">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-emerald-50 text-emerald-600 border border-emerald-100">
                       <Wifi size={20} />
                     </div>
                     <div>
-                      <h2 className="text-lg md:text-xl font-extrabold text-slate-900 dark:text-white">WhatsApp & AI Automation Engine</h2>
-                      <p className="text-xs font-medium text-slate-400">Configure 24/7 cloud messaging or local Evolution API.</p>
+                      <h2 className="text-lg md:text-xl font-black text-slate-900">WhatsApp & AI Automation Engine</h2>
+                      <p className="text-xs font-medium text-slate-500">Configure 24/7 cloud messaging or local Evolution API.</p>
                     </div>
                   </div>
-                  <div className="px-3.5 py-1.5 rounded-full flex items-center gap-2 text-xs font-black uppercase tracking-wider w-fit bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                  <div className="px-3.5 py-1.5 rounded-full flex items-center gap-2 text-xs font-black uppercase tracking-wider w-fit bg-emerald-50 text-emerald-600 border border-emerald-200">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     🟢 Active & Synced
                   </div>
@@ -349,15 +346,15 @@ export default function SettingsPage() {
                     onClick={() => setEngineType('meta')}
                     className={`p-4 rounded-2xl border text-left transition-all ${
                       engineType === 'meta' 
-                        ? 'bg-brand-primary/5 border-brand-primary text-brand-primary shadow-sm' 
-                        : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'
+                        ? 'bg-blue-50/80 border-blue-500 text-blue-900 shadow-sm' 
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-extrabold text-sm flex items-center gap-2">
+                      <span className="font-extrabold text-sm flex items-center gap-2 text-slate-900">
                         🌐 Meta Cloud API
                       </span>
-                      {engineType === 'meta' && <Check size={16} className="text-brand-primary" />}
+                      {engineType === 'meta' && <Check size={16} className="text-blue-600" />}
                     </div>
                     <p className="text-xs font-medium text-slate-500">Official Meta 24/7 Cloud Host — Runs 365 days even when laptop is OFF!</p>
                   </button>
@@ -367,15 +364,15 @@ export default function SettingsPage() {
                     onClick={() => setEngineType('evolution')}
                     className={`p-4 rounded-2xl border text-left transition-all ${
                       engineType === 'evolution' 
-                        ? 'bg-brand-primary/5 border-brand-primary text-brand-primary shadow-sm' 
-                        : 'bg-slate-50 dark:bg-slate-800/40 border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-300'
+                        ? 'bg-blue-50/80 border-blue-500 text-blue-900 shadow-sm' 
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
                     <div className="flex items-center justify-between mb-2">
-                      <span className="font-extrabold text-sm flex items-center gap-2">
+                      <span className="font-extrabold text-sm flex items-center gap-2 text-slate-900">
                         ⚡ Evolution API
                       </span>
-                      {engineType === 'evolution' && <Check size={16} className="text-brand-primary" />}
+                      {engineType === 'evolution' && <Check size={16} className="text-blue-600" />}
                     </div>
                     <p className="text-xs font-medium text-slate-500">QR Code Scan via WhatsApp Web / Localhost Instance.</p>
                   </button>
@@ -385,7 +382,7 @@ export default function SettingsPage() {
                 {engineType === 'evolution' && (
                   <div className="space-y-4 pt-2">
                     <div className="space-y-1.5">
-                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Evolution API Endpoint URL</label>
+                      <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Evolution API Endpoint URL</label>
                       <div className="relative">
                         <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                         <input 
@@ -393,13 +390,13 @@ export default function SettingsPage() {
                           placeholder="http://localhost:8081"
                           value={evolutionUrl}
                           onChange={(e) => setEvolutionUrl(e.target.value)}
-                          className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none focus:border-brand-primary"
+                          className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600"
                         />
                       </div>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">API Global Key</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">API Global Key</label>
                         <div className="relative">
                           <Key className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                           <input 
@@ -407,18 +404,18 @@ export default function SettingsPage() {
                             placeholder="Secret Key"
                             value={evolutionKey}
                             onChange={(e) => setEvolutionKey(e.target.value)}
-                            className="w-full pl-11 pr-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none focus:border-brand-primary"
+                            className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600"
                           />
                         </div>
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Instance Name</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Instance Name</label>
                         <input 
                           type="text" 
                           placeholder="ClinicBot1"
                           value={instanceName}
                           onChange={(e) => setInstanceName(e.target.value)}
-                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none focus:border-brand-primary"
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600"
                         />
                       </div>
                     </div>
@@ -428,26 +425,26 @@ export default function SettingsPage() {
                 {/* Meta Cloud Details */}
                 {engineType === 'meta' && (
                   <div className="space-y-4 pt-2">
-                    <div className="p-4 rounded-2xl bg-emerald-500/5 border border-emerald-500/20 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
+                    <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-semibold text-emerald-800">
                       ⚡ Meta Cloud API is active! Patients message <span className="font-bold">+1 (555) 204-1470</span> or <span className="font-bold">6352449698</span> and Meta handles auto-replies 24/7.
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Meta Phone Number ID</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Meta Phone Number ID</label>
                         <input 
                           type="text" 
                           value={metaPhoneId}
                           onChange={(e) => setMetaPhoneId(e.target.value)}
-                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none"
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600"
                         />
                       </div>
                       <div className="space-y-1.5">
-                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Meta WABA Account ID</label>
+                        <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Meta WABA Account ID</label>
                         <input 
                           type="text" 
                           value={metaWabaId}
                           onChange={(e) => setMetaWabaId(e.target.value)}
-                          className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none"
+                          className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600"
                         />
                       </div>
                     </div>
@@ -459,7 +456,7 @@ export default function SettingsPage() {
                   onClick={async () => {
                     alert('🟢 WhatsApp Engine Active & Verified 24/7!');
                   }}
-                  className="w-full py-3.5 rounded-xl font-extrabold text-sm transition-all shadow-sm bg-emerald-500/10 text-emerald-600 border border-emerald-500/30 hover:bg-emerald-500/20"
+                  className="w-full py-3.5 rounded-xl font-extrabold text-sm transition-all shadow-sm bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100"
                 >
                   🟢 Engine Verified & Ready (24/7 Cloud Active)
                 </button>
@@ -471,46 +468,46 @@ export default function SettingsPage() {
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-6"
+                className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6"
               >
-                <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-500/10 text-blue-600">
+                <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-blue-50 text-blue-600 border border-blue-100">
                     <Clock size={20} />
                   </div>
                   <div>
-                    <h2 className="text-lg md:text-xl font-extrabold text-slate-900 dark:text-white">OPD Operating Schedule</h2>
-                    <p className="text-xs font-medium text-slate-400">Timings auto-displayed to patients on WhatsApp inquiries.</p>
+                    <h2 className="text-lg md:text-xl font-black text-slate-900">OPD Operating Schedule</h2>
+                    <p className="text-xs font-medium text-slate-500">Timings auto-displayed to patients on WhatsApp inquiries.</p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Morning OPD Slot</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Morning OPD Slot</label>
                     <input 
                       type="text" 
                       value={morningTiming}
                       onChange={(e) => setMorningTiming(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Evening OPD Slot</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Evening OPD Slot</label>
                     <input 
                       type="text" 
                       value={eveningTiming}
                       onChange={(e) => setEveningTiming(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 ml-1">Operating Days</label>
+                    <label className="text-[10px] font-black uppercase tracking-widest text-slate-500 ml-1">Operating Days</label>
                     <input 
                       type="text" 
                       value={operatingDays}
                       onChange={(e) => setOperatingDays(e.target.value)}
-                      className="w-full px-4 py-3 bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700/60 rounded-xl font-bold text-sm text-slate-900 dark:text-white outline-none"
+                      className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-sm text-slate-900 outline-none focus:bg-white focus:border-blue-600"
                     />
                   </div>
                 </div>
@@ -522,42 +519,42 @@ export default function SettingsPage() {
               <motion.div 
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white dark:bg-slate-900 p-6 md:p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-sm space-y-6"
+                className="bg-white p-6 md:p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6"
               >
-                <div className="flex items-center gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-purple-500/10 text-purple-600">
+                <div className="flex items-center gap-3 pb-4 border-b border-slate-100">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-purple-50 text-purple-600 border border-purple-100">
                     <Shield size={20} />
                   </div>
                   <div>
-                    <h2 className="text-lg md:text-xl font-extrabold text-slate-900 dark:text-white">Security & Notifications</h2>
-                    <p className="text-xs font-medium text-slate-400">Control automated patient reminders and doctor alerts.</p>
+                    <h2 className="text-lg md:text-xl font-black text-slate-900">Security & Notifications</h2>
+                    <p className="text-xs font-medium text-slate-500">Control automated patient reminders and doctor alerts.</p>
                   </div>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200">
                     <div>
-                      <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">WhatsApp Appointment Reminders</h4>
-                      <p className="text-xs text-slate-400">Send automatic WhatsApp reminder 2 hours before scheduled OPD slot.</p>
+                      <h4 className="font-extrabold text-sm text-slate-900">WhatsApp Appointment Reminders</h4>
+                      <p className="text-xs text-slate-500">Send automatic WhatsApp reminder 2 hours before scheduled OPD slot.</p>
                     </div>
                     <input 
                       type="checkbox" 
                       checked={autoReminder} 
                       onChange={(e) => setAutoReminder(e.target.checked)}
-                      className="w-5 h-5 accent-brand-primary cursor-pointer" 
+                      className="w-5 h-5 accent-blue-600 cursor-pointer" 
                     />
                   </div>
 
-                  <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-200">
                     <div>
-                      <h4 className="font-extrabold text-sm text-slate-900 dark:text-white">Doctor Mobile Booking Alerts</h4>
-                      <p className="text-xs text-slate-400">Receive WhatsApp alert on doctor phone when a new patient confirms an OPD booking.</p>
+                      <h4 className="font-extrabold text-sm text-slate-900">Doctor Mobile Booking Alerts</h4>
+                      <p className="text-xs text-slate-500">Receive WhatsApp alert on doctor phone when a new patient confirms an OPD booking.</p>
                     </div>
                     <input 
                       type="checkbox" 
                       checked={doctorAlerts} 
                       onChange={(e) => setDoctorAlerts(e.target.checked)}
-                      className="w-5 h-5 accent-brand-primary cursor-pointer" 
+                      className="w-5 h-5 accent-blue-600 cursor-pointer" 
                     />
                   </div>
                 </div>
@@ -569,7 +566,7 @@ export default function SettingsPage() {
               <button 
                 type="submit"
                 disabled={saving}
-                className="btn-primary flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/20 px-8 py-3.5 rounded-xl font-extrabold text-sm touch-target disabled:opacity-50"
+                className="bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20 px-8 py-3.5 rounded-xl font-extrabold text-sm touch-target disabled:opacity-50 transition-all"
               >
                 {saving ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
@@ -581,11 +578,11 @@ export default function SettingsPage() {
             </div>
 
             {/* Mobile Fixed Bottom Floating Save Bar */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/95 dark:bg-slate-900/95 border-t border-slate-200 dark:border-slate-800 backdrop-blur-lg z-40">
+            <div className="md:hidden fixed bottom-0 left-0 right-0 p-4 bg-white/95 border-t border-slate-200 backdrop-blur-lg z-40">
               <button 
                 type="submit"
                 disabled={saving}
-                className="w-full btn-primary flex items-center justify-center gap-2 py-3.5 rounded-xl font-extrabold text-sm shadow-md"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center gap-2 py-3.5 rounded-xl font-extrabold text-sm shadow-md"
               >
                 {saving ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

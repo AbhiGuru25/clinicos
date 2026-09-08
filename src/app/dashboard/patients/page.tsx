@@ -15,9 +15,9 @@ import {
   MessageSquare,
   X,
   UserCheck,
-  FolderPlus,
   Filter
 } from 'lucide-react';
+
 import { motion, AnimatePresence } from 'framer-motion';
 
 export default function PatientsPage() {
@@ -157,12 +157,13 @@ export default function PatientsPage() {
       {/* ─── Header ─── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">
             Patients Directory
           </h1>
-          <p className="text-sm font-medium text-slate-500 mt-1">
-            Complete medical records, vision therapy history, and patient database.
+          <p className="text-xs font-medium text-slate-500 mt-0.5">
+            Medical records, vision therapy history &amp; patient database
           </p>
+
         </div>
         <div className="flex items-center gap-3">
           <button 
@@ -216,13 +217,14 @@ export default function PatientsPage() {
 
         <div className="clinic-card p-4 flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 font-bold">
-            <FolderPlus size={20} />
+            <MessageSquare size={20} />
           </div>
           <div>
-            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">Medical Files</p>
-            <p className="text-xl font-extrabold text-amber-600">{totalPatients}</p>
+            <p className="text-[10px] font-black uppercase tracking-wider text-slate-400">WhatsApp AI</p>
+            <p className="text-xl font-extrabold text-amber-600">Active</p>
           </div>
         </div>
+
       </div>
 
       {/* ─── Search & Patient Table Card ─── */}

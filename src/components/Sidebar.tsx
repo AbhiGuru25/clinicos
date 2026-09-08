@@ -119,16 +119,16 @@ export default function Sidebar() {
           <div className="flex items-center justify-between mb-1.5">
             <div className="flex items-center gap-2">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--success-text)' }}>Live Engine Sync</span>
+              <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--success-text)' }}>WhatsApp AI</span>
             </div>
             <MessageSquare size={12} style={{ color: 'var(--success-text)' }} />
           </div>
-          <p className="text-[10px] font-medium leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            WhatsApp AI is active.<br/>
-            <span className="font-bold my-1 block" style={{ color: 'var(--success-text)' }}>47 messages handled today</span>
-            Click to configure.
+          <p className="text-[10px] font-semibold leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
+            <span className="font-bold block" style={{ color: 'var(--success-text)' }}>Auto-receptionist active</span>
+            Booking, reminders &amp; FAQs on autopilot.
           </p>
         </Link>
+
 
         {/* Zynteq Badge */}
         <div className="flex items-center justify-center py-2">

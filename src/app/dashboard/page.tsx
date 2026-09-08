@@ -81,19 +81,6 @@ export default function Dashboard() {
     }
   }
 
-  async function fetchMessages() {
-    try {
-      const { data } = await supabase
-        .from('whatsapp_messages')
-        .select('*, patients(name)')
-        .order('created_at', { ascending: false })
-        .limit(5);
-      if (data) setMessages(data);
-    } catch (err) {
-      console.error('Error fetching messages:', err);
-    }
-  }
-
   const todayDateFormatted = new Date().toLocaleDateString('en-IN', { 
     weekday: 'long', 
     day: 'numeric', 
@@ -112,9 +99,10 @@ export default function Dashboard() {
             <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
             <span className="uppercase tracking-widest">{todayDateFormatted}</span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">
             Welcome, <span className="text-blue-600">{doctorName}</span>
           </h1>
+
           <p className="text-xs font-semibold text-slate-500 mt-1">
             KK Neuro Vision Therapy Institute • Daily Practice Overview
           </p>
