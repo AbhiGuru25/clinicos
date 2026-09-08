@@ -211,21 +211,36 @@ export async function POST(req: Request) {
       }
     }
 
+    // Check if Meta Cloud API Payload format
+    let metaSenderNumber = '';
+    let metaText = '';
+    let metaName = '';
+
+    if (payload.object === 'whatsapp_business_account' && payload.entry?.[0]?.changes?.[0]?.value) {
+      const val = payload.entry[0].changes[0].value;
+      const msg = val.messages?.[0];
+      const contact = val.contacts?.[0];
+      if (msg) {
+        metaSenderNumber = msg.from || '';
+        metaText = msg.text?.body || msg.caption || '';
+        metaName = contact?.profile?.name || '';
+      }
+    }
+
     const message = data.message || data;
-    if (!message) return NextResponse.json({ status: 'ok' });
+
+    let remoteJid = metaSenderNumber ? `${metaSenderNumber}@s.whatsapp.net` : (message.key?.remoteJid || data.key?.remoteJid || '');
+    if (remoteJid.includes('@lid')) {
+      remoteJid = message.key?.remoteJidAlt || data.key?.remoteJidAlt || data.sender || remoteJid;
+    }
+    if (!remoteJid && !metaSenderNumber) return NextResponse.json({ status: 'ok' });
 
     // Ignore messages sent by bot itself
     if (message.key?.fromMe) return NextResponse.json({ status: 'ok' });
 
-    let remoteJid = message.key?.remoteJid || data.key?.remoteJid || '';
-    if (remoteJid.includes('@lid')) {
-      remoteJid = message.key?.remoteJidAlt || data.key?.remoteJidAlt || data.sender || remoteJid;
-    }
-    if (!remoteJid) return NextResponse.json({ status: 'ok' });
-
-    const rawSenderNumber = remoteJid.split('@')[0];
+    const rawSenderNumber = metaSenderNumber || remoteJid.split('@')[0];
     const cleanSenderNumber = normalizePhone(rawSenderNumber);
-    const textContent = (
+    const textContent = metaText || (
       message?.conversation || 
       message?.extendedTextMessage?.text || 
       message?.text || 
