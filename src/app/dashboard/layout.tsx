@@ -10,7 +10,8 @@ export default function DashboardLayout({
       <Sidebar />
       {/* Desktop: offset by sidebar width. Mobile: offset by top bar + bottom nav */}
       <main className="lg:pl-64 min-h-screen">
-        <div className="pt-[60px] lg:pt-0 pb-[72px] lg:pb-0 p-4 md:p-6 lg:p-8 max-w-7xl mx-auto">
+        <div className="p-4 pt-20 pb-24 md:p-6 lg:p-8 max-w-7xl mx-auto">
+
           {children}
         </div>
       </main>
