@@ -188,7 +188,7 @@ export default function SettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* Navigation Tabs (Horizontal Scroll on Mobile, Vertical Stack on Desktop) */}
-        <div className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto hide-scrollbar p-1.5 bg-slate-100 dark:bg-slate-900/60 rounded-2xl border border-slate-200/60 dark:border-slate-800 shrink-0">
+        <div className="lg:col-span-3 flex lg:flex-col gap-2 overflow-x-auto hide-scrollbar p-2 bg-slate-200/60 dark:bg-slate-900/90 rounded-2xl border border-slate-300/80 dark:border-slate-800 shrink-0 shadow-sm">
           {[
             { id: 'profile', name: 'Clinic Profile', icon: MapPin, desc: 'Doctor & Clinic Details' },
             { id: 'whatsapp', name: 'WhatsApp & AI Bot', icon: Wifi, desc: '24/7 Automation Engine' },
@@ -201,14 +201,16 @@ export default function SettingsPage() {
                 type="button"
                 key={tab.id} 
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`w-full flex items-center gap-3 px-4 py-3 md:py-3.5 rounded-xl font-bold text-xs md:text-sm transition-all whitespace-nowrap text-left touch-target ${
-                  isActive ? 'bg-white dark:bg-slate-800 text-brand-primary shadow-sm border border-slate-200/80 dark:border-slate-700' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-white/40'
+                className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl font-bold text-xs md:text-sm transition-all whitespace-nowrap text-left touch-target ${
+                  isActive 
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20 border border-blue-500' 
+                    : 'bg-white dark:bg-slate-800/90 text-slate-800 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700/80 hover:text-blue-600 dark:hover:text-white border border-slate-200/80 dark:border-slate-700/80'
                 }`}
               >
-                <tab.icon size={18} className={isActive ? 'text-brand-primary' : 'text-slate-400'} />
+                <tab.icon size={18} className={isActive ? 'text-white' : 'text-blue-600 dark:text-blue-400'} />
                 <div className="flex flex-col min-w-0">
-                  <span className="font-extrabold leading-tight">{tab.name}</span>
-                  <span className="text-[10px] font-medium text-slate-400 hidden lg:inline">{tab.desc}</span>
+                  <span className={`font-extrabold leading-tight ${isActive ? 'text-white' : 'text-slate-900 dark:text-slate-100'}`}>{tab.name}</span>
+                  <span className={`text-[10px] font-semibold hidden lg:inline ${isActive ? 'text-blue-100' : 'text-slate-500 dark:text-slate-400'}`}>{tab.desc}</span>
                 </div>
               </button>
             );
