@@ -228,7 +228,7 @@ export default function BillingPage() {
       const totalAmt = Number(inv.total).toFixed(2);
       const pdfUrl = `${window.location.origin}/api/billing/pdf?id=${inv.id}`;
       
-      const message = `Hello *${patientName}*!\n\nYour official GST Invoice *#${invCode}* for *₹${totalAmt}* at *KK Neuro Vision Therapy Institute* has been generated.\n\n📌 *Invoice Details:*\n• Invoice ID: #${invCode}\n• Total Amount: ₹${totalAmt} (Incl. 18% GST)\n• Clinic: KK Neuro Vision Therapy Institute, Ahmedabad.\n\n📄 *Download Official Invoice PDF:*\n${pdfUrl}\n\nThank you for visiting KK Neuro Vision Therapy Institute!`;
+      const message = `Hello *${patientName}*!\n\nYour official GST Invoice *#${invCode}* for *₹${totalAmt}* at *KK Neuro Vision Therapy Institute* has been generated.\n\n*Invoice Details:*\n• Invoice ID: #${invCode}\n• Total Amount: ₹${totalAmt} (Incl. 18% GST)\n• Clinic: KK Neuro Vision Therapy Institute, Ahmedabad.\n\n*Download Official Invoice PDF:*\n${pdfUrl}\n\nThank you for visiting KK Neuro Vision Therapy Institute!`;
       
       const res = await fetch('/api/whatsapp/send', {
         method: 'POST',
@@ -244,12 +244,12 @@ export default function BillingPage() {
       const data = await res.json();
       if (data.success) {
         if (data.deliveredViaApi) {
-          alert(`✅ Invoice & PDF Link Sent Live via WhatsApp to ${patientName}!`);
+          alert(`Invoice & PDF Link Sent Live via WhatsApp to ${patientName}!`);
         } else {
           window.open(data.waWebUrl, '_blank');
         }
       } else {
-        alert(data.error || 'Failed to send WhatsApp invoice.');
+        alert(data.error || 'Failed to send WhatsApp message.');
       }
     } catch (err: any) {
       const rawPhone = inv.appointments?.patients?.phone || inv.phone_number || '';
@@ -257,7 +257,7 @@ export default function BillingPage() {
       const formattedPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
       const invCode = `CL-${inv.id.slice(0, 6).toUpperCase()}`;
       const pdfUrl = `${window.location.origin}/api/billing/pdf?id=${inv.id}`;
-      const message = `Hello *${inv.patient_name || 'Patient'}*!\n\nYour official GST Invoice *#${invCode}* for *₹${inv.total}* at *KK Neuro Vision Therapy Institute* has been generated.\n\n📄 Download Invoice PDF:\n${pdfUrl}`;
+      const message = `Hello *${inv.patient_name || 'Patient'}*!\n\nYour official GST Invoice *#${invCode}* for *₹${inv.total}* at *KK Neuro Vision Therapy Institute* has been generated.\n\nDownload Invoice PDF:\n${pdfUrl}`;
       window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`, '_blank');
     }
   };

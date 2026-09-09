@@ -323,7 +323,7 @@ export default function AppointmentsPage() {
     const formattedDate = formatDate(appointment.appointment_date);
     const formattedTime = formatTime(appointment.appointment_time);
 
-    const msg = `Hi *${patientName}*! 👋\n\nThis is a reminder for your appointment at *KK Neuro Vision Therapy Institute*.\n\n📅 *Date:* ${formattedDate}\n⏰ *Time:* ${formattedTime}\n📍 *Location:* KK Neuro Vision Therapy Institute, Ahmedabad.\n\nSee you soon!`;
+    const msg = `Hi *${patientName}*!\n\nThis is a reminder for your appointment at *KK Neuro Vision Therapy Institute*.\n\n• *Date:* ${formattedDate}\n• *Time:* ${formattedTime}\n• *Location:* KK Neuro Vision Therapy Institute, Ahmedabad.\n\nSee you soon!`;
 
     try {
       const res = await fetch('/api/whatsapp/send', {
@@ -353,6 +353,7 @@ export default function AppointmentsPage() {
       window.open(`https://wa.me/${formattedPhone}?text=${encodeURIComponent(msg)}`, '_blank');
     }
   };
+
 
   return (
     <div className="space-y-6 page-enter">
