@@ -14,6 +14,7 @@ export function normalizePhone(rawPhone: string): string {
     cleaned = cleaned.slice(1);
   }
 
+  // Return cleaned digits (preserves 10 digits for India, 11 digits for +1 US test numbers)
   return cleaned;
 }
 
