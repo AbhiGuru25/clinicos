@@ -498,15 +498,16 @@ export default function BillingPage() {
             </button>
           </div>
         ) : (
-          <div>
-            {/* Desktop Table Header */}
-            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-100 bg-slate-50/70 text-[10px] font-black uppercase tracking-wider text-slate-400">
-              <div className="col-span-3">Invoice ID & Date</div>
-              <div className="col-span-4">Patient Name & Phone</div>
-              <div className="col-span-2 text-right">Amount</div>
-              <div className="col-span-1 text-center">Status</div>
-              <div className="col-span-2 text-right">Actions</div>
-            </div>
+          <div className="overflow-x-auto hide-scrollbar">
+            <div className="min-w-[650px] md:min-w-full">
+              {/* Desktop Table Header */}
+              <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-100 bg-slate-50/70 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                <div className="col-span-3">Invoice ID & Date</div>
+                <div className="col-span-4">Patient Name & Phone</div>
+                <div className="col-span-2 text-right">Amount</div>
+                <div className="col-span-1 text-center">Status</div>
+                <div className="col-span-2 text-right">Actions</div>
+              </div>
 
             <div className="divide-y divide-slate-100">
               {filteredInvoices.map((inv, i) => {
@@ -573,6 +574,7 @@ export default function BillingPage() {
               })}
             </div>
           </div>
+        </div>
         )}
       </div>
 

@@ -252,7 +252,7 @@ export default function PatientsPage() {
           </p>
         </div>
 
-        {/* Patients Table */}
+        {/* Patients Table Container */}
         {loading ? (
           <div className="p-20 text-center text-slate-400 font-bold">
             <div className="w-8 h-8 rounded-full border-2 border-blue-500 border-t-transparent animate-spin mx-auto mb-3" />
@@ -272,15 +272,16 @@ export default function PatientsPage() {
             </button>
           </div>
         ) : (
-          <div>
-            {/* Desktop Table Header */}
-            <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-100 bg-slate-50/70 text-[10px] font-black uppercase tracking-wider text-slate-400">
-              <div className="col-span-4">Patient Information</div>
-              <div className="col-span-3">Contact Details</div>
-              <div className="col-span-2 text-center">Visits</div>
-              <div className="col-span-2">Registered On</div>
-              <div className="col-span-1 text-right">Records</div>
-            </div>
+          <div className="overflow-x-auto hide-scrollbar">
+            <div className="min-w-[650px] md:min-w-full">
+              {/* Desktop Table Header */}
+              <div className="hidden md:grid grid-cols-12 gap-4 px-6 py-4 border-b border-slate-100 bg-slate-50/70 text-[10px] font-black uppercase tracking-wider text-slate-400">
+                <div className="col-span-4">Patient Information</div>
+                <div className="col-span-3">Contact Details</div>
+                <div className="col-span-2 text-center">Visits</div>
+                <div className="col-span-2">Registered On</div>
+                <div className="col-span-1 text-right">Records</div>
+              </div>
 
             {/* Rows List */}
             <div className="divide-y divide-slate-100">
@@ -371,6 +372,7 @@ export default function PatientsPage() {
               })}
             </div>
           </div>
+        </div>
         )}
       </div>
 
