@@ -299,11 +299,17 @@ export async function POST(req: Request) {
 
     if (payload.object === 'whatsapp_business_account' && payload.entry?.[0]?.changes?.[0]?.value) {
       const val = payload.entry[0].changes[0].value;
+      
+      // Ignore status receipts (sent, delivered, read)
+      if (val.statuses && !val.messages) {
+        return NextResponse.json({ status: 'ok' });
+      }
+
       const msg = val.messages?.[0];
       const contact = val.contacts?.[0];
       if (msg) {
         metaSenderNumber = msg.from || '';
-        metaText = msg.text?.body || msg.caption || '';
+        metaText = msg.text?.body || msg.button?.text || msg.interactive?.button_reply?.title || msg.caption || '';
         metaName = contact?.profile?.name || '';
       }
     }
