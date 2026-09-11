@@ -10,6 +10,76 @@ const supabaseAdmin = createClient(
 
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Generative AI Knowledge Base Prompt for KK Neuro Vision Therapy Institute
+const CLINIC_KNOWLEDGE_PROMPT = `
+You are the 24/7 AI Receptionist & Clinical Coordinator for KK Neuro Vision Therapy Institute in Ahmedabad, Gujarat.
+Doctor / Founder: Dr. Vikash
+Location: Healthcare Hub, Near Circle, SG Highway, Ahmedabad, Gujarat — 380015
+Phone / WhatsApp: +91 63524 49698
+OPD Hours: 9:00 AM – 1:00 PM (Morning) & 4:00 PM – 8:00 PM (Evening), Monday to Saturday. Sunday closed.
+
+Treatments & Specializations:
+- Vision Therapy & Neuro-Optometric Rehabilitation
+- Amblyopia (Lazy Eye) Evaluation & Treatment
+- Strabismus (Squint) Non-Surgical Therapy
+- Digital Eye Strain & Binocular Vision Disorders
+- Comprehensive Pediatric & Adult Eye Assessment
+
+Consultation Fees:
+- OPD Doctor Consultation: ₹800
+- Vision Therapy & Amblyopia Assessment: ₹1,200 – ₹1,500
+
+Behavior & Rules:
+1. Answer in the same language the patient messages you (English, Hindi, or Gujarati).
+2. Be warm, professional, concise, empathetic, and clear.
+3. Always offer to help them book an OPD appointment slot with Dr. Vikash.
+4. Keep responses short and suitable for WhatsApp (2-4 lines max).
+5. Never diagnose medical conditions directly; invite them for a clinical OPD assessment with Dr. Vikash.
+`;
+
+async function getGenerativeAiReply(userMsg: string, patientName: string): Promise<string | null> {
+  const apiKey = process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    if (process.env.OPENAI_API_KEY) {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: CLINIC_KNOWLEDGE_PROMPT },
+            { role: 'user', content: `Patient Name: ${patientName}. Message: "${userMsg}"` }
+          ],
+          max_tokens: 250,
+          temperature: 0.7
+        })
+      });
+      const data = await res.json();
+      return data.choices?.[0]?.message?.content || null;
+    } else if (process.env.GEMINI_API_KEY) {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{ text: `${CLINIC_KNOWLEDGE_PROMPT}\n\nPatient Name: ${patientName}. Patient Question: "${userMsg}"` }]
+          }]
+        })
+      });
+      const data = await res.json();
+      return data.candidates?.[0]?.content?.parts?.[0]?.text || null;
+    }
+  } catch (err) {
+    console.error('Generative AI error:', err);
+  }
+  return null;
+}
+
 async function handleMultiMessageAutoReply({
   cleanPhone,
   patientName,
@@ -81,7 +151,18 @@ async function handleMultiMessageAutoReply({
     return;
   }
 
-  // 1. Menu Selection "1" or "book" or "appointment"
+  // 1. Try Generative AI LLM response first if API key is present
+  const aiResponse = await getGenerativeAiReply(userMessage, patientName);
+  if (aiResponse) {
+    await sendWhatsAppMessage({
+      phone: cleanPhone,
+      message: aiResponse,
+      clinicId
+    });
+    return;
+  }
+
+  // 2. Menu Selection "1" or "book" or "appointment"
   if (msgLower === '1' || msgLower.includes('book') || msgLower.includes('appointment')) {
     await sendWhatsAppMessage({
       phone: cleanPhone,
@@ -105,7 +186,7 @@ async function handleMultiMessageAutoReply({
     return;
   }
 
-  // 2. Menu Selection "2" or "address" or "location" or "where"
+  // 3. Menu Selection "2" or "address" or "location" or "where"
   if (msgLower === '2' || msgLower.includes('address') || msgLower.includes('location') || msgLower.includes('where')) {
     await sendWhatsAppMessage({
       phone: cleanPhone,
@@ -116,7 +197,7 @@ async function handleMultiMessageAutoReply({
 
     await sendWhatsAppMessage({
       phone: cleanPhone,
-      message: `Healthcare Hub, Near Circle, SG Highway, Ahmedabad, Gujarat — 380015.\n\n📞 Desk: +91 95588 55508\n⏰ OPD Timings: 9:00 AM – 8:00 PM (Mon to Sat)`,
+      message: `Healthcare Hub, Near Circle, SG Highway, Ahmedabad, Gujarat — 380015.\n\n📞 Desk: +91 63524 49698\n⏰ OPD Timings: 9:00 AM – 8:00 PM (Mon to Sat)`,
       clinicId
     });
     await delay(1000);
@@ -129,7 +210,7 @@ async function handleMultiMessageAutoReply({
     return;
   }
 
-  // 3. Menu Selection "3" or "fees" or "cost" or "treatment"
+  // 4. Menu Selection "3" or "fees" or "cost" or "treatment"
   if (msgLower === '3' || msgLower.includes('fees') || msgLower.includes('cost') || msgLower.includes('price')) {
     await sendWhatsAppMessage({
       phone: cleanPhone,
@@ -153,7 +234,7 @@ async function handleMultiMessageAutoReply({
     return;
   }
 
-  // 4. Default Interactive Welcome Menu (Staggered 3-Message Flow)
+  // 5. Default Interactive Welcome Menu (Staggered 3-Message Flow)
   await sendWhatsAppMessage({
     phone: cleanPhone,
     message: `Hello *${patientName}*! 👋 Welcome to *KK Neuro Vision Therapy Institute*.`,
