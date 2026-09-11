@@ -103,7 +103,7 @@ export async function sendWhatsAppMessage({
 
   // 3. Log outgoing message in whatsapp_messages table
   const msgPayload: any = {
-    sender_number: clean10,
+    sender_number: cleanDigits,
     content: message,
     type: 'outgoing'
   };
