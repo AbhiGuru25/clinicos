@@ -17,10 +17,11 @@ export async function sendWhatsAppMessage({
   patientId?: string | null;
   clinicId?: string | null;
 }) {
-  const clean10 = normalizePhone(phone);
-  if (!clean10) return { success: false, error: 'Invalid phone number' };
-
-  const intlPhone = clean10.length === 10 ? `91${clean10}` : clean10;
+  const cleanDigits = phone.replace(/[^0-9]/g, '');
+  let intlPhone = cleanDigits;
+  if (cleanDigits.length === 10) {
+    intlPhone = `91${cleanDigits}`;
+  }
 
   // 1. Fetch Clinic Evolution API config
   let evoUrl = 'http://localhost:8081';
