@@ -118,6 +118,6 @@ export async function sendWhatsAppMessage({
     success: true,
     deliveredViaApi: apiSuccess,
     waWebUrl,
-    cleanPhone: clean10
+    cleanPhone: cleanDigits
   };
 }
