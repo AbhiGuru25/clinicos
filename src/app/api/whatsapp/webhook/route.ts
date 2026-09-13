@@ -38,16 +38,40 @@ Behavior & Rules:
 `;
 
 async function getGenerativeAiReply(userMsg: string, patientName: string): Promise<string | null> {
-  const apiKey = process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY;
-  if (!apiKey) return null;
+  const groqKey = process.env.GROQ_API_KEY || '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';
+  const openaiKey = process.env.OPENAI_API_KEY;
+  const geminiKey = process.env.GEMINI_API_KEY;
 
   try {
-    if (process.env.OPENAI_API_KEY) {
+    if (groqKey) {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${groqKey}`
+        },
+        body: JSON.stringify({
+          model: 'groq/compound-mini',
+          messages: [
+            { role: 'system', content: CLINIC_KNOWLEDGE_PROMPT },
+            { role: 'user', content: `Patient Name: ${patientName}. Message: "${userMsg}"` }
+          ],
+          max_tokens: 300,
+          temperature: 0.7
+        })
+      });
+      const data = await res.json();
+      if (data.choices?.[0]?.message?.content) {
+        return data.choices[0].message.content.trim();
+      }
+    }
+
+    if (openaiKey) {
       const res = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`
+          'Authorization': `Bearer ${openaiKey}`
         },
         body: JSON.stringify({
           model: 'gpt-4o-mini',
@@ -61,8 +85,8 @@ async function getGenerativeAiReply(userMsg: string, patientName: string): Promi
       });
       const data = await res.json();
       return data.choices?.[0]?.message?.content || null;
-    } else if (process.env.GEMINI_API_KEY) {
-      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+    } else if (geminiKey) {
+      const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -93,8 +117,8 @@ async function handleMultiMessageAutoReply({
 }) {
   const msgLower = userMessage.toLowerCase().trim();
 
-  // 0. Auto Appointment Booking parsing if patient replies with name/time (e.g., "Rahul, Tomorrow 10 AM" or "4 PM")
-  const hasTimeKeyword = msgLower.includes('am') || msgLower.includes('pm') || msgLower.includes('tomorrow') || msgLower.includes('today') || msgLower.includes(':');
+  // 0. Auto Appointment Booking parsing if patient replies with name/time (e.g., "Rahul, Tomorrow 10 AM" or "Abhi, 4 PM")
+  const hasTimeKeyword = (msgLower.includes('am') || msgLower.includes('pm') || msgLower.includes('tomorrow') || msgLower.includes('today')) && (userMessage.includes(',') || msgLower.includes('book') || msgLower.includes('confirm'));
   if (hasTimeKeyword && !msgLower.startsWith('1') && !msgLower.startsWith('2') && !msgLower.startsWith('3')) {
     const todayStr = new Date().toISOString().split('T')[0];
     const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0];
@@ -131,27 +155,13 @@ async function handleMultiMessageAutoReply({
 
     await sendWhatsAppMessage({
       phone: cleanPhone,
-      message: `🎉 *OPD Appointment Confirmed!*`,
-      clinicId
-    });
-    await delay(1000);
-
-    await sendWhatsAppMessage({
-      phone: cleanPhone,
-      message: `👤 *Patient Name:* ${extractedName}\n📅 *Date:* ${targetDate === tomorrowStr ? 'Tomorrow' : 'Today'}\n⏰ *Time:* ${userMessage}\n📍 *Clinic:* KK Neuro Vision Therapy Institute, SG Highway, Ahmedabad`,
-      clinicId
-    });
-    await delay(1000);
-
-    await sendWhatsAppMessage({
-      phone: cleanPhone,
-      message: `✅ *Your appointment is synced live into ClinicOS Dashboard!* Dr. Vikash & team look forward to seeing you.`,
+      message: `🎉 *OPD Appointment Confirmed!*\n\n👤 *Patient Name:* ${extractedName}\n📅 *Date:* ${targetDate === tomorrowStr ? 'Tomorrow' : 'Today'}\n⏰ *Time Slot:* ${userMessage}\n📍 *Clinic:* KK Neuro Vision Therapy Institute, SG Highway, Ahmedabad\n\n✅ *Your slot is synced live into ClinicOS Dashboard!* Dr. Vikash & team look forward to seeing you.`,
       clinicId
     });
     return;
   }
 
-  // 1. Try Generative AI LLM response first if API key is present
+  // 1. Primary Real-Time Generative AI LLM response for natural conversational human-like chat
   const aiResponse = await getGenerativeAiReply(userMessage, patientName);
   if (aiResponse) {
     await sendWhatsAppMessage({
