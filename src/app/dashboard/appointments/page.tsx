@@ -19,24 +19,30 @@ import {
   FileText,
   ChevronRight,
   UserPlus,
-  ExternalLink
+  ExternalLink,
+  LayoutList,
+  CalendarDays,
+  SlidersHorizontal,
+  Settings
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import AppointmentCalendar from '@/components/AppointmentCalendar';
+import ScheduleManager from '@/components/ScheduleManager';
 
 const TIME_SLOTS = [
-  '08:00 AM', '08:30 AM',
-  '09:00 AM', '09:30 AM',
-  '10:00 AM', '10:30 AM',
-  '11:00 AM', '11:30 AM',
-  '12:00 PM', '12:30 PM',
-  '01:00 PM', '01:30 PM',
-  '02:00 PM', '02:30 PM',
-  '03:00 PM', '03:30 PM',
-  '04:00 PM', '04:30 PM',
-  '05:00 PM', '05:30 PM',
-  '06:00 PM', '06:30 PM',
-  '07:00 PM', '07:30 PM',
-  '08:00 PM', '08:30 PM',
+  '08:00 AM',
+  '09:00 AM',
+  '10:00 AM',
+  '11:00 AM',
+  '12:00 PM',
+  '01:00 PM',
+  '02:00 PM',
+  '03:00 PM',
+  '04:00 PM',
+  '05:00 PM',
+  '06:00 PM',
+  '07:00 PM',
+  '08:00 PM',
   '09:00 PM'
 ];
 
@@ -73,6 +79,12 @@ export default function AppointmentsPage() {
   // Filters
   const [dateFilter, setDateFilter] = useState('Today');
   const [statusFilter, setStatusFilter] = useState('All');
+
+  // Calendar & Schedule Manager State
+  const [pageViewMode, setPageViewMode] = useState<'queue' | 'calendar'>('calendar');
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [doctorSchedule, setDoctorSchedule] = useState<any[]>([]);
+  const [blockedDates, setBlockedDates] = useState<any[]>([]);
 
   const todayStr = new Date().toISOString().split('T')[0];
   const tomorrow = new Date();
@@ -137,6 +149,7 @@ export default function AppointmentsPage() {
         const { data: clinic } = await supabase.from('clinics').select('id').limit(1).single();
         if (clinic) setClinicId(clinic.id);
         fetchAppointments();
+        fetchSchedule();
       } catch (err) {
         console.error('Init error:', err);
         setLoading(false);
@@ -205,6 +218,49 @@ export default function AppointmentsPage() {
     }
   }
 
+  async function fetchSchedule() {
+    try {
+      const res = await fetch('/api/schedule');
+      const data = await res.json();
+      if (data.success && data.schedule) {
+        setDoctorSchedule(data.schedule);
+      }
+    } catch (err) {
+      console.error('Error fetching schedule:', err);
+    }
+    try {
+      const saved = localStorage.getItem('clinicos_blocked_dates');
+      if (saved) {
+        setBlockedDates(JSON.parse(saved));
+      }
+    } catch {}
+  }
+
+  const handleCalendarSlotClick = (dateStr: string, timeStr: string) => {
+    setAppointmentDate(dateStr);
+    const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+    if (match) {
+      setSlotHour(match[1].padStart(2, '0'));
+      setSlotMinute(match[2]);
+      setAmpm(match[3].toUpperCase());
+    }
+    setIsModalOpen(true);
+  };
+
+  const getBlockedDateReason = (dateStr: string) => {
+    if (!dateStr) return null;
+    const blocked = blockedDates.find(b => b.date === dateStr);
+    if (blocked) return blocked.reason;
+    try {
+      const d = new Date(`${dateStr}T12:00:00`);
+      const dayOfWeek = d.getDay();
+      const sched = doctorSchedule.find(s => s.day_of_week === dayOfWeek);
+      if (sched && !sched.is_working) return `${sched.day_name} Clinic Closed`;
+      if (dayOfWeek === 0 && (!sched || !sched.is_working)) return 'Sunday Closed';
+    } catch {}
+    return null;
+  };
+
   const handleBook = async (e: React.FormEvent) => {
     e.preventDefault();
     setBooking(true);
@@ -265,6 +321,58 @@ export default function AppointmentsPage() {
       }
     } catch (err: any) {
       alert(err.message || 'Failed to update status');
+    }
+  };
+
+  const handleReschedule = async (
+    appointmentId: string,
+    newDate: string,
+    newTime: string,
+    notifyWhatsapp: boolean = true
+  ) => {
+    try {
+      const res = await fetch('/api/appointments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: appointmentId,
+          appointment_date: newDate,
+          appointment_time: newTime,
+          status: 'confirmed'
+        })
+      });
+
+      const data = await res.json();
+      if (!data.success) {
+        alert(data.error || 'Failed to reschedule appointment');
+        return;
+      }
+
+      fetchAppointments();
+
+      if (notifyWhatsapp) {
+        const appointment = data.appointment || appointments.find(a => a.id === appointmentId);
+        const rawPhone = appointment?.patients?.phone || appointment?.phone_number;
+        const patientName = (appointment?.patients?.name || appointment?.patient_name || 'Patient').trim();
+
+        if (rawPhone) {
+          const msg = `Hi *${patientName}*!\n\nYour appointment at *KK Neuro Vision Therapy Institute* has been rescheduled.\n\n• *New Date:* ${formatDate(newDate)}\n• *New Time:* ${formatTime(newTime)}\n• *Location:* KK Neuro Vision Therapy Institute, Ahmedabad.\n\nSee you soon!`;
+          await fetch('/api/whatsapp/send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              phone: rawPhone,
+              message: msg,
+              patient_id: appointment?.patient_id || appointment?.patients?.id,
+              clinic_id: clinicId
+            })
+          }).catch(console.error);
+        }
+      }
+
+      alert('✅ Appointment Rescheduled Successfully!');
+    } catch (err: any) {
+      alert(err.message || 'Failed to reschedule appointment');
     }
   };
 
@@ -358,22 +466,65 @@ export default function AppointmentsPage() {
   return (
     <div className="space-y-6 page-enter">
       {/* ─── Header ─── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">
-            Appointments Queue
+            Appointments & Calendar
           </h1>
           <p className="text-xs font-medium text-slate-500 mt-0.5">
-            OPD Consultation Schedule & Patient Queue
+            Visual OPD Schedule, Doctor Calendar & Patient Queue
           </p>
         </div>
-        <button 
-          onClick={() => setIsModalOpen(true)} 
-          className="btn-primary flex items-center justify-center gap-2 touch-target shadow-lg shadow-blue-500/20"
-        >
-          <UserPlus size={18} />
-          <span>+ Add Walk-In Patient</span>
-        </button>
+
+        <div className="flex items-center gap-2 flex-wrap w-full sm:w-auto justify-start sm:justify-end">
+          {/* View Mode Switcher: Calendar vs Queue List */}
+          <div className="flex items-center p-1 bg-slate-100 rounded-2xl border border-slate-200 shadow-xs shrink-0">
+            <button
+              type="button"
+              onClick={() => setPageViewMode('calendar')}
+              className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all ${
+                pageViewMode === 'calendar'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <CalendarDays size={14} />
+              <span>Calendar</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPageViewMode('queue')}
+              className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all ${
+                pageViewMode === 'queue'
+                  ? 'bg-white text-blue-600 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <LayoutList size={14} />
+              <span>Queue</span>
+            </button>
+          </div>
+
+          {/* Doctor Schedule Button */}
+          <button
+            type="button"
+            onClick={() => setIsScheduleModalOpen(true)}
+            className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl text-xs font-extrabold bg-white border border-slate-200 hover:border-slate-300 text-slate-700 hover:bg-slate-50 transition-all flex items-center gap-1.5 shadow-xs touch-target"
+            title="Configure OPD Consultation Hours & Leave Dates"
+          >
+            <Clock size={14} className="text-blue-600" />
+            <span className="hidden xs:inline">Doctor</span> Schedule
+          </button>
+
+          {/* Add Walk-In Patient */}
+          <button 
+            onClick={() => setIsModalOpen(true)} 
+            className="btn-primary flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 text-xs font-extrabold shadow-md shadow-blue-500/20 touch-target"
+          >
+            <UserPlus size={15} />
+            <span>+ Walk-In</span>
+          </button>
+        </div>
       </div>
 
       {/* ─── Doctor Quick Stat Metric Cards ─── */}
@@ -419,8 +570,24 @@ export default function AppointmentsPage() {
         </div>
       </div>
 
-      {/* ─── Doctor Search & Filters Bar ─── */}
-      <div className="clinic-card p-4 md:p-6 space-y-4">
+      {/* ─── Main Content: Calendar View OR Queue List View ─── */}
+      {pageViewMode === 'calendar' ? (
+        <AppointmentCalendar
+          appointments={appointments}
+          schedule={doctorSchedule}
+          blockedDates={blockedDates}
+          onSlotClick={handleCalendarSlotClick}
+          onUpdateStatus={handleUpdateStatus}
+          onSendReminder={handleSendReminder}
+          onCompleteAndBill={(a) => {
+            setSelectedAppointment(a);
+            setIsBillingModalOpen(true);
+          }}
+          onReschedule={handleReschedule}
+        />
+      ) : (
+        /* ─── Doctor Search & Filters Bar & Queue List ─── */
+        <div className="clinic-card p-4 md:p-6 space-y-4">
         <div className="flex flex-col md:flex-row items-center gap-4 justify-between">
           
           {/* Live Patient Search Input */}
@@ -611,6 +778,7 @@ export default function AppointmentsPage() {
           </div>
         )}
       </div>
+      )}
 
       {/* ─── Walk-In Appointment Modal ─── */}
       {mounted && createPortal(
@@ -703,6 +871,12 @@ export default function AppointmentsPage() {
                     <div>
                       <label className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block mb-1">Visit Date</label>
                       <input required type="date" value={appointmentDate} onChange={e => setAppointmentDate(e.target.value)} className="w-full px-4 py-2.5 border border-slate-200 rounded-xl font-bold text-sm bg-slate-50/50 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all text-slate-900" />
+                      {getBlockedDateReason(appointmentDate) && (
+                        <div className="mt-1.5 p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold flex items-center gap-1.5">
+                          <AlertCircle size={14} className="text-amber-600 shrink-0" />
+                          <span>Clinic routine notice: {getBlockedDateReason(appointmentDate)}.</span>
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -847,6 +1021,17 @@ export default function AppointmentsPage() {
         </AnimatePresence>,
         document.body
       )}
+
+      {/* ─── Doctor Schedule Manager Modal ─── */}
+      <ScheduleManager
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        onScheduleUpdated={() => {
+          fetchSchedule();
+          fetchAppointments();
+        }}
+        clinicId={clinicId}
+      />
     </div>
   );
 }

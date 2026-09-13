@@ -176,7 +176,7 @@ export async function POST(req: Request) {
     }
 
     const todayStr = new Date().toISOString().split('T')[0];
-    const { date, time } = parseDateAndTime(rawSlot, todayStr);
+    const { date: rawParsedDate, time: rawParsedTime } = parseDateAndTime(rawSlot, todayStr);
 
     // Get default clinic
     const { data: clinic } = await supabaseAdmin
@@ -184,6 +184,43 @@ export async function POST(req: Request) {
       .select('id')
       .limit(1)
       .single();
+
+    // ─── Enforce Doctor Schedule & Working Hours ───
+    const { getDoctorSchedule, isClinicOpenOnDate, validateOpdTime, snapTo1HourSlot } = await import('@/lib/schedule');
+    const doctorSchedule = await getDoctorSchedule(supabaseAdmin, clinic?.id);
+
+    let finalDate = rawParsedDate;
+    let finalTime = snapTo1HourSlot(rawParsedTime);
+    let scheduleAdjustmentNote = '';
+
+    // Check if clinic is open on the requested date
+    let dateCheck = isClinicOpenOnDate(doctorSchedule, [], finalDate);
+    if (!dateCheck.isOpen) {
+      // Find the next available working day (up to 7 days ahead)
+      let nextDateObj = new Date(`${finalDate}T12:00:00`);
+      for (let i = 1; i <= 7; i++) {
+        nextDateObj.setDate(nextDateObj.getDate() + 1);
+        const candidateStr = nextDateObj.toISOString().split('T')[0];
+        const candidateCheck = isClinicOpenOnDate(doctorSchedule, [], candidateStr);
+        if (candidateCheck.isOpen) {
+          scheduleAdjustmentNote = `Original requested date ${finalDate} was closed (${dateCheck.reason}). Moved to next open day: ${candidateStr}. `;
+          finalDate = candidateStr;
+          dateCheck = candidateCheck;
+          break;
+        }
+      }
+    }
+
+    // Validate time against working OPD hours on that day
+    if (dateCheck.daySchedule) {
+      const timeCheck = validateOpdTime(dateCheck.daySchedule, finalTime);
+      if (!timeCheck.valid && timeCheck.suggestedTime) {
+        scheduleAdjustmentNote += `Requested time was outside OPD hours (${timeCheck.reason}). Adjusted to ${timeCheck.suggestedTime}. `;
+        finalTime = timeCheck.suggestedTime;
+      } else {
+        finalTime = timeCheck.normalizedTime;
+      }
+    }
 
     // Smart Deduplicated Patient Lookup / Registration / Name Sync
     const patient = await findOrCreatePatient(supabaseAdmin, {
@@ -196,9 +233,9 @@ export async function POST(req: Request) {
     // Insert appointment into OPD Queue
     const aptPayload: any = {
       patient_id: patient.id,
-      appointment_date: date,
-      appointment_time: time,
-      notes: `Concern: ${mainConcern} (Booked via Omnidim Voice AI)`,
+      appointment_date: finalDate,
+      appointment_time: finalTime,
+      notes: `${scheduleAdjustmentNote}Concern: ${mainConcern} (Booked via OmniDim Voice AI)`.trim(),
       status: 'confirmed'
     };
     if (clinic?.id) aptPayload.clinic_id = clinic.id;
@@ -221,7 +258,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       status: 'success',
-      message: `Appointment confirmed for ${patientName} on ${date} at ${time}`,
+      message: `Appointment confirmed for ${patientName} on ${finalDate} at ${finalTime}`,
       appointment
     }, { headers: corsHeaders });
 

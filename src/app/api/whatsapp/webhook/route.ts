@@ -2,6 +2,13 @@ import { createClient } from '@supabase/supabase-js';
 import { NextResponse } from 'next/server';
 import { findOrCreatePatient, normalizePhone } from '@/lib/phone';
 import { sendWhatsAppMessage } from '@/lib/whatsapp';
+import {
+  getDoctorSchedule,
+  isClinicOpenOnDate,
+  validateOpdTime,
+  snapTo1HourSlot,
+  getSchedulePromptSnippet
+} from '@/lib/schedule';
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://cqxvcdrverdwhxccyluz.supabase.co',
@@ -16,7 +23,7 @@ You are the 24/7 AI Receptionist & Clinical Coordinator for KK Neuro Vision Ther
 Doctor / Founder: Dr. Vikash
 Location: Healthcare Hub, Near Circle, SG Highway, Ahmedabad, Gujarat — 380015
 Phone / WhatsApp: +91 63524 49698
-OPD Hours: 9:00 AM – 1:00 PM (Morning) & 4:00 PM – 8:00 PM (Evening), Monday to Saturday. Sunday closed.
+Standard OPD Hours: 9:00 AM – 1:00 PM (Morning) & 4:00 PM – 8:00 PM (Evening), Monday to Saturday. Sunday closed.
 
 Treatments & Specializations:
 - Vision Therapy & Neuro-Optometric Rehabilitation
@@ -32,15 +39,17 @@ Consultation Fees:
 Behavior & Rules:
 1. Answer in the same language the patient messages you (English, Hindi, or Gujarati).
 2. Be warm, professional, concise, empathetic, and clear.
-3. Always offer to help them book an OPD appointment slot with Dr. Vikash.
+3. Always offer to help them book an OPD appointment slot with Dr. Vikash within working hours.
 4. Keep responses short and suitable for WhatsApp (2-4 lines max).
 5. Never diagnose medical conditions directly; invite them for a clinical OPD assessment with Dr. Vikash.
 `;
 
-async function getGenerativeAiReply(userMsg: string, patientName: string): Promise<string | null> {
+async function getGenerativeAiReply(userMsg: string, patientName: string, scheduleSnippet: string = ''): Promise<string | null> {
   const groqKey = process.env.GROQ_API_KEY || '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';
   const openaiKey = process.env.OPENAI_API_KEY;
   const geminiKey = process.env.GEMINI_API_KEY;
+
+  const fullPrompt = scheduleSnippet ? `${CLINIC_KNOWLEDGE_PROMPT}\n\n${scheduleSnippet}` : CLINIC_KNOWLEDGE_PROMPT;
 
   try {
     if (groqKey) {
@@ -53,7 +62,7 @@ async function getGenerativeAiReply(userMsg: string, patientName: string): Promi
         body: JSON.stringify({
           model: 'groq/compound-mini',
           messages: [
-            { role: 'system', content: CLINIC_KNOWLEDGE_PROMPT },
+            { role: 'system', content: fullPrompt },
             { role: 'user', content: `Patient Name: ${patientName}. Message: "${userMsg}"` }
           ],
           max_tokens: 300,
@@ -76,7 +85,7 @@ async function getGenerativeAiReply(userMsg: string, patientName: string): Promi
         body: JSON.stringify({
           model: 'gpt-4o-mini',
           messages: [
-            { role: 'system', content: CLINIC_KNOWLEDGE_PROMPT },
+            { role: 'system', content: fullPrompt },
             { role: 'user', content: `Patient Name: ${patientName}. Message: "${userMsg}"` }
           ],
           max_tokens: 250,
@@ -91,7 +100,7 @@ async function getGenerativeAiReply(userMsg: string, patientName: string): Promi
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           contents: [{
-            parts: [{ text: `${CLINIC_KNOWLEDGE_PROMPT}\n\nPatient Name: ${patientName}. Patient Question: "${userMsg}"` }]
+            parts: [{ text: `${fullPrompt}\n\nPatient Name: ${patientName}. Patient Question: "${userMsg}"` }]
           }]
         })
       });
@@ -117,13 +126,30 @@ async function handleMultiMessageAutoReply({
 }) {
   const msgLower = userMessage.toLowerCase().trim();
 
+  // Load live doctor schedule
+  const doctorSchedule = await getDoctorSchedule(supabaseAdmin, clinicId);
+  const scheduleSnippet = getSchedulePromptSnippet(doctorSchedule);
+
   // 0. Auto Appointment Booking parsing if patient replies with name/time (e.g., "Rahul, Tomorrow 10 AM" or "Abhi, 4 PM")
   const hasTimeKeyword = (msgLower.includes('am') || msgLower.includes('pm') || msgLower.includes('tomorrow') || msgLower.includes('today')) && (userMessage.includes(',') || msgLower.includes('book') || msgLower.includes('confirm'));
   if (hasTimeKeyword && !msgLower.startsWith('1') && !msgLower.startsWith('2') && !msgLower.startsWith('3')) {
     const todayStr = new Date().toISOString().split('T')[0];
     const tomorrowStr = new Date(Date.now() + 86400000).toISOString().split('T')[0];
-    const targetDate = msgLower.includes('tomorrow') ? tomorrowStr : todayStr;
-    
+    let targetDate = msgLower.includes('tomorrow') ? tomorrowStr : todayStr;
+
+    // Check for explicit days mentioned (e.g. sunday, monday, etc.)
+    const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    for (let i = 0; i < 7; i++) {
+      if (msgLower.includes(dayNames[i])) {
+        const d = new Date();
+        const currentDay = d.getDay();
+        const diff = (i + 7 - currentDay) % 7 || 7;
+        d.setDate(d.getDate() + diff);
+        targetDate = d.toISOString().split('T')[0];
+        break;
+      }
+    }
+
     // Extract name if provided as "Name, Time"
     let extractedName = patientName;
     if (userMessage.includes(',')) {
@@ -132,6 +158,30 @@ async function handleMultiMessageAutoReply({
         extractedName = parts[0].trim();
       }
     }
+
+    // Check if clinic is open on that date
+    const dateCheck = isClinicOpenOnDate(doctorSchedule, [], targetDate);
+    if (!dateCheck.isOpen) {
+      await sendWhatsAppMessage({
+        phone: cleanPhone,
+        message: `Hello *${extractedName}*! 🙏\n\nKK Neuro Vision Therapy Institute is closed on that day (${dateCheck.reason}).\n\n📅 *Dr. Vikash's Consultation Hours:* Mon–Sat: 9:00 AM – 1:00 PM & 4:00 PM – 8:00 PM.\n\nWould you like to book for *Tomorrow* or another working day instead? Reply with your preferred day and time!`,
+        clinicId
+      });
+      return;
+    }
+
+    // Validate time against doctor's OPD hours
+    const timeCheck = validateOpdTime(dateCheck.daySchedule!, userMessage);
+    if (!timeCheck.valid) {
+      await sendWhatsAppMessage({
+        phone: cleanPhone,
+        message: `Hello *${extractedName}*! Dr. Vikash's consultation hours on ${dateCheck.daySchedule?.day_name} are Morning: 9:00 AM – 1:00 PM and Evening: 4:00 PM – 8:00 PM.\n\nWould *${timeCheck.suggestedTime}* work for your appointment? Reply with *"Yes"* to confirm!`,
+        clinicId
+      });
+      return;
+    }
+
+    const finalSlotTime = timeCheck.normalizedTime;
 
     // Ensure patient name is updated
     const patient = await findOrCreatePatient(supabaseAdmin, {
@@ -145,7 +195,7 @@ async function handleMultiMessageAutoReply({
     const aptPayload: any = {
       patient_id: patient.id,
       appointment_date: targetDate,
-      appointment_time: userMessage,
+      appointment_time: finalSlotTime,
       status: 'confirmed',
       notes: `Booked via WhatsApp AI Bot (${userMessage})`
     };
@@ -153,16 +203,17 @@ async function handleMultiMessageAutoReply({
 
     await supabaseAdmin.from('appointments').insert([aptPayload]);
 
+    const formattedDate = targetDate === tomorrowStr ? 'Tomorrow' : targetDate === todayStr ? 'Today' : targetDate;
     await sendWhatsAppMessage({
       phone: cleanPhone,
-      message: `🎉 *OPD Appointment Confirmed!*\n\n👤 *Patient Name:* ${extractedName}\n📅 *Date:* ${targetDate === tomorrowStr ? 'Tomorrow' : 'Today'}\n⏰ *Time Slot:* ${userMessage}\n📍 *Clinic:* KK Neuro Vision Therapy Institute, SG Highway, Ahmedabad\n\n✅ *Your slot is synced live into ClinicOS Dashboard!* Dr. Vikash & team look forward to seeing you.`,
+      message: `🎉 *OPD Appointment Confirmed!*\n\n👤 *Patient Name:* ${extractedName}\n📅 *Date:* ${formattedDate}\n⏰ *Time Slot:* ${finalSlotTime}\n📍 *Clinic:* KK Neuro Vision Therapy Institute, SG Highway, Ahmedabad\n\n✅ *Your slot is synced live into ClinicOS Dashboard!* Dr. Vikash & team look forward to seeing you.`,
       clinicId
     });
     return;
   }
 
   // 1. Primary Real-Time Generative AI LLM response for natural conversational human-like chat
-  const aiResponse = await getGenerativeAiReply(userMessage, patientName);
+  const aiResponse = await getGenerativeAiReply(userMessage, patientName, scheduleSnippet);
   if (aiResponse) {
     await sendWhatsAppMessage({
       phone: cleanPhone,

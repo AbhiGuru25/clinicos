@@ -28,13 +28,23 @@ export async function GET() {
 export async function PUT(req: Request) {
   try {
     const body = await req.json();
-    const { id, status } = body;
+    const { id, status, appointment_date, appointment_time, notes } = body;
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Appointment ID required' }, { status: 400 });
+    }
+
+    const updateData: any = {};
+    if (status !== undefined) updateData.status = status;
+    if (appointment_date !== undefined) updateData.appointment_date = appointment_date;
+    if (appointment_time !== undefined) updateData.appointment_time = appointment_time;
+    if (notes !== undefined) updateData.notes = notes;
 
     const { data, error } = await supabaseAdmin
       .from('appointments')
-      .update({ status })
+      .update(updateData)
       .eq('id', id)
-      .select()
+      .select('*, patients(name, phone)')
       .single();
 
     if (error) {
