@@ -47,7 +47,7 @@ export async function sendWhatsAppMessage({
 
   // 2. Attempt Evolution API HTTP request or Meta Cloud API
   try {
-    const metaToken = process.env.META_ACCESS_TOKEN || 'EAAPHaT1rNWcBSdiugi0dNBl6ntqZBQsZADOfPs6cMbEZAPiOHic1v5gYEstB7TcXHx74iPxE58HKOZAGqnuiS7TsBfYMzdzjmFaLOIvmAUHZCZCRchT0EQgD9ZANWTMG3ivfpaPJwirJasK6GiSoApdH5SnyZBsXyiVZB0YNXZCZCl4WR8BrycScX2Y0fG6aYFK4n29e40kph0aQasmQeqS66p9kDtJnq6nSPqSK8B3oZAIZAhvssHBHWXpMddEP58tZBNO5H6EXZCcvoqN8UC1O9VDBrQ7RAZDZD';
+    const metaToken = process.env.META_ACCESS_TOKEN || 'EAAPHaT1rNWcBSWZCxZCKloFlLBkiZCORhMrlBQ3xkSMSAsncMFMj6yNZAbf3vDjZCAoCaqPtibccI2KR3YOd264QJPaBQwFGmnHK7rR2w16r6yvUbmG6ZCYjl3FbXPVsgZAdrDNuYwramiHkRV6WCDm9c0W5pQZC02KrRLHij2M2gyNn02ZBmHQMFU0rjFqTwCQZDZD';
     const metaPhoneId = process.env.META_PHONE_NUMBER_ID || '1369421772910379';
 
     if (metaToken && metaPhoneId) {
