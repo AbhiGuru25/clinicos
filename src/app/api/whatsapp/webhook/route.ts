@@ -176,21 +176,7 @@ async function handleMultiMessageAutoReply({
   if (msgLower === '1' || msgLower.includes('book') || msgLower.includes('appointment')) {
     await sendWhatsAppMessage({
       phone: cleanPhone,
-      message: `Hello *${patientName}*! 👋\n\nI'd be happy to help you book an OPD Consultation at *KK Neuro Vision Therapy Institute*.`,
-      clinicId
-    });
-    await delay(1200);
-
-    await sendWhatsAppMessage({
-      phone: cleanPhone,
-      message: `📅 *Available OPD Slots Today & Tomorrow:*\n\n• Today (Evening): 4:00 PM | 5:30 PM | 6:30 PM\n• Tomorrow (Morning): 10:00 AM | 11:30 AM\n• Tomorrow (Evening): 4:00 PM | 5:30 PM`,
-      clinicId
-    });
-    await delay(1200);
-
-    await sendWhatsAppMessage({
-      phone: cleanPhone,
-      message: `✍️ *To confirm your booking, please reply with:*\n\n"Your Name, Preferred Time Slot"\n\n_Example: Rahul, Tomorrow 10 AM_`,
+      message: `Hello *${patientName}*! 👋\n\nI'd be happy to help you book an OPD Consultation at *KK Neuro Vision Therapy Institute*.\n\n📅 *Available OPD Slots Today & Tomorrow:*\n• Today (Evening): 4:00 PM | 5:30 PM | 6:30 PM\n• Tomorrow (Morning): 10:00 AM | 11:30 AM\n• Tomorrow (Evening): 4:00 PM | 5:30 PM\n\n✍️ *To confirm your booking, please reply with:*\n"Your Name, Preferred Time Slot"\n_Example: Rahul, Tomorrow 10 AM_`,
       clinicId
     });
     return;
@@ -200,21 +186,7 @@ async function handleMultiMessageAutoReply({
   if (msgLower === '2' || msgLower.includes('address') || msgLower.includes('location') || msgLower.includes('where')) {
     await sendWhatsAppMessage({
       phone: cleanPhone,
-      message: `📍 *KK Neuro Vision Therapy Institute Location:*`,
-      clinicId
-    });
-    await delay(1000);
-
-    await sendWhatsAppMessage({
-      phone: cleanPhone,
-      message: `Healthcare Hub, Near Circle, SG Highway, Ahmedabad, Gujarat — 380015.\n\n📞 Desk: +91 63524 49698\n⏰ OPD Timings: 9:00 AM – 8:00 PM (Mon to Sat)`,
-      clinicId
-    });
-    await delay(1000);
-
-    await sendWhatsAppMessage({
-      phone: cleanPhone,
-      message: `🗺️ *Click for Google Maps Navigation:*\nhttps://maps.google.com/?q=KK+Neuro+Vision+Therapy+Institute+Ahmedabad`,
+      message: `📍 *KK Neuro Vision Therapy Institute Location:*\nHealthcare Hub, Near Circle, SG Highway, Ahmedabad, Gujarat — 380015.\n\n📞 Desk: +91 63524 49698\n⏰ OPD Timings: 9:00 AM – 8:00 PM (Mon to Sat)\n\n🗺️ *Click for Google Maps Navigation:*\nhttps://maps.google.com/?q=KK+Neuro+Vision+Therapy+Institute+Ahmedabad`,
       clinicId
     });
     return;
@@ -224,44 +196,16 @@ async function handleMultiMessageAutoReply({
   if (msgLower === '3' || msgLower.includes('fees') || msgLower.includes('cost') || msgLower.includes('price')) {
     await sendWhatsAppMessage({
       phone: cleanPhone,
-      message: `📋 *Consultation Fees & Therapy Services:*`,
-      clinicId
-    });
-    await delay(1000);
-
-    await sendWhatsAppMessage({
-      phone: cleanPhone,
-      message: `• *Doctor OPD Consultation:* ₹800\n• *Complete Vision Therapy Assessment:* ₹1,500\n• *Amblyopia (Lazy Eye) Evaluation:* ₹1,200\n• *Strabismus / Squint Examination:* ₹1,500`,
-      clinicId
-    });
-    await delay(1000);
-
-    await sendWhatsAppMessage({
-      phone: cleanPhone,
-      message: `Would you like me to book an OPD consultation slot for you with Dr. Vikash today? 🗓️\n\nReply *1* to view available slots!`,
+      message: `📋 *Consultation Fees & Therapy Services:*\n• *Doctor OPD Consultation:* ₹800\n• *Complete Vision Therapy Assessment:* ₹1,500\n• *Amblyopia (Lazy Eye) Evaluation:* ₹1,200\n• *Strabismus / Squint Examination:* ₹1,500\n\nWould you like me to book an OPD consultation slot for you with Dr. Vikash today? 🗓️ Reply *1* to view available slots!`,
       clinicId
     });
     return;
   }
 
-  // 5. Default Interactive Welcome Menu (Staggered 3-Message Flow)
+  // 5. Default Interactive Welcome Menu
   await sendWhatsAppMessage({
     phone: cleanPhone,
-    message: `Hello *${patientName}*! 👋 Welcome to *KK Neuro Vision Therapy Institute*.`,
-    clinicId
-  });
-  await delay(1200);
-
-  await sendWhatsAppMessage({
-    phone: cleanPhone,
-    message: `Dr. Vikash & Team specialize in Vision Therapy, Amblyopia (Lazy Eye), Strabismus, and Comprehensive Eye Evaluations.`,
-    clinicId
-  });
-  await delay(1200);
-
-  await sendWhatsAppMessage({
-    phone: cleanPhone,
-    message: `🤖 *How can I help you today? Please reply with a number:*\n\n1️⃣ Book OPD Appointment\n2️⃣ Clinic Address & Directions\n3️⃣ Consultation Fees & Treatments\n4️⃣ Talk to Front Desk Receptionist`,
+    message: `Hello *${patientName}*! 👋 Welcome to *KK Neuro Vision Therapy Institute*.\n\nDr. Vikash & Team specialize in Vision Therapy, Amblyopia (Lazy Eye), Strabismus, and Comprehensive Eye Evaluations.\n\n🤖 *How can I help you today? Please reply with a number or ask any question:*\n1️⃣ Book OPD Appointment\n2️⃣ Clinic Address & Directions\n3️⃣ Consultation Fees & Treatments\n4️⃣ Talk to Front Desk Receptionist`,
     clinicId
   });
 }
