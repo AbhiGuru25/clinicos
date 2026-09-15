@@ -23,7 +23,10 @@ import {
   LayoutList,
   CalendarDays,
   SlidersHorizontal,
-  Settings
+  Settings,
+  Send,
+  Bell,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import AppointmentCalendar from '@/components/AppointmentCalendar';
@@ -55,10 +58,10 @@ export default function AppointmentsPage() {
   const [booking, setBooking] = useState(false);
   const [clinicId, setClinicId] = useState<string | null>(null);
   
-  // Billing State
   const [selectedAppointment, setSelectedAppointment] = useState<any>(null);
   const [consultationFee, setConsultationFee] = useState('800');
   const [gstRate, setGstRate] = useState('18');
+  const [sendingBatchReminders, setSendingBatchReminders] = useState(false);
 
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState('');
@@ -462,6 +465,33 @@ export default function AppointmentsPage() {
     }
   };
 
+  const handleSendBatchReminders = async (target: 'today' | 'tomorrow' | 'both' = 'both') => {
+    if (sendingBatchReminders) return;
+    const label = target === 'today' ? "Today's" : target === 'tomorrow' ? "Tomorrow's" : "Today & Tomorrow's";
+    const confirmed = window.confirm(`Send automated WhatsApp reminders to all upcoming patients scheduled for ${label}?`);
+    if (!confirmed) return;
+
+    setSendingBatchReminders(true);
+    try {
+      const res = await fetch('/api/appointments/reminders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target })
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert(`✅ WhatsApp Reminder Batch Complete!\n\n• Successfully Sent: ${data.sentCount || 0}\n• Skipped / Already Notified: ${data.skippedCount || 0}\n• Failed: ${data.failedCount || 0}`);
+        fetchAppointments();
+      } else {
+        alert(data.error || 'Failed to dispatch batch reminders.');
+      }
+    } catch (err: any) {
+      alert(`Reminder Dispatch Error: ${err.message}`);
+    } finally {
+      setSendingBatchReminders(false);
+    }
+  };
+
 
   return (
     <div className="space-y-6 page-enter">
@@ -514,6 +544,22 @@ export default function AppointmentsPage() {
           >
             <Clock size={14} className="text-blue-600" />
             <span className="hidden xs:inline">Doctor</span> Schedule
+          </button>
+
+          {/* Send Batch WhatsApp Reminders Button */}
+          <button
+            type="button"
+            onClick={() => handleSendBatchReminders('both')}
+            disabled={sendingBatchReminders}
+            className="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl sm:rounded-2xl text-xs font-extrabold bg-emerald-50 border border-emerald-200 hover:bg-emerald-100 text-emerald-800 transition-all flex items-center gap-1.5 shadow-xs touch-target disabled:opacity-50"
+            title="Send automated WhatsApp reminders to all upcoming patients scheduled for Today & Tomorrow"
+          >
+            {sendingBatchReminders ? (
+              <Loader2 size={14} className="animate-spin text-emerald-600" />
+            ) : (
+              <Bell size={14} className="text-emerald-600" />
+            )}
+            <span>{sendingBatchReminders ? 'Sending...' : 'Send Reminders'}</span>
           </button>
 
           {/* Add Walk-In Patient */}
