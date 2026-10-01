@@ -10,10 +10,10 @@ import {
   LogOut,
   Menu,
   X,
-  Stethoscope,
   PanelLeftClose,
   PanelLeftOpen,
 } from 'lucide-react';
+import { ClinicOSLockup, ZynteqBolt } from '@/components/Brand';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useEffect, useState } from 'react';
@@ -49,23 +49,9 @@ export default function Sidebar({
     <div className="flex flex-col h-full">
       <div className={`${collapsed ? 'p-4 pb-3 flex justify-center' : 'p-5 pb-4'}`}>
         {collapsed ? (
-          <div className="w-10 h-10 rounded-lg bg-[#0E7C6B] border border-[#0A5C4F] flex items-center justify-center shrink-0">
-            <Stethoscope size={20} className="text-white" />
-          </div>
+          <ClinicOSLockup theme="dark" compact subline={false} />
         ) : (
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#0E7C6B] border border-[#0A5C4F] flex items-center justify-center shrink-0">
-              <Stethoscope size={20} className="text-white" />
-            </div>
-            <div>
-              <p className="font-display font-semibold text-[19px] leading-none text-white tracking-tight">
-                ClinicOS
-              </p>
-              <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#7FB3A6] mt-1">
-                KK Neuro Vision
-              </p>
-            </div>
-          </div>
+          <ClinicOSLockup theme="dark" />
         )}
       </div>
 
@@ -114,6 +100,11 @@ export default function Sidebar({
           <LogOut size={17} />
           {!collapsed && 'Sign Out'}
         </button>
+        {!collapsed && (
+          <p className="text-center text-[10px] font-mono uppercase tracking-[0.18em] text-[#6E9A8E] pt-1">
+            Powered by Zynteq<span style={{ color: '#F5C518' }}>.</span>
+          </p>
+        )}
       </div>
     </div>
   );
@@ -138,9 +129,7 @@ export default function Sidebar({
       {/* ─── Mobile top bar ─── */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-[#0B3530] border-b border-[#155E54]">
         <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-lg bg-[#0E7C6B] flex items-center justify-center">
-            <Stethoscope size={17} className="text-white" />
-          </div>
+          <ZynteqBolt size={16} tile tileSize={32} />
           <span className="font-display font-semibold text-white text-lg">ClinicOS</span>
         </div>
         <button onClick={() => setMobileOpen(true)} className="p-2 rounded-lg text-white hover:bg-white/10" aria-label="Open menu">

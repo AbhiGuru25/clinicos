@@ -1,3 +1,5 @@
+import { ZynteqBolt } from '@/components/Brand';
+
 export default function Footer() {
   return (
     <footer style={{ background: '#0F172A', color: 'white', padding: '64px 0' }}>
@@ -6,19 +8,18 @@ export default function Footer() {
           
           {/* Brand */}
           <div style={{ gridColumn: 'span 2' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
-              <div style={{ width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(135deg, #0EA5E9, #10B981)' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-                </svg>
-              </div>
-              <span className="font-display" style={{ fontSize: '1.3rem', fontWeight: 900 }}>Clinic<span style={{ background: 'linear-gradient(135deg, #0EA5E9, #10B981)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}>OS</span></span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+              <ZynteqBolt size={18} tile tileSize={38} />
+              <span>
+                <span className="font-display" style={{ display: 'block', fontSize: '1.3rem', fontWeight: 900, color: 'white', lineHeight: 1 }}>ClinicOS</span>
+                <span style={{ display: 'block', fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.18em', color: '#64748B', marginTop: '4px' }}>BY <a href="https://zynteq.in" target="_blank" rel="noopener noreferrer" style={{ color: '#F5C518', textDecoration: 'none' }}>ZYNTEQ.</a></span>
+              </span>
             </div>
             <p style={{ fontSize: '0.88rem', lineHeight: 1.7, color: '#94A3B8', marginBottom: '16px', maxWidth: '280px' }}>
               AI-powered clinic management built for Indian healthcare. WhatsApp-first. Zero complexity.
             </p>
             <p style={{ fontSize: '0.78rem', color: '#475569' }}>
-              A product by <a href="https://zynteq.in" target="_blank" rel="noopener noreferrer" style={{ color: '#60A5FA', textDecoration: 'none' }}>Zynteq Agency</a>
+              A product by <a href="https://zynteq.in" target="_blank" rel="noopener noreferrer" style={{ color: '#F5C518', textDecoration: 'none' }}>Zynteq Agency</a>
             </p>
           </div>
 

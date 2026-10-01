@@ -207,8 +207,8 @@ body {
 
 .zynteq-badge {
   font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 0.25rem 0.7rem; background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15); border-radius: 99px; color: #9DB0C0;
+  padding: 0.25rem 0.7rem; background: rgba(245,197,24,0.1);
+  border: 1px solid rgba(245,197,24,0.3); border-radius: 99px; color: #F5C518;
 }
 
 /* Ledger rule lines like a paper register */
