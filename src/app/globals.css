@@ -2,227 +2,228 @@
 
 @theme {
   --font-sans: 'Inter', system-ui, sans-serif;
-  --font-display: 'Inter', sans-serif;
-  --font-jakarta: 'Inter', sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
 }
 
 :root {
-  /* ─── Spacing System ─── */
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 16px;
-  --space-lg: 24px;
-  --space-xl: 32px;
-  --space-2xl: 48px;
+  /* ─── ClinicOS “OPD Register” Design System ───
+     Warm paper + ink + clinical teal. No SaaS gradients. */
+  --paper: #F4F1EA;
+  --paper-deep: #ECE7DA;
+  --bg-app: #F4F1EA;
+  --bg-card: #FFFDF8;
+  --bg-card-hover: #FFFDF8;
 
-  /* ─── Clinical Brand Palette ─── */
-  --brand-primary: #2563EB;
-  --brand-primary-light: #BFDBFE;
+  --ink: #1A2B3C;
+  --text-primary: #1A2B3C;
+  --text-secondary: #5B6B7B;
+  --text-muted: #93A0AE;
 
-  /* ─── Sidebar (White Clinical) ─── */
-  --sidebar-bg: #FFFFFF;
-  --sidebar-border: #E2E8F0;
-  --sidebar-text: #64748B;
-  --sidebar-text-active: #2563EB;
+  --line: #E3DDCF;
+  --line-strong: #C9C0AC;
+  --border: #E3DDCF;
+  --border-strong: #C9C0AC;
 
-  /* ─── App Background ─── */
-  --bg-app: #F8FAFC;
-  --bg-card: #FFFFFF;
-  --bg-card-hover: #F8FAFC;
+  --brand-primary: #0E7C6B;
+  --brand-ink: #0A5C4F;
+  --brand-tint: #DDF0EA;
 
-  /* ─── Text ─── */
-  --text-primary: #0F172A;
-  --text-secondary: #64748B;
-  --text-muted: #94A3B8;
+  --amber: #B45309;
+  --amber-bg: #FEF3C7;
+  --urgent: #C2410C;
+  --urgent-bg: #FFEDD5;
 
-  /* ─── Border ─── */
-  --border: #E2E8F0;
-  --border-strong: #CBD5E1;
+  --success: #0E7C6B;
+  --success-bg: #DDF0EA;
+  --success-text: #0A5C4F;
 
-  /* ─── Status Colors ─── */
-  --success: #10B981;
-  --success-bg: #DCFCE7;
-  --success-text: #16A34A;
-  
-  --warning: #F59E0B;
-  --warning-bg: #FEF9C3;
-  --warning-text: #CA8A04;
-  
-  --error: #EF4444;
+  --warning: #B45309;
+  --warning-bg: #FEF3C7;
+  --warning-text: #92400E;
+
+  --error: #B91C1C;
   --error-bg: #FEE2E2;
-  --error-text: #DC2626;
-  
-  --info: #3B82F6;
+  --error-text: #991B1B;
+
+  --info: #0E7C6B;
+
+  --sidebar-bg: #0B3530;
+  --sidebar-border: #155E54;
+  --sidebar-text: #9DBFAC;
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-w: 264px;
+
+  --wa-green: #1FA855;
+  --wa-bubble: #E7F6EC;
 }
 
-/* ─── Base ─── */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
-
-html {
-  scroll-behavior: smooth;
-}
+*, *::before, *::after { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 
 body {
   background-color: var(--bg-app);
+  background-image:
+    radial-gradient(#d8d1bf 1px, transparent 1px);
+  background-size: 22px 22px;
   color: var(--text-primary);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
 }
 
-/* ─── Typography ─── */
-.font-display {
-  font-family: var(--font-display);
-}
+/* Display serif for clinical authority */
+.font-display { font-family: var(--font-display); }
+.font-mono2 { font-family: var(--font-mono); }
 
-.font-jakarta {
-  font-family: var(--font-jakarta);
-}
-
-.gradient-text {
-  color: var(--brand-primary);
-}
-
-/* ─── Clinical Cards ─── */
+/* ─── Register cards: paper slips with hard ink edge ─── */
 .clinic-card, .zynteq-card {
-  background: white;
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
-  transition: all 0.2s ease;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  box-shadow: 3px 3px 0 rgba(26, 43, 60, 0.08);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
-
 .clinic-card:hover, .zynteq-card:hover {
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
-  border-color: #BFDBFE;
+  box-shadow: 4px 4px 0 rgba(14, 124, 107, 0.18);
   transform: translateY(-1px);
 }
 
-/* ─── Glassmorphism ─── */
-.glass {
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+/* Token ticket with perforation */
+.token-ticket {
+  position: relative;
+  background: #fff;
+  border: 1.5px dashed var(--line-strong);
+  border-radius: 12px;
+}
+.token-ticket::before, .token-ticket::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 16px; height: 16px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  transform: translateY(-50%);
+}
+.token-ticket::before { left: -9px; }
+.token-ticket::after { right: -9px; }
+
+.token-num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: -0.02em;
 }
 
-.glass-dark {
-  background: rgba(26, 26, 46, 0.8);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(108, 92, 231, 0.2);
+/* Status pills — dot + label, always legible */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 10px; font-weight: 800;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 999px;
+  border: 1px solid var(--line);
 }
+.pill .dot { width: 7px; height: 7px; border-radius: 999px; }
+.pill-confirmed { background: #DDF0EA; color: #0A5C4F; border-color: #9ED9C8; }
+.pill-confirmed .dot { background: #0E7C6B; }
+.pill-pending { background: #FEF3C7; color: #92400E; border-color: #F5D67B; }
+.pill-pending .dot { background: #D97706; animation: blink 1.4s infinite; }
+.pill-completed { background: #E8E6DF; color: #4B5563; border-color: #D1CFC4; }
+.pill-completed .dot { background: #6B7280; }
+.pill-cancelled { background: #FEE2E2; color: #991B1B; border-color: #FECACA; }
+.pill-cancelled .dot { background: #DC2626; }
 
-/* ─── Buttons ─── */
+@keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+/* Buttons — stamp-like, no glow gradients */
 .btn-primary {
   background: var(--brand-primary);
-  color: white;
-  font-weight: 600;
-  border-radius: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: none;
+  color: #fff;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid var(--brand-ink);
+  box-shadow: 2px 2px 0 var(--brand-ink);
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(37, 99, 235, 0.1);
+  transition: all 0.12s ease;
 }
+.btn-primary:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 var(--brand-ink); }
+.btn-primary:active { transform: translate(1px, 1px); box-shadow: 0 0 0 var(--brand-ink); }
 
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+.btn-ink {
+  background: var(--ink); color: #fff;
+  font-weight: 700; border-radius: 10px;
+  padding: 0.6rem 1.1rem;
+  border: 1px solid #000;
+  box-shadow: 2px 2px 0 rgba(0,0,0,0.35);
+  cursor: pointer; transition: all 0.12s ease;
 }
+.btn-ink:hover { transform: translate(-1px,-1px); }
 
-.btn-primary:active {
-  transform: translateY(0);
+.btn-ghost {
+  background: #fff; color: var(--ink);
+  font-weight: 700; border-radius: 10px;
+  padding: 0.55rem 1rem;
+  border: 1px solid var(--line-strong);
+  cursor: pointer; transition: all 0.12s ease;
 }
+.btn-ghost:hover { border-color: var(--ink); }
 
-/* ─── Sidebar Glow (Removed for clinical theme) ─── */
-.sidebar-glow {
-  display: none;
-}
+.sidebar-glow { display: none; }
 
-/* ─── Animated Dot ─── */
-@keyframes pulse-primary {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0); }
-}
-
-.pulse-purple {
-  animation: pulse-primary 2s ease-in-out infinite;
-}
-
-/* ─── Page Entrance ─── */
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: translateY(0); }
 }
+.page-enter { animation: slideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 
-.page-enter {
-  animation: slideUp 0.35s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-/* ─── Scrollbar ─── */
-::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(108, 92, 231, 0.2); border-radius: 99px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(108, 92, 231, 0.4); }
+::-webkit-scrollbar-thumb { background: #C9C0AC; border-radius: 99px; border: 2px solid var(--paper); }
 
-/* ─── Hide scrollbar utility ─── */
 .hide-scrollbar::-webkit-scrollbar { display: none; }
 .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* ─── Stat card gradient variants (Removed for Option A, all white) ─── */
 .stat-card-purple, .stat-card-cyan, .stat-card-emerald, .stat-card-amber {
-  background: white;
-  color: var(--text-primary);
+  background: var(--bg-card); color: var(--text-primary);
 }
 
-/* ─── Mobile touch target ─── */
-.touch-target {
-  min-height: 44px;
-  min-width: 44px;
-}
+.touch-target { min-height: 44px; min-width: 44px; }
 
-/* ─── Table → Card on mobile ─── */
 @media (max-width: 768px) {
-  .mobile-card-row {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    padding: 1rem;
-    border-radius: 1rem;
-    background: white;
-    border: 1px solid var(--border);
-    margin-bottom: 0.75rem;
-  }
-
+  .mobile-card-row { display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem; border-radius: 1rem; background: var(--bg-card); border: 1px solid var(--line); margin-bottom: 0.75rem; }
   .mobile-hide-col { display: none !important; }
   .desktop-only { display: none !important; }
 }
+@media (min-width: 769px) { .mobile-only { display: none !important; } }
 
-@media (min-width: 769px) {
-  .mobile-only { display: none !important; }
-}
-
-/* ─── Float animation ─── */
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 .animate-float { animation: float 6s ease-in-out infinite; }
 
-/* ─── Zynteq badge ─── */
+/* WhatsApp thread bubbles */
+.wa-thread { background: #EFE9DC; border: 1px solid var(--line); border-radius: 12px; }
+.wa-in { background: #fff; border: 1px solid var(--line); border-radius: 4px 12px 12px 12px; }
+.wa-out { background: #D9F2E3; border: 1px solid #B7E3C6; border-radius: 12px 4px 12px 12px; }
+
 .zynteq-badge {
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding: 0.2rem 0.6rem;
-  background: #F1F5F9;
-  border: 1px solid #E2E8F0;
-  border-radius: 99px;
-  color: #64748B;
+  font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 0.25rem 0.7rem; background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15); border-radius: 99px; color: #9DB0C0;
+}
+
+/* Ledger rule lines like a paper register */
+.ledger-row { border-bottom: 1px dashed var(--line); }
+.ledger-row:last-child { border-bottom: none; }
+
+/* Collapsible sidebar rail — offset is driven explicitly by DashboardShell
+   (lg:pl-[264px] / lg:pl-[78px]) so content always follows the rail. */
+.sidebar-rail {
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* OPD shift tape */
+.shift-tape {
+  background: var(--ink); color: #F4F1EA;
+  font-family: var(--font-mono); font-size: 11px;
+  letter-spacing: 0.12em; text-transform: uppercase;
 }

@@ -7,144 +7,112 @@ import {
   Users,
   ReceiptIndianRupee,
   Settings,
-  MessageSquare,
   LogOut,
   Menu,
   X,
-  Activity
+  Stethoscope,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const navItems = [
-  { name: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Appointments', href: '/dashboard/appointments', icon: CalendarDays },
+  { name: 'OPD Desk', href: '/dashboard', icon: LayoutDashboard },
+  { name: 'Schedule', href: '/dashboard/appointments', icon: CalendarDays },
   { name: 'Patients', href: '/dashboard/patients', icon: Users },
   { name: 'Billing', href: '/dashboard/billing', icon: ReceiptIndianRupee },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { name: 'Setup', href: '/dashboard/settings', icon: Settings },
 ];
 
-function ZynteqLogo() {
-  return (
-    <div className="flex items-center gap-3">
-      {/* Z Icon Mark */}
-      <div className="relative w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden"
-        style={{ background: 'var(--brand-primary)' }}>
-        <Activity size={22} className="text-white z-10" />
-      </div>
-      {/* Wordmark */}
-      <div>
-        <p className="font-black text-lg leading-none tracking-tight" style={{ color: 'var(--text-primary)', fontFamily: 'Inter, sans-serif' }}>
-          Clinic<span style={{ color: 'var(--brand-primary)' }}>OS</span>
-        </p>
-        <p className="text-[9px] font-bold tracking-[0.15em] uppercase mt-0.5" style={{ color: 'var(--text-muted)' }}>by Zynteq</p>
-      </div>
-    </div>
-  );
-}
-
-export default function Sidebar() {
+export default function Sidebar({
+  collapsed,
+  onToggle,
+}: {
+  collapsed: boolean;
+  onToggle: () => void;
+}) {
   const pathname = usePathname();
-  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = () => {
-    console.log('Logout clicked');
-    // Ensure the redirect happens regardless of auth state
     try {
       supabase.auth.signOut().catch(console.error);
     } catch (e) {
       console.error(e);
     }
-    
-    // Use window.location for a definitive hard redirect
     window.location.href = '/login';
   };
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
-      {/* Glow Effect */}
-      <div className="sidebar-glow" />
-
-      {/* Logo */}
-      <div className="p-6 pb-8">
-        <ZynteqLogo />
+      <div className={`${collapsed ? 'p-4 pb-3 flex justify-center' : 'p-5 pb-4'}`}>
+        {collapsed ? (
+          <div className="w-10 h-10 rounded-lg bg-[#0E7C6B] border border-[#0A5C4F] flex items-center justify-center shrink-0">
+            <Stethoscope size={20} className="text-white" />
+          </div>
+        ) : (
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-[#0E7C6B] border border-[#0A5C4F] flex items-center justify-center shrink-0">
+              <Stethoscope size={20} className="text-white" />
+            </div>
+            <div>
+              <p className="font-display font-semibold text-[19px] leading-none text-white tracking-tight">
+                ClinicOS
+              </p>
+              <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-[#7FB3A6] mt-1">
+                KK Neuro Vision
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Nav */}
-      <nav className="px-4 flex-1 space-y-1">
+      <nav className={`${collapsed ? 'px-2.5' : 'px-3'} flex-1 space-y-1`}>
+        {!collapsed && (
+          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.2em] text-[#6E9A8E]">
+            Clinic
+          </p>
+        )}
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
             <Link
               key={item.name}
               href={item.href}
+              title={collapsed ? item.name : undefined}
               onClick={() => setMobileOpen(false)}
-              className={`relative flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
+              className={`relative flex items-center ${collapsed ? 'justify-center px-0 py-3' : 'gap-3 px-3 py-2.5'} rounded-lg transition-all duration-150 border ${
                 isActive
-                  ? 'text-brand-primary font-bold'
-                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                  ? 'bg-[#FFFDF8] text-[#0B3530] border-[#FFFDF8]'
+                  : 'text-[#9DBFAC] border-transparent hover:text-white hover:bg-white/5'
               }`}
-              style={{ color: isActive ? 'var(--brand-primary)' : 'var(--text-secondary)' }}
             >
-              {isActive && (
-                <motion.div
-                  layoutId="active-nav"
-                  className="absolute inset-0 rounded-xl"
-                  style={{ background: '#EFF6FF' }}
-                  transition={{ type: 'spring', bounce: 0.15, duration: 0.4 }}
-                />
-              )}
-              <item.icon
-                size={18}
-                className={`relative z-10 transition-colors ${isActive ? 'text-brand-primary' : 'text-slate-500 group-hover:text-slate-900'}`}
-                style={{ color: isActive ? 'var(--brand-primary)' : 'currentColor' }}
-              />
-              <span className="relative z-10 text-sm font-semibold">{item.name}</span>
+              <item.icon size={19} className={`shrink-0 ${isActive ? 'text-[#0E7C6B]' : ''}`} />
+              {!collapsed && <span className="text-[13.5px] font-bold">{item.name}</span>}
             </Link>
           );
         })}
       </nav>
 
-      {/* Bottom Section */}
-      <div className="p-4 mt-auto space-y-3">
-        {/* WhatsApp Status */}
-        <Link
-          href="/dashboard/settings"
-          className="block p-4 rounded-2xl border transition-all hover:scale-[1.01] cursor-pointer"
-          style={{ background: 'var(--success-bg)', borderColor: 'rgba(22, 163, 74, 0.1)' }}
-        >
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-[10px] font-black uppercase tracking-wider" style={{ color: 'var(--success-text)' }}>WhatsApp AI</span>
-            </div>
-            <MessageSquare size={12} style={{ color: 'var(--success-text)' }} />
-          </div>
-          <p className="text-[10px] font-semibold leading-relaxed" style={{ color: 'var(--text-secondary)' }}>
-            <span className="font-bold block" style={{ color: 'var(--success-text)' }}>Auto-receptionist active</span>
-            Booking, reminders &amp; FAQs on autopilot.
-          </p>
-        </Link>
-
-
-        {/* Zynteq Badge */}
-        <div className="flex items-center justify-center py-2">
-          <span className="zynteq-badge">Powered by Zynteq AI</span>
-        </div>
-
-        {/* Sign Out */}
+      <div className={`${collapsed ? 'p-2.5' : 'p-3'} mt-auto space-y-2`}>
+        {!collapsed && (
+          <Link
+            href="/dashboard/settings"
+            className="flex items-center gap-2 rounded-lg border border-emerald-300/20 bg-emerald-300/10 px-3 py-2.5 hover:bg-emerald-300/20 transition-all"
+          >
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse shrink-0" />
+            <span className="text-[12px] font-bold text-emerald-100">WhatsApp AI • On</span>
+          </Link>
+        )}
         <button
           onClick={handleLogout}
-          className="flex items-center gap-3 px-4 py-3 w-full rounded-xl transition-all font-semibold text-sm group cursor-pointer relative z-20"
-          style={{ color: 'var(--text-secondary)' }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--error-bg)'; (e.currentTarget as HTMLElement).style.color = 'var(--error-text)'; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'transparent'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
+          title={collapsed ? 'Sign Out' : undefined}
+          className={`flex items-center ${collapsed ? 'justify-center px-0 py-2.5' : 'gap-3 px-3 py-2.5'} w-full rounded-lg font-semibold text-[13px] text-[#9DBFAC] hover:text-white hover:bg-white/5 transition-all cursor-pointer`}
         >
-          <LogOut size={18} />
-          Sign Out
+          <LogOut size={17} />
+          {!collapsed && 'Sign Out'}
         </button>
       </div>
     </div>
@@ -152,54 +120,49 @@ export default function Sidebar() {
 
   return (
     <>
-      {/* ─── Desktop Sidebar ─── */}
-      <div
-        className="hidden lg:flex flex-col w-64 fixed left-0 top-0 h-screen z-50 overflow-hidden"
-        style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--sidebar-border)' }}
-      >
+      {/* ─── Desktop rail ─── */}
+      <div className={`hidden lg:flex flex-col sidebar-rail fixed left-0 top-0 h-screen z-50 bg-[#0B3530] border-r border-[#155E54] ${collapsed ? 'w-[78px]' : 'w-[264px]'}`}>
         <SidebarContent />
+        {/* Collapse toggle on the edge */}
+        <button
+          onClick={onToggle}
+          aria-expanded={!collapsed}
+          aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          title={collapsed ? 'Expand ( [ )' : 'Collapse ( [ )'}
+          className="absolute -right-3.5 top-6 w-7 h-7 rounded-full bg-[#FFFDF8] border border-[#C9C0AC] text-[#0B3530] flex items-center justify-center shadow-md hover:scale-105 transition-transform cursor-pointer"
+        >
+          {collapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
+        </button>
       </div>
 
-      {/* ─── Mobile Top Bar ─── */}
-      <div
-        className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3"
-        style={{ background: 'var(--sidebar-bg)', borderBottom: '1px solid var(--sidebar-border)' }}
-      >
-        <ZynteqLogo />
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="p-2 rounded-xl transition-colors hover:bg-slate-100"
-          style={{ color: 'var(--text-primary)' }}
-        >
+      {/* ─── Mobile top bar ─── */}
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-4 py-3 bg-[#0B3530] border-b border-[#155E54]">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-lg bg-[#0E7C6B] flex items-center justify-center">
+            <Stethoscope size={17} className="text-white" />
+          </div>
+          <span className="font-display font-semibold text-white text-lg">ClinicOS</span>
+        </div>
+        <button onClick={() => setMobileOpen(true)} className="p-2 rounded-lg text-white hover:bg-white/10" aria-label="Open menu">
           <Menu size={22} />
         </button>
       </div>
 
-      {/* ─── Mobile Drawer ─── */}
+      {/* ─── Mobile drawer ─── */}
       <AnimatePresence>
         {mobileOpen && (
           <>
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
               onClick={() => setMobileOpen(false)}
-              className="lg:hidden fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm"
+              className="lg:hidden fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm"
             />
             <motion.div
-              initial={{ x: '-100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
+              initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
               transition={{ type: 'spring', bounce: 0, duration: 0.35 }}
-              className="lg:hidden fixed left-0 top-0 h-full w-72 z-[70] flex flex-col overflow-hidden"
-              style={{ background: 'var(--sidebar-bg)', borderRight: '1px solid var(--sidebar-border)' }}
+              className="lg:hidden fixed left-0 top-0 h-full w-72 z-[70] bg-[#0B3530]"
             >
-              {/* Close Button */}
-              <button
-                onClick={() => setMobileOpen(false)}
-                className="absolute top-4 right-4 p-2 rounded-xl hover:bg-slate-100 transition-colors z-10"
-                style={{ color: 'var(--text-secondary)' }}
-              >
+              <button onClick={() => setMobileOpen(false)} className="absolute top-4 right-4 p-2 rounded-lg text-slate-200 hover:bg-white/10 z-10" aria-label="Close menu">
                 <X size={20} />
               </button>
               <SidebarContent />
@@ -208,41 +171,16 @@ export default function Sidebar() {
         )}
       </AnimatePresence>
 
-      {/* ─── Mobile Bottom Tab Bar ─── */}
-      <div
-        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-2 py-2"
-        style={{
-          background: 'rgba(255,255,255,0.95)',
-          backdropFilter: 'blur(20px)',
-          borderTop: '1px solid var(--sidebar-border)'
-        }}
-      >
+      {/* ─── Mobile bottom tabs ─── */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-2 py-2 bg-[#0B3530]/95 backdrop-blur border-t border-[#155E54]">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all touch-target"
-              style={{ minHeight: '52px', justifyContent: 'center' }}
-            >
-              <item.icon
-                size={20}
-                style={{ color: isActive ? 'var(--brand-primary)' : 'var(--text-muted)' }}
-              />
-              <span
-                className="text-[9px] font-bold uppercase tracking-wider"
-                style={{ color: isActive ? 'var(--brand-primary)' : 'var(--text-muted)' }}
-              >
-                {item.name === 'Appointments' ? 'Appts' : item.name}
+            <Link key={item.name} href={item.href} className="flex flex-col items-center gap-1 py-1.5 px-3 rounded-lg touch-target justify-center">
+              <item.icon size={20} className={isActive ? 'text-emerald-200' : 'text-[#6E9A8E]'} />
+              <span className={`text-[9px] font-bold uppercase tracking-wider ${isActive ? 'text-emerald-100' : 'text-[#6E9A8E]'}`}>
+                {item.name === 'OPD Desk' ? 'Desk' : item.name}
               </span>
-              {isActive && (
-                <motion.div
-                  layoutId="mobile-tab-indicator"
-                  className="absolute bottom-0 w-6 h-0.5 rounded-full"
-                  style={{ background: 'var(--brand-primary)' }}
-                />
-              )}
             </Link>
           );
         })}

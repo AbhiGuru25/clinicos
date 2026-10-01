@@ -498,11 +498,14 @@ export default function AppointmentsPage() {
       {/* ─── Header ─── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">
-            Appointments & Calendar
+          <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#0E7C6B] font-semibold">
+            OPD Schedule • Calendar & Queue
+          </p>
+          <h1 className="font-display text-[28px] md:text-[34px] leading-tight tracking-tight text-[#1A2B3C] mt-1">
+            Appointments register.
           </h1>
-          <p className="text-xs font-medium text-slate-500 mt-0.5">
-            Visual OPD Schedule, Doctor Calendar & Patient Queue
+          <p className="text-[13px] font-medium text-[#5B6B7B] mt-1">
+            Walk-ins and WhatsApp bookings merge into one queue — no double-booking.
           </p>
         </div>
 

@@ -348,11 +348,14 @@ export default function BillingPage() {
       {/* ─── Header ─── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-xl md:text-2xl font-extrabold tracking-tight text-slate-900">
-            Billing & Invoices
+          <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#0E7C6B] font-semibold">
+            Billing Desk • GST Invoices
+          </p>
+          <h1 className="font-display text-[28px] md:text-[34px] leading-tight tracking-tight text-[#1A2B3C] mt-1">
+            Bills that balance.
           </h1>
-          <p className="text-xs font-medium text-slate-500 mt-0.5">
-            GST invoices, billing records & revenue insights
+          <p className="text-[13px] font-medium text-[#5B6B7B] mt-1">
+            GST-ready invoices, WhatsApp delivery and a ledger your accountant will trust.
           </p>
         </div>
         <div className="flex items-center gap-3">
