@@ -1,6 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { ZynteqBolt } from '@/components/Brand';
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -24,27 +25,26 @@ export default function Navbar() {
 
   return (
     <>
-      <nav style={{ 
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000, 
-        background: scrolled ? 'rgba(255, 255, 255, 0.95)' : 'rgba(255, 255, 255, 0.8)', 
-        backdropFilter: 'blur(12px)', 
-        borderBottom: scrolled ? '1px solid #E2E8F0' : '1px solid transparent', 
+      <nav style={{
+        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 1000,
+        background: scrolled ? 'rgba(244, 241, 234, 0.95)' : 'rgba(244, 241, 234, 0.8)',
+        backdropFilter: 'blur(12px)',
+        borderBottom: scrolled ? '1px solid #E3DDCF' : '1px solid transparent',
         height: '64px', display: 'flex', alignItems: 'center',
         transition: 'all 0.3s ease'
       }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%', padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           
           {/* Logo */}
-          <motion.div 
+          <motion.div
             whileHover={{ scale: 1.05 }}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
           >
-            <div style={{ width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0369A1' }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
-              </svg>
-            </div>
-            <span className="font-display" style={{ fontSize: '1.15rem', fontWeight: 900, color: '#0F172A', letterSpacing: '-0.5px' }}>Clinic<span style={{ color: '#0369A1' }}>OS</span></span>
+            <ZynteqBolt size={16} tile tileSize={32} />
+            <span>
+              <span className="font-display" style={{ display: 'block', fontSize: '1.15rem', fontWeight: 900, color: '#0F172A', letterSpacing: '-0.5px', lineHeight: 1 }}>Clinic<span style={{ color: '#0E7C6B' }}>OS</span></span>
+              <span style={{ display: 'block', fontSize: '0.58rem', fontWeight: 700, letterSpacing: '0.18em', color: '#94A3B8', marginTop: '3px' }}>BY ZYNTEQ<span style={{ color: '#F5C518' }}>.</span></span>
+            </span>
           </motion.div>
 
           {/* Desktop Links (Hidden on Mobile) */}
@@ -67,11 +67,11 @@ export default function Navbar() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             {!isMobile && (
               <>
-                <a href="#pricing" style={{ fontSize: '0.82rem', fontWeight: 700, color: '#64748B', textDecoration: 'none' }}>Sign In</a>
-                <motion.a 
+                <a href="/login" style={{ fontSize: '0.82rem', fontWeight: 700, color: '#5B6B7B', textDecoration: 'none' }}>Sign In</a>
+                <motion.a
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
-                  href="#pricing" style={{ fontSize: '0.82rem', fontWeight: 800, padding: '8px 18px', borderRadius: '10px', color: 'white', textDecoration: 'none', background: '#0369A1', boxShadow: '0 4px 12px rgba(3,105,161,0.2)' }}
+                  href="#pricing" style={{ fontSize: '0.82rem', fontWeight: 800, padding: '8px 18px', borderRadius: '10px', color: 'white', textDecoration: 'none', background: '#0E7C6B', border: '1px solid #0A5C4F', boxShadow: '2px 2px 0 #0A5C4F' }}
                 >
                   Start Free Trial
                 </motion.a>
@@ -95,14 +95,14 @@ export default function Navbar() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              style={{ position: 'absolute', top: '64px', left: 0, right: 0, background: 'white', borderBottom: '1px solid #F1F5F9', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '8px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', overflow: 'hidden' }}
+              style={{ position: 'absolute', top: '64px', left: 0, right: 0, background: '#FFFDF8', borderBottom: '1px solid #E3DDCF', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: '8px', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)', overflow: 'hidden' }}
             >
               {[['Features', '#features'], ['How It Works', '#how-it-works'], ['Pricing', '#pricing']].map(([label, href]) => (
                 <a key={label} href={href} onClick={() => setOpen(false)} style={{ fontSize: '0.9rem', fontWeight: 600, color: '#475569', padding: '12px 0', textDecoration: 'none', borderBottom: '1px solid #F8FAFC' }}>{label}</a>
               ))}
               <motion.a 
                 whileTap={{ scale: 0.95 }}
-                href="#pricing" style={{ textAlign: 'center', padding: '14px', borderRadius: '12px', fontWeight: 800, color: 'white', textDecoration: 'none', marginTop: '12px', background: '#0369A1' }}
+                href="#pricing" style={{ textAlign: 'center', padding: '14px', borderRadius: '12px', fontWeight: 800, color: 'white', textDecoration: 'none', marginTop: '12px', background: '#0E7C6B' }}
               >
                 Start Free Trial
               </motion.a>

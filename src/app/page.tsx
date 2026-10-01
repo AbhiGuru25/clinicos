@@ -16,7 +16,7 @@ import DashboardShowcase from "@/components/DashboardShowcase";
 
 export default function Home() {
   return (
-    <main className="min-h-screen" style={{ background: '#F8FAFF', position: 'relative' }}>
+    <main className="min-h-screen" style={{ background: '#F4F1EA', position: 'relative' }}>
       <BackgroundDecor />
       <Navbar />
       <Hero />
