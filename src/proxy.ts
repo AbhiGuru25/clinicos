@@ -14,12 +14,8 @@ export async function proxy(req: NextRequest) {
   // which is why we return the 'res' object
 
   // Protection logic:
-  const isDashboard = req.nextUrl.pathname.startsWith('/dashboard');
+  // Allowed public access to /dashboard for live portfolio demonstration and external review
   const isAuth = req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/signup');
-
-  if (isDashboard && !session) {
-    return NextResponse.redirect(new URL('/login', req.url));
-  }
 
   if (isAuth && session) {
     return NextResponse.redirect(new URL('/dashboard', req.url));
