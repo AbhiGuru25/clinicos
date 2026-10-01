@@ -5,6 +5,11 @@ export const metadata: Metadata = {
   title: "ClinicOS by Zynteq — AI-Powered Clinic Management",
   description: "Automate appointments, patient reminders, billing and daily reports for your clinic. WhatsApp-first. No complex software. Built for Indian clinics by Zynteq.",
   keywords: "clinic management software india, ai appointment booking, whatsapp clinic bot, clinic automation ahmedabad, zynteq clinicos",
+  icons: {
+    icon: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+    apple: [{ url: "/favicon.svg", type: "image/svg+xml" }],
+  },
+  themeColor: "#0B3530",
   openGraph: {
     title: "ClinicOS by Zynteq — AI-Powered Clinic Management",
     description: "Save 4 hours daily. Automate appointments, reminders, billing via WhatsApp AI.",

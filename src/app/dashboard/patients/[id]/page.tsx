@@ -102,7 +102,7 @@ export default function PatientDetailsPage({ params }: { params: Promise<{ id: s
     // Header
     doc.setFontSize(24);
     doc.setTextColor(124, 58, 237); // Violet-600
-    doc.text('ClinicOS', 14, 25);
+    doc.text('ClinicOS  |  by Zynteq', 14, 25);
     doc.setFontSize(10);
     doc.setTextColor(100);
     doc.text('Smart Medical Management', 14, 32);

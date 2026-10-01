@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { Mail, Lock, Building, User, Phone, ArrowRight, AlertCircle, Loader2, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { ZynteqBolt } from '@/components/Brand';
 
 export default function SignupPage() {
   const router = useRouter();
@@ -83,13 +84,13 @@ export default function SignupPage() {
         <div className="rounded-[2rem] p-8 md:p-10 border bg-white shadow-xl shadow-blue-900/5" style={{ borderColor: 'var(--border)' }}>
           {/* Logo */}
           <div className="flex flex-col items-center mb-8">
-            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4 text-white font-black text-3xl shadow-sm" style={{ background: 'var(--brand-primary)', fontFamily: 'Inter, sans-serif' }}>
-              Z
+            <div className="mb-4">
+              <ZynteqBolt size={30} tile tileSize={64} />
             </div>
             <h1 className="font-extrabold text-3xl text-slate-900 tracking-tight" style={{ fontFamily: 'Inter, sans-serif' }}>
               Clinic<span className="text-brand-primary">OS</span>
             </h1>
-            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-2">by Zynteq</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mt-2">by Zynteq<span style={{ color: '#F5C518' }}>.</span></span>
             <p className="text-sm font-medium mt-3 text-slate-500">
               Start your free trial today. No credit card required.
             </p>
